@@ -1,0 +1,124 @@
+name: Android Build
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'composeApp/**'
+      - 'androidApp/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'composeApp/**'
+      - 'androidApp/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+  workflow_dispatch:
+
+concurrency:
+  group: android-build
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Run tests
+        run: ./gradlew :composeApp:desktopTest --no-daemon
+
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      APPETIZE_API_TOKEN: ${{ secrets.APPETIZE_API_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Cache Android Gradle
+        uses: actions/cache@v4
+        with:
+          path: androidApp/.gradle
+          key: android-gradle-${{ runner.os }}-${{ hashFiles('androidApp/**/*.gradle*') }}
+          restore-keys: |
+            android-gradle-${{ runner.os }}-
+
+      - name: Build debug APK
+        run: ./gradlew :androidApp:assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        id: artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: androidApp/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+
+      - name: Upload to Appetize
+        id: appetize
+        if: ${{ env.APPETIZE_API_TOKEN != '' }}
+        uses: appetizeio/github-action-appetize@v1.0.5
+        with:
+          apiToken: ${{ secrets.APPETIZE_API_TOKEN }}
+          appFile: androidApp/build/outputs/apk/debug/app-debug.apk
+          platform: android
+        continue-on-error: true
+
+      - name: Write job summary
+        run: |
+          echo "## Android Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **APK built successfully**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Artifact | [Download APK](${{ steps.artifact.outputs.artifact-url }}) |" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.appetize.outputs.publicKey }}" ]; then
+            echo "| Appetize | [▶ Preview on Appetize](https://appetize.io/app/${{ steps.appetize.outputs.publicKey }}) |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Appetize | Skipped (set \`APPETIZE_API_TOKEN\` secret to enable) |" >> $GITHUB_STEP_SUMMARY
+          fi
