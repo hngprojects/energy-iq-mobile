@@ -1,4 +1,4 @@
-rootProject.name = "KotlinStarter"
+rootProject.name = "EnergyIQ"
 
 pluginManagement {
     repositories {

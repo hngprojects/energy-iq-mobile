@@ -1,6 +1,6 @@
-# Kotlin Starter
+# EnergyIQ
 
-KMP + Compose Multiplatform template with Vertical Slice Architecture for HNG project teams.
+KMP + Compose Multiplatform project with Vertical Slice Architecture.
 
 **Platforms:** Android · iOS · Desktop (JVM) · Web (wasmJs)
 
@@ -8,11 +8,8 @@ KMP + Compose Multiplatform template with Vertical Slice Architecture for HNG pr
 
 ```bash
 # 1. Clone
-git clone https://github.com/hngprojects/kotlin-starter.git
-cd kotlin-starter
-
-# 2. Rename package (optional)
-./rename.sh com.yourcompany.appname
+git clone https://github.com/hngprojects/energy-iq-mobile.git
+cd cd energy-iq-mobile
 
 # 3. Replace simulated auth with your real API
 # composeApp/src/commonMain/.../features/auth/data/remote/AuthApi.kt
