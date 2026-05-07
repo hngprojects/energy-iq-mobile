@@ -1,5 +1,5 @@
 # Add project specific ProGuard rules here.
--keep class dev.logickoder.starter.** { *; }
+-keep class com.hng14.energyiq.** { *; }
 
 # Kotlin serialization
 -keepattributes *Annotation*, InnerClasses

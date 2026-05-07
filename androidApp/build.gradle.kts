@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.logickoder.starter.android"
+    namespace = "com.hng14.energyiq.android"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "dev.logickoder.starter"
+        applicationId = "com.hng14.energyiq"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
