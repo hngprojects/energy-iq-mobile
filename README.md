@@ -9,7 +9,7 @@ KMP + Compose Multiplatform project with Vertical Slice Architecture.
 ```bash
 # 1. Clone
 git clone https://github.com/hngprojects/energy-iq-mobile.git
-cd cd energy-iq-mobile
+cd energy-iq-mobile
 
 # 3. Replace simulated auth with your real API
 # composeApp/src/commonMain/.../features/auth/data/remote/AuthApi.kt
