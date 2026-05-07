@@ -14,7 +14,7 @@ kotlin {
     jvmToolchain(17)
 
     android {
-        namespace = "dev.logickoder.starter"
+        namespace = "com.hng14.energyiq"
         compileSdk = 36
         minSdk = 26
     }
