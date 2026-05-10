@@ -1,6 +1,6 @@
 [versions]
 # Build toolchain
-agp = "9.0.0-alpha06"
+agp = "9.2.0"
 kotlin = "2.3.20"
 
 # Compose / UI

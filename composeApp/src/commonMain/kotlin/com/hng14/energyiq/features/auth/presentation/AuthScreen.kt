@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,7 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hng14.energyiq.features.auth.AuthMode
 import com.hng14.energyiq.features.auth.OnAuthSuccess
-import com.hng14.energyiq.features.auth.data.remote.AuthApi
 import com.hng14.energyiq.features.auth.presentation.components.AuthTextField
 import com.hng14.energyiq.features.auth.presentation.components.PasswordTextField
 import org.koin.compose.viewmodel.koinViewModel
@@ -81,7 +81,7 @@ fun AuthScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 content = {
                                     Text(
-                                        text = "K",
+                                        text = "E",
                                         style = MaterialTheme.typography.headlineLarge,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         fontWeight = FontWeight.Bold,
@@ -127,15 +127,31 @@ fun AuthScreen(
                                         enter = expandVertically(),
                                         exit = shrinkVertically(),
                                         content = {
-                                            AuthTextField(
-                                                value = state.name,
-                                                onValueChange = { viewModel.onNameChange(value = it) },
-                                                label = "Full Name",
-                                                placeholder = "Jane Doe",
-                                                error = state.nameError,
-                                                imeAction = ImeAction.Next,
-                                                modifier = Modifier.fillMaxWidth(),
-                                            )
+                                            Column(verticalArrangement = Arrangement.spacedBy(12.dp),) {
+                                                AuthTextField(
+                                                    value = state.firstName,
+                                                    onValueChange = {
+                                                        viewModel.onFirstNameChange(
+                                                            value = it
+                                                        )
+                                                    },
+                                                    label = "First Name",
+                                                    placeholder = "Jane",
+                                                    error = state.firstNameError,
+                                                    imeAction = ImeAction.Next,
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                )
+                                                AuthTextField(
+                                                    value = state.lastName,
+                                                    onValueChange = { viewModel.onLastNameChange(value = it) },
+                                                    label = "Last Name",
+                                                    placeholder = "Doe",
+                                                    error = state.lastNameError,
+                                                    imeAction = ImeAction.Next,
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                )
+                                            }
+
                                         },
                                     )
 
@@ -143,7 +159,7 @@ fun AuthScreen(
                                         value = state.email,
                                         onValueChange = { viewModel.onEmailChange(value = it) },
                                         label = "Email",
-                                        placeholder = "jeffery@logickoder.dev",
+                                        placeholder = "johndoe@yopmail.com",
                                         error = state.emailError,
                                         keyboardType = KeyboardType.Email,
                                         imeAction = ImeAction.Next,
@@ -160,10 +176,10 @@ fun AuthScreen(
                                             else -> ImeAction.Next
                                         },
                                         onImeAction = {
-                                            when {
-                                                isLogin -> viewModel.onSubmit(onSuccess = onAuthSuccess)
-                                                else -> {}
-                                            }
+//                                            when {
+//                                                isLogin -> viewModel.onSubmit(onSuccess = onAuthSuccess)
+//                                                else -> {}
+//                                            }
                                         },
                                         modifier = Modifier.fillMaxWidth(),
                                     )
@@ -183,7 +199,9 @@ fun AuthScreen(
                                                 label = "Confirm Password",
                                                 error = state.confirmPasswordError,
                                                 imeAction = ImeAction.Done,
-                                                onImeAction = { viewModel.onSubmit(onSuccess = onAuthSuccess) },
+                                                onImeAction = {
+                                                    //viewModel.onSubmit(onSuccess = onAuthSuccess)
+                                                              },
                                                 modifier = Modifier.fillMaxWidth(),
                                             )
                                         },
@@ -213,7 +231,7 @@ fun AuthScreen(
                             when {
                                 state.isLoading -> CircularProgressIndicator(
                                     modifier = Modifier.size(20.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    color = Color.Cyan,
                                     strokeWidth = 2.dp,
                                 )
 
@@ -238,41 +256,6 @@ fun AuthScreen(
                             )
                         },
                     )
-
-                    if (isLogin) {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = MaterialTheme.shapes.medium,
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            content = {
-                                Column(
-                                    modifier = Modifier.padding(
-                                        horizontal = 16.dp,
-                                        vertical = 12.dp
-                                    ),
-                                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                                    content = {
-                                        Text(
-                                            text = "Demo credentials",
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                            fontWeight = FontWeight.SemiBold,
-                                        )
-                                        Text(
-                                            text = AuthApi.DEMO_EMAIL,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        )
-                                        Text(
-                                            text = AuthApi.DEMO_PASSWORD,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        )
-                                    },
-                                )
-                            },
-                        )
-                    }
 
                     Spacer(modifier = Modifier.height(32.dp))
                 },

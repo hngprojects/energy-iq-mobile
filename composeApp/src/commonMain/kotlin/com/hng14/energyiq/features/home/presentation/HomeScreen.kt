@@ -54,7 +54,7 @@ fun HomeScreen(onLogout: OnLogout) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "KotlinStarter",
+                        text = "EnergyIQ",
                         fontWeight = FontWeight.SemiBold,
                     )
                 },

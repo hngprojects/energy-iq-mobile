@@ -29,9 +29,11 @@ class AuthViewModel(
             )
         }
     }
-
-    fun onNameChange(value: String) {
-        _state.update { it.copy(name = value, nameError = null, generalError = null) }
+    fun onFirstNameChange(value: String) {
+        _state.update { it.copy(firstName = value, firstNameError = null, generalError = null) }
+    }
+    fun onLastNameChange(value: String) {
+        _state.update { it.copy(lastName = value, lastNameError = null, generalError = null) }
     }
 
     fun onEmailChange(value: String) {
@@ -47,6 +49,7 @@ class AuthViewModel(
     }
 
     fun onSubmit(onSuccess: OnAuthSuccess) {
+        if (_state.value.isLoading) return
         if (!validateInputs()) return
         val current = _state.value
         viewModelScope.launch {
@@ -59,7 +62,8 @@ class AuthViewModel(
                     )
 
                     AuthMode.REGISTER -> repository.register(
-                        name = current.name.trim(),
+                        firstName = current.firstName.trim(),
+                        lastName = current.lastName.trim(),
                         email = current.email.trim(),
                         password = current.password,
                     )
@@ -81,8 +85,10 @@ class AuthViewModel(
 
     private fun validateInputs(): Boolean {
         val s = _state.value
-        val nameError =
-            if (s.mode == AuthMode.REGISTER && s.name.isBlank()) "Name is required" else null
+        val firstNameError =
+            if (s.mode == AuthMode.REGISTER && s.firstName.isBlank()) "First Name is required" else null
+        val lastNameError =
+            if (s.mode == AuthMode.REGISTER && s.lastName.isBlank()) "Last Name is required" else null
         val emailError = when {
             s.email.isBlank() -> "Email is required"
             !s.email.contains('@') -> "Enter a valid email address"
@@ -100,12 +106,14 @@ class AuthViewModel(
 
         _state.update {
             it.copy(
-                nameError = nameError,
+                firstNameError = firstNameError,
+                lastNameError = lastNameError,
                 emailError = emailError,
                 passwordError = passwordError,
                 confirmPasswordError = confirmPasswordError,
+
             )
         }
-        return nameError == null && emailError == null && passwordError == null && confirmPasswordError == null
+        return firstNameError == null && lastNameError == null  && emailError == null && passwordError == null && confirmPasswordError == null
     }
 }
