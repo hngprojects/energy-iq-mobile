@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_base" />
+
+    <item
+        android:gravity="top|start"
+        android:width="180dp"
+        android:height="180dp"
+        android:left="-32dp"
+        android:top="-28dp">
+        <shape android:shape="oval">
+            <stroke
+                android:width="2dp"
+                android:color="#40D9A441" />
+        </shape>
+    </item>
+
+    <item
+        android:gravity="top|start"
+        android:width="148dp"
+        android:height="148dp"
+        android:left="-16dp"
+        android:top="-10dp">
+        <shape android:shape="oval">
+            <stroke
+                android:width="2dp"
+                android:color="#66D9A441" />
+        </shape>
+    </item>
+
+    <item
+        android:gravity="center"
+        android:width="160dp"
+        android:height="160dp"
+        android:drawable="@drawable/splash_orb" />
+
+    <item
+        android:gravity="center"
+        android:width="92dp"
+        android:height="92dp"
+        android:drawable="@drawable/ic_brand_mark" />
+</layer-list>

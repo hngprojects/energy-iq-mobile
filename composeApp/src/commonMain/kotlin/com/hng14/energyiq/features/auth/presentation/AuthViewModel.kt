@@ -15,6 +15,8 @@ class AuthViewModel(
     private val repository: AuthRepository,
     initialMode: AuthMode = AuthMode.LOGIN,
 ) : ViewModel() {
+    private val fullNameRuleMessage = "Enter your first and last name, for example John Doe"
+    private val passwordRuleMessage = "Password must be at least 8 characters and a special key"
 
     private val _state = MutableStateFlow(AuthState(mode = initialMode))
     val state: StateFlow<AuthState> = _state.asStateFlow()
@@ -25,15 +27,54 @@ class AuthViewModel(
                 mode = when (current.mode) {
                     AuthMode.LOGIN -> AuthMode.REGISTER
                     AuthMode.REGISTER -> AuthMode.LOGIN
+                    AuthMode.FORGOT_PASSWORD -> AuthMode.LOGIN
+                    AuthMode.CHECK_MAIL -> AuthMode.LOGIN
+                    AuthMode.RESET_SUCCESS -> AuthMode.LOGIN
                 },
             )
         }
     }
-    fun onFirstNameChange(value: String) {
-        _state.update { it.copy(firstName = value, firstNameError = null, generalError = null) }
+
+    fun onShowForgotPassword() {
+        _state.update {
+            AuthState(
+                mode = AuthMode.FORGOT_PASSWORD,
+                email = it.email,
+            )
+        }
     }
-    fun onLastNameChange(value: String) {
-        _state.update { it.copy(lastName = value, lastNameError = null, generalError = null) }
+
+    fun onBackToLogin() {
+        _state.update {
+            AuthState(
+                mode = AuthMode.LOGIN,
+                email = it.email,
+            )
+        }
+    }
+
+    fun onForgotPasswordSubmit() {
+        if (_state.value.isLoading) return
+        val emailError = validateEmail(_state.value.email.trim())
+        if (emailError != null) {
+            _state.update {
+                it.copy(
+                    emailError = emailError,
+                    generalError = null,
+                )
+            }
+            return
+        }
+        _state.update {
+            AuthState(
+                mode = AuthMode.CHECK_MAIL,
+                email = it.email.trim(),
+            )
+        }
+    }
+
+    fun onFullNameChange(value: String) {
+        _state.update { it.copy(fullName = value, fullNameError = null, generalError = null) }
     }
 
     fun onEmailChange(value: String) {
@@ -45,13 +86,46 @@ class AuthViewModel(
     }
 
     fun onConfirmPasswordChange(value: String) {
-        _state.update { it.copy(confirmPassword = value, confirmPasswordError = null) }
+        _state.update { it.copy(confirmPassword = value, confirmPasswordError = null, generalError = null) }
+    }
+
+    fun onResetPasswordSubmit() {
+        if (_state.value.isLoading) return
+        val passwordError = when {
+            _state.value.password.isBlank() -> "Password is required"
+            !isPasswordValid(_state.value.password) -> passwordRuleMessage
+            else -> null
+        }
+        val confirmPasswordError = when {
+            _state.value.confirmPassword.isBlank() -> "Confirm password is required"
+            _state.value.confirmPassword != _state.value.password -> "Passwords do not match"
+            else -> null
+        }
+
+        if (passwordError != null || confirmPasswordError != null) {
+            _state.update {
+                it.copy(
+                    passwordError = passwordError,
+                    confirmPasswordError = confirmPasswordError,
+                    generalError = null,
+                )
+            }
+            return
+        }
+
+        _state.update {
+            AuthState(
+                mode = AuthMode.RESET_SUCCESS,
+                email = it.email,
+            )
+        }
     }
 
     fun onSubmit(onSuccess: OnAuthSuccess) {
         if (_state.value.isLoading) return
         if (!validateInputs()) return
         val current = _state.value
+        val splitName = current.fullName.toBackendNameParts()
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, generalError = null) }
             runCatching {
@@ -62,14 +136,16 @@ class AuthViewModel(
                     )
 
                     AuthMode.REGISTER -> repository.register(
-                        firstName = current.firstName.trim(),
-                        lastName = current.lastName.trim(),
+                        firstName = splitName.firstName,
+                        lastName = splitName.lastName,
                         email = current.email.trim(),
                         password = current.password,
                     )
+
+                    AuthMode.FORGOT_PASSWORD, AuthMode.CHECK_MAIL, AuthMode.RESET_SUCCESS -> Unit
                 }
             }.onSuccess {
-                onSuccess()
+                onSuccess(current.mode)
             }.onFailure { error ->
                 _state.update {
                     it.copy(
@@ -85,35 +161,82 @@ class AuthViewModel(
 
     private fun validateInputs(): Boolean {
         val s = _state.value
-        val firstNameError =
-            if (s.mode == AuthMode.REGISTER && s.firstName.isBlank()) "First Name is required" else null
-        val lastNameError =
-            if (s.mode == AuthMode.REGISTER && s.lastName.isBlank()) "Last Name is required" else null
-        val emailError = when {
-            s.email.isBlank() -> "Email is required"
-            !s.email.contains('@') -> "Enter a valid email address"
-            else -> null
+        val fullNameError = validateFullName(s)
+        val emailError = validateEmail(s.email)
+        val passwordError = when (s.mode) {
+            AuthMode.LOGIN, AuthMode.REGISTER -> when {
+                s.password.isBlank() -> "Password is required"
+                !isPasswordValid(s.password) -> passwordRuleMessage
+                else -> null
+            }
+
+            AuthMode.FORGOT_PASSWORD, AuthMode.CHECK_MAIL, AuthMode.RESET_SUCCESS -> null
         }
-        val passwordError = when {
-            s.password.isBlank() -> "Password is required"
-            s.password.length < 8 -> "Password must be at least 8 characters"
-            else -> null
-        }
-        val confirmPasswordError =
-            if (s.mode == AuthMode.REGISTER && s.confirmPassword != s.password) {
-                "Passwords do not match"
-            } else null
 
         _state.update {
             it.copy(
-                firstNameError = firstNameError,
-                lastNameError = lastNameError,
+                fullNameError = fullNameError,
                 emailError = emailError,
                 passwordError = passwordError,
-                confirmPasswordError = confirmPasswordError,
-
             )
         }
-        return firstNameError == null && lastNameError == null  && emailError == null && passwordError == null && confirmPasswordError == null
+        return fullNameError == null && emailError == null && passwordError == null
+    }
+
+    private fun validateEmail(email: String): String? {
+        val normalizedEmail = email.trim()
+        return when {
+            normalizedEmail.isBlank() -> "Email is required"
+            !EMAIL_REGEX.matches(normalizedEmail) -> "Enter a valid email address"
+            else -> null
+        }
+    }
+
+    private companion object {
+        val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+    }
+
+    private fun validateFullName(state: AuthState): String? {
+        if (state.mode != AuthMode.REGISTER) return null
+
+        val normalized = state.fullName.normalizedNameParts()
+        return when {
+            normalized.isEmpty() -> "Full name is required"
+            normalized.size < 2 -> fullNameRuleMessage
+            !startsWithLetter(normalized.first()) -> "First name must start with a letter"
+            !startsWithLetter(normalized.drop(1).joinToString(" ")) -> "Last name must start with a letter"
+            normalized.first().length < 2 -> "First name is too short"
+            normalized.drop(1).joinToString(" ").length < 2 -> "Last name is too short"
+            else -> null
+        }
+    }
+
+    private fun isPasswordValid(password: String): Boolean {
+        val hasMinLength = password.length >= 8
+        val hasSpecialCharacter = password.any { !it.isLetterOrDigit() }
+        return hasMinLength && hasSpecialCharacter
+    }
+
+    private data class BackendNameParts(
+        val firstName: String,
+        val lastName: String,
+    )
+
+    private fun String.normalizedNameParts(): List<String> {
+        return trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+    }
+
+    private fun startsWithLetter(value: String): Boolean {
+        return value.firstOrNull()?.isLetter() == true
+    }
+
+    private fun String.toBackendNameParts(): BackendNameParts {
+        val parts = normalizedNameParts()
+        val firstName = parts.firstOrNull().orEmpty()
+        val lastName = parts.drop(1).joinToString(" ")
+        return BackendNameParts(
+            firstName = firstName,
+            lastName = lastName,
+        )
     }
 }
