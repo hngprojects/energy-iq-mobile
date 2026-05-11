@@ -1,44 +1,19 @@
 package com.hng14.energyiq.features.auth.presentation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalUriHandler
+import com.hng14.energyiq.core.network.NetworkConfig
 import com.hng14.energyiq.features.auth.AuthMode
 import com.hng14.energyiq.features.auth.OnAuthSuccess
-import com.hng14.energyiq.features.auth.data.remote.AuthApi
-import com.hng14.energyiq.features.auth.presentation.components.AuthTextField
-import com.hng14.energyiq.features.auth.presentation.components.PasswordTextField
+import com.hng14.energyiq.features.auth.presentation.components.CheckMailContent
+import com.hng14.energyiq.features.auth.presentation.components.ForgotPasswordContent
+import com.hng14.energyiq.features.auth.presentation.components.LoginContent
+import com.hng14.energyiq.features.auth.presentation.components.RegisterContent
+import com.hng14.energyiq.features.auth.presentation.components.ResetSuccessContent
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -47,236 +22,89 @@ fun AuthScreen(
     onAuthSuccess: OnAuthSuccess,
     initialMode: AuthMode = AuthMode.LOGIN,
 ) {
-    val viewModel = koinViewModel<AuthViewModel>(
-        parameters = { parametersOf(initialMode) },
-    )
+    val viewModel = koinViewModel<AuthViewModel> {
+        parametersOf(initialMode)
+    }
     val state by viewModel.state.collectAsState()
-    val isLogin = state.mode == AuthMode.LOGIN
+    val uriHandler = LocalUriHandler.current
+    val googleAuthUrl = remember { "${NetworkConfig.BASE_URL}/auth/google" }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-                    .navigationBarsPadding()
-                    .imePadding()
-                    .verticalScroll(state = rememberScrollState())
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                content = {
-                    Spacer(modifier = Modifier.height(48.dp))
+    LaunchedEffect(initialMode) {
+        viewModel.resetToMode(initialMode)
+    }
 
-                    Surface(
-                        modifier = Modifier.size(80.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        content = {
-                            Row(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically,
-                                content = {
-                                    Text(
-                                        text = "K",
-                                        style = MaterialTheme.typography.headlineLarge,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                },
-                            )
-                        },
-                    )
+    val onGoogleLoginClick = remember(uriHandler, googleAuthUrl) {
+        {
+            println("Google auth: opening $googleAuthUrl")
+            runCatching {
+                uriHandler.openUri(googleAuthUrl)
+            }.onSuccess {
+                println("Google auth: browser open triggered")
+            }.onFailure { error ->
+                println("Google auth: failed to open $googleAuthUrl -> ${error.message}")
+            }
+            Unit
+        }
+    }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+    when (state.mode) {
+        AuthMode.REGISTER -> RegisterContent(
+            fullName = state.fullName,
+            email = state.email,
+            password = state.password,
+            fullNameError = state.fullNameError,
+            emailError = state.emailError,
+            passwordError = state.passwordError,
+            generalError = state.generalError,
+            isLoading = state.isLoading,
+            onFullNameChange = viewModel::onFullNameChange,
+            onEmailChange = viewModel::onEmailChange,
+            onPasswordChange = viewModel::onPasswordChange,
+            onCreateAccount = { viewModel.onSubmit(onSuccess = onAuthSuccess) },
+            onGoogleClick = {},
+            onLoginClick = viewModel::onToggleMode,
+        )
 
-                    Text(
-                        text = when {
-                            isLogin -> "Welcome back"
-                            else -> "Create account"
-                        },
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = when {
-                            isLogin -> "Sign in to continue"
-                            else -> "Sign up to get started"
-                        },
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+        AuthMode.LOGIN -> LoginContent(
+            email = state.email,
+            password = state.password,
+            emailError = state.emailError,
+            passwordError = state.passwordError,
+            generalError = state.generalError,
+            isLoading = state.isLoading,
+            onEmailChange = viewModel::onEmailChange,
+            onPasswordChange = viewModel::onPasswordChange,
+            onSubmit = { viewModel.onSubmit(onSuccess = onAuthSuccess) },
+            onToggleMode = viewModel::onToggleMode,
+            onForgotPasswordClick = viewModel::onShowForgotPassword,
+            onGoogleClick = onGoogleLoginClick,
+        )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+        AuthMode.FORGOT_PASSWORD -> ForgotPasswordContent(
+            email = state.email,
+            emailError = state.emailError,
+            isLoading = state.isLoading,
+            generalError = state.generalError,
+            onEmailChange = viewModel::onEmailChange,
+            onResendLink = viewModel::onForgotPasswordSubmit,
+            onBackToLogin = viewModel::onBackToLogin,
+        )
 
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.large,
-                        tonalElevation = 2.dp,
-                        content = {
-                            Column(
-                                modifier = Modifier.padding(all = 20.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
-                                content = {
-                                    AnimatedVisibility(
-                                        visible = !isLogin,
-                                        enter = expandVertically(),
-                                        exit = shrinkVertically(),
-                                        content = {
-                                            AuthTextField(
-                                                value = state.name,
-                                                onValueChange = { viewModel.onNameChange(value = it) },
-                                                label = "Full Name",
-                                                placeholder = "Jane Doe",
-                                                error = state.nameError,
-                                                imeAction = ImeAction.Next,
-                                                modifier = Modifier.fillMaxWidth(),
-                                            )
-                                        },
-                                    )
+        AuthMode.CHECK_MAIL -> CheckMailContent(
+            email = state.email,
+            password = state.password,
+            confirmPassword = state.confirmPassword,
+            passwordError = state.passwordError,
+            confirmPasswordError = state.confirmPasswordError,
+            isLoading = state.isLoading,
+            onPasswordChange = viewModel::onPasswordChange,
+            onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
+            onResetPassword = viewModel::onResetPasswordSubmit,
+            onBackToLogin = viewModel::onBackToLogin,
+        )
 
-                                    AuthTextField(
-                                        value = state.email,
-                                        onValueChange = { viewModel.onEmailChange(value = it) },
-                                        label = "Email",
-                                        placeholder = "jeffery@logickoder.dev",
-                                        error = state.emailError,
-                                        keyboardType = KeyboardType.Email,
-                                        imeAction = ImeAction.Next,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-
-                                    PasswordTextField(
-                                        value = state.password,
-                                        onValueChange = { viewModel.onPasswordChange(value = it) },
-                                        label = "Password",
-                                        error = state.passwordError,
-                                        imeAction = when {
-                                            isLogin -> ImeAction.Done
-                                            else -> ImeAction.Next
-                                        },
-                                        onImeAction = {
-                                            when {
-                                                isLogin -> viewModel.onSubmit(onSuccess = onAuthSuccess)
-                                                else -> {}
-                                            }
-                                        },
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-
-                                    AnimatedVisibility(
-                                        visible = !isLogin,
-                                        enter = expandVertically(),
-                                        exit = shrinkVertically(),
-                                        content = {
-                                            PasswordTextField(
-                                                value = state.confirmPassword,
-                                                onValueChange = {
-                                                    viewModel.onConfirmPasswordChange(
-                                                        value = it
-                                                    )
-                                                },
-                                                label = "Confirm Password",
-                                                error = state.confirmPasswordError,
-                                                imeAction = ImeAction.Done,
-                                                onImeAction = { viewModel.onSubmit(onSuccess = onAuthSuccess) },
-                                                modifier = Modifier.fillMaxWidth(),
-                                            )
-                                        },
-                                    )
-                                },
-                            )
-                        },
-                    )
-
-                    state.generalError?.let { error ->
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Button(
-                        onClick = { viewModel.onSubmit(onSuccess = onAuthSuccess) },
-                        enabled = !state.isLoading,
-                        modifier = Modifier.fillMaxWidth(),
-                        content = {
-                            when {
-                                state.isLoading -> CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    strokeWidth = 2.dp,
-                                )
-
-                                else -> Text(
-                                    text = when {
-                                        isLogin -> "Sign In"
-                                        else -> "Create Account"
-                                    },
-                                )
-                            }
-                        },
-                    )
-
-                    TextButton(
-                        onClick = { viewModel.onToggleMode() },
-                        content = {
-                            Text(
-                                text = when {
-                                    isLogin -> "Don't have an account? Sign up"
-                                    else -> "Already have an account? Sign in"
-                                },
-                            )
-                        },
-                    )
-
-                    if (isLogin) {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = MaterialTheme.shapes.medium,
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            content = {
-                                Column(
-                                    modifier = Modifier.padding(
-                                        horizontal = 16.dp,
-                                        vertical = 12.dp
-                                    ),
-                                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                                    content = {
-                                        Text(
-                                            text = "Demo credentials",
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                            fontWeight = FontWeight.SemiBold,
-                                        )
-                                        Text(
-                                            text = AuthApi.DEMO_EMAIL,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        )
-                                        Text(
-                                            text = AuthApi.DEMO_PASSWORD,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        )
-                                    },
-                                )
-                            },
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-                },
-            )
-        },
-    )
+        AuthMode.RESET_SUCCESS -> ResetSuccessContent(
+            onSignIn = viewModel::onBackToLogin,
+        )
+    }
 }

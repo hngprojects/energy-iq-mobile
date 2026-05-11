@@ -8,6 +8,7 @@ import com.hng14.energyiq.App
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_KotlinStarter)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

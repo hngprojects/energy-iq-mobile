@@ -1,4 +1,42 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use(::load)
+    }
+}
+
+val baseUrl = localProperties.getProperty("BASE_URL") ?: "http://10.0.2.2:8080"
+
+val generateLocalConfig by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/source/localConfig/commonMain/kotlin")
+    val localProps = rootProject.file("local.properties")
+    
+    // We only track the file as an input if it actually exists.
+    // This prevents Gradle from failing in CI environments where local.properties is missing.
+    if (localProps.exists()) {
+        inputs.file(localProps).withPropertyName("localPropertiesFile").optional()
+    }
+
+    inputs.property("baseUrl", baseUrl)
+    outputs.dir(outputDir)
+
+    doLast {
+        val file = outputDir.get().file("com/hng14/energyiq/core/network/LocalConfig.kt").asFile
+        file.parentFile.mkdirs()
+        file.writeText(
+            """
+            package com.hng14.energyiq.core.network
+
+            object LocalConfig {
+                const val baseUrl = "$baseUrl"
+            }
+            """.trimIndent()
+        )
+    }
+}
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -8,6 +46,11 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+}
+
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.hng14.energyiq"
 }
 
 kotlin {
@@ -38,6 +81,12 @@ kotlin {
     }
 
     sourceSets {
+        val commonMain by getting {
+            kotlin.srcDir(generateLocalConfig.map {
+                layout.buildDirectory.dir("generated/source/localConfig/commonMain/kotlin")
+            })
+        }
+
         commonMain.dependencies {
             // Compose — explicit (implicit compose.* accessors deprecated)
             implementation(libs.compose.runtime)
@@ -131,3 +180,4 @@ dependencies {
     add("kspDesktop", libs.room.compiler)
     add("kspWasmJs", libs.room.compiler)
 }
+
