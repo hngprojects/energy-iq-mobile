@@ -1,6 +1,7 @@
 package com.hng14.energyiq.features.auth.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -27,6 +28,10 @@ fun AuthScreen(
     val state by viewModel.state.collectAsState()
     val uriHandler = LocalUriHandler.current
     val googleAuthUrl = remember { "${NetworkConfig.BASE_URL}/auth/google" }
+
+    LaunchedEffect(initialMode) {
+        viewModel.resetToMode(initialMode)
+    }
 
     val onGoogleLoginClick = remember(uriHandler, googleAuthUrl) {
         {

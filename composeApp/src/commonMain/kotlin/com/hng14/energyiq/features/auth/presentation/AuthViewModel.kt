@@ -21,6 +21,21 @@ class AuthViewModel(
     private val _state = MutableStateFlow(AuthState(mode = initialMode))
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
+    fun resetToMode(mode: AuthMode) {
+        _state.update { current ->
+            if (current.mode == mode && current.fullName.isEmpty() && current.email.isEmpty() &&
+                current.password.isEmpty() && current.confirmPassword.isEmpty() &&
+                current.fullNameError == null && current.emailError == null &&
+                current.passwordError == null && current.confirmPasswordError == null &&
+                current.generalError == null && !current.isLoading
+            ) {
+                current
+            } else {
+                AuthState(mode = mode)
+            }
+        }
+    }
+
     fun onToggleMode() {
         _state.update { current ->
             AuthState(
@@ -145,6 +160,7 @@ class AuthViewModel(
                     AuthMode.FORGOT_PASSWORD, AuthMode.CHECK_MAIL, AuthMode.RESET_SUCCESS -> Unit
                 }
             }.onSuccess {
+                _state.value = AuthState(mode = current.mode)
                 onSuccess(current.mode)
             }.onFailure { error ->
                 _state.update {
