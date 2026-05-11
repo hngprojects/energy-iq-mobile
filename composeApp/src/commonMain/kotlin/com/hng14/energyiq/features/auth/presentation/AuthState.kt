@@ -16,12 +16,6 @@ data class AuthState(
     val generalError: String? = null,
 )
 
-sealed interface EmailVerificationState{
-    data object ConfirmEmailAccount: EmailVerificationState
-    data object ResetPassword: EmailVerificationState
-    data object VerificationLinkExpired: EmailVerificationState
-    data object UpdatedPassword: EmailVerificationState
-    data object IsVerificationSuccess: EmailVerificationState
-}
+
 
 

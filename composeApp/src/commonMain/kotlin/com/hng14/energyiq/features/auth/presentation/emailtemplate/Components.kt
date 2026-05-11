@@ -1,4 +1,4 @@
-package com.hng14.energyiq.features.auth.presentation.email
+package com.hng14.energyiq.features.auth.presentation.emailtemplate
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

@@ -19,10 +19,6 @@ class AuthViewModel(
     private val _state = MutableStateFlow(AuthState(mode = initialMode))
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
-    private val _emailVerificationState: MutableStateFlow<EmailVerificationState?> = MutableStateFlow(null)
-    val emailVerificationState: StateFlow<EmailVerificationState?> = _emailVerificationState.asStateFlow()
-
-
     fun onToggleMode() {
         _state.update { current ->
             AuthState(
@@ -146,29 +142,4 @@ class AuthViewModel(
         _state.update { AuthState(mode = AuthMode.LOGIN) }
     }
 
-    fun onNavigateToEmailVerification() {
-        _emailVerificationState.update { EmailVerificationState.ConfirmEmailAccount }
-    }
-    fun onVerificationCodeSent() {
-        _emailVerificationState.update { EmailVerificationState.ConfirmEmailAccount }
-    }
-
-    fun onForgotPassword() {
-        _emailVerificationState.update { EmailVerificationState.ResetPassword }
-    }
-
-    fun onVerificationLinkExpired() {
-        _emailVerificationState.update { EmailVerificationState.VerificationLinkExpired }
-    }
-
-    fun onPasswordUpdatedSuccess() {
-        _emailVerificationState.update { EmailVerificationState.UpdatedPassword }
-    }
-    fun onEmailVerificationSuccess() {
-        _emailVerificationState.update { EmailVerificationState.IsVerificationSuccess }
-    }
-
-    fun clearVerificationState() {
-        _emailVerificationState.update { null }
-    }
 }

@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.hng14.energyiq.App
-import com.hng14.energyiq.features.auth.presentation.email.EmailVerificationScreen
 
 
 class MainActivity : ComponentActivity() {
