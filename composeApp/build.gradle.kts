@@ -12,10 +12,14 @@ val baseUrl = localProperties.getProperty("BASE_URL") ?: "http://10.0.2.2:8080"
 
 val generateLocalConfig by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/source/localConfig/commonMain/kotlin")
-    inputs
-        .file(rootProject.file("local.properties"))
-        .withPropertyName("localPropertiesFile")
-        .optional()
+    val localProps = rootProject.file("local.properties")
+    
+    // We only track the file as an input if it actually exists.
+    // This prevents Gradle from failing in CI environments where local.properties is missing.
+    if (localProps.exists()) {
+        inputs.file(localProps).withPropertyName("localPropertiesFile").optional()
+    }
+
     inputs.property("baseUrl", baseUrl)
     outputs.dir(outputDir)
 
