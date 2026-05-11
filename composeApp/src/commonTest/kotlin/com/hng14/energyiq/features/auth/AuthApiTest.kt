@@ -66,9 +66,35 @@ class AuthApiTest {
 
     @Test
     fun loginReturnsMockedDemoPayload() = runTest {
-        val response = createApi().login(LoginRequest(email = "demo@example.com", password = "password123"))
-        assertEquals("demo@example.com", response.user.email)
-        assertEquals("demo_token_demo@example.com", response.accessToken)
+        val api = createApi(
+            status = HttpStatusCode.OK,
+            responseBody = """
+                {
+                  "success": true,
+                  "message": "Login successful",
+                  "data": {
+                    "accessToken": "demo_token_demo@example.com",
+                    "refreshToken": "demo_refresh_token",
+                    "user": {
+                      "id": "user-1",
+                      "email": "demo@example.com",
+                      "firstName": "Demo",
+                      "lastName": "User",
+                      "role": "user",
+                      "emailVerified": true,
+                      "createdAt": "2026-05-09T23:02:38.952Z",
+                      "updatedAt": "2026-05-09T23:02:38.952Z"
+                    }
+                  },
+                  "meta": {
+                    "timestamp": "2026-05-09T23:02:39.020Z"
+                  }
+                }
+            """.trimIndent()
+        )
+        val response = api.login(LoginRequest(email = "demo@example.com", password = "password123"))
+        assertEquals("demo@example.com", response.data.user.email)
+        assertEquals("demo_token_demo@example.com", response.data.accessToken)
     }
 
     @Test
