@@ -2,64 +2,42 @@ package com.hng14.energyiq.core.theme
 
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.ui.graphics.Color
-
-// Brand palette
-val Primary = Color(0xFF6650A4)
-val OnPrimary = Color(0xFFFFFFFF)
-val PrimaryContainer = Color(0xFFEADDFF)
-val OnPrimaryContainer = Color(0xFF21005E)
-
-val Secondary = Color(0xFF625B71)
-val OnSecondary = Color(0xFFFFFFFF)
-val SecondaryContainer = Color(0xFFE8DEF8)
-val OnSecondaryContainer = Color(0xFF1E192B)
-
-val Tertiary = Color(0xFF7D5260)
-val OnTertiary = Color(0xFFFFFFFF)
-val TertiaryContainer = Color(0xFFFFD8E4)
-val OnTertiaryContainer = Color(0xFF370B1E)
-
-val Error = Color(0xFFB3261E)
-val OnError = Color(0xFFFFFFFF)
-val ErrorContainer = Color(0xFFF9DEDC)
-val OnErrorContainer = Color(0xFF370606)
 
 // Light scheme
-val LightBackground = Color(0xFFFFFBFE)
-val LightOnBackground = Color(0xFF1C1B1F)
-val LightSurface = Color(0xFFFFFBFE)
-val LightOnSurface = Color(0xFF1C1B1F)
-val LightSurfaceVariant = Color(0xFFE7E0EC)
-val LightOnSurfaceVariant = Color(0xFF49454E)
-val LightOutline = Color(0xFF7A757F)
+val LightBackground = EnergyPalette.LightBackground
+val LightOnBackground = EnergyPalette.DarkBackground
+val LightSurface = EnergyPalette.LightBackgroundAlt
+val LightOnSurface = EnergyPalette.DarkBackground
+val LightSurfaceVariant = EnergyPalette.AmberLight
+val LightOnSurfaceVariant = EnergyPalette.Grey
+val LightOutline = EnergyPalette.Grey
 
 // Dark scheme
-val DarkBackground = Color(0xFF1C1B1F)
-val DarkOnBackground = Color(0xFFE6E1E5)
-val DarkSurface = Color(0xFF1C1B1F)
-val DarkOnSurface = Color(0xFFE6E1E5)
-val DarkSurfaceVariant = Color(0xFF49454E)
-val DarkOnSurfaceVariant = Color(0xFFCAC4D0)
-val DarkOutline = Color(0xFF948F99)
+val DarkBackground = EnergyPalette.DarkBackground
+val DarkOnBackground = EnergyPalette.LightBackgroundAlt
+val DarkSurface = EnergyPalette.SlateMid
+val DarkOnSurface = EnergyPalette.LightBackgroundAlt
+val DarkSurfaceVariant = EnergyPalette.CardSurfaceDark
+val DarkOnSurfaceVariant = EnergyPalette.Grey
+val DarkOutline = EnergyPalette.Grey
 
 val LightColorScheme = lightColorScheme(
-    primary = Primary,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
-    secondary = Secondary,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSecondaryContainer,
-    tertiary = Tertiary,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainer,
-    onTertiaryContainer = OnTertiaryContainer,
-    error = Error,
-    onError = OnError,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer,
+    primary = EnergyPalette.Amber,
+    onPrimary = EnergyPalette.DarkBackground,
+    primaryContainer = EnergyPalette.AmberLight,
+    onPrimaryContainer = EnergyPalette.DarkBackground,
+    secondary = EnergyPalette.ChargeGreen,
+    onSecondary = EnergyPalette.DarkBackground,
+    secondaryContainer = EnergyPalette.SuccessBadgeBackground,
+    onSecondaryContainer = EnergyPalette.BatteryGreen,
+    tertiary = EnergyPalette.Coral,
+    onTertiary = androidx.compose.ui.graphics.Color.White,
+    tertiaryContainer = EnergyPalette.DieselOrange.copy(alpha = 0.20f),
+    onTertiaryContainer = EnergyPalette.Coral,
+    error = EnergyPalette.Danger,
+    onError = androidx.compose.ui.graphics.Color.White,
+    errorContainer = EnergyPalette.DangerBackground,
+    onErrorContainer = EnergyPalette.Danger,
     background = LightBackground,
     onBackground = LightOnBackground,
     surface = LightSurface,
@@ -70,22 +48,22 @@ val LightColorScheme = lightColorScheme(
 )
 
 val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFCFBCFF),
-    onPrimary = Color(0xFF371E73),
-    primaryContainer = Color(0xFF4F378A),
-    onPrimaryContainer = PrimaryContainer,
-    secondary = Color(0xFFCBC2DB),
-    onSecondary = Color(0xFF332D41),
-    secondaryContainer = Color(0xFF4A4458),
-    onSecondaryContainer = SecondaryContainer,
-    tertiary = Color(0xFFEFB8C8),
-    onTertiary = Color(0xFF4A2532),
-    tertiaryContainer = Color(0xFF633B48),
-    onTertiaryContainer = TertiaryContainer,
-    error = Color(0xFFF2B8B5),
-    onError = Color(0xFF601410),
-    errorContainer = Color(0xFF8C1D18),
-    onErrorContainer = ErrorContainer,
+    primary = EnergyPalette.Amber,
+    onPrimary = EnergyPalette.DarkBackground,
+    primaryContainer = EnergyPalette.CardSurfaceDark,
+    onPrimaryContainer = EnergyPalette.LightBackgroundAlt,
+    secondary = EnergyPalette.ChargeGreen,
+    onSecondary = EnergyPalette.DarkBackground,
+    secondaryContainer = EnergyPalette.BatteryGreen.copy(alpha = 0.24f),
+    onSecondaryContainer = EnergyPalette.ChargeGreen,
+    tertiary = EnergyPalette.Coral,
+    onTertiary = androidx.compose.ui.graphics.Color.White,
+    tertiaryContainer = EnergyPalette.Coral.copy(alpha = 0.20f),
+    onTertiaryContainer = EnergyPalette.DieselOrange,
+    error = androidx.compose.ui.graphics.Color(0xFFFF8A80),
+    onError = EnergyPalette.DarkBackground,
+    errorContainer = EnergyPalette.Danger.copy(alpha = 0.20f),
+    onErrorContainer = androidx.compose.ui.graphics.Color(0xFFFFDAD6),
     background = DarkBackground,
     onBackground = DarkOnBackground,
     surface = DarkSurface,

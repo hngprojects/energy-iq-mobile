@@ -16,27 +16,39 @@ class AuthRepository(
 
     suspend fun login(email: String, password: String): User {
         val response = api.login(request = LoginRequest(email = email, password = password))
-        preferences.saveSession(token = response.accessToken, userId = response.user.id)
+        val remoteUser = response.data.user
+        preferences.saveSession(token = response.data.accessToken, userId = remoteUser.id)
         val entity = UserEntity(
-            id = response.user.id,
-            email = response.user.email,
-            name = response.user.name,
+            id = remoteUser.id,
+            email = remoteUser.email,
+            name = "${remoteUser.firstName} ${remoteUser.lastName}",
         )
         userDao.upsert(user = entity)
         return entity.toDomain()
     }
 
-    suspend fun register(name: String, email: String, password: String): User {
+    suspend fun register(
+        firstName: String,
+        lastName: String,
+        email: String,
+        password: String
+    ): User {
         val response = api.register(
-            request = RegisterRequest(name = name, email = email, password = password),
+            request = RegisterRequest(
+                firstName = firstName,
+                lastName = lastName,
+                email = email,
+                password = password
+            ),
         )
-        preferences.saveSession(token = response.accessToken, userId = response.user.id)
+        val remoteUser = response.data
         val entity = UserEntity(
-            id = response.user.id,
-            email = response.user.email,
-            name = response.user.name,
+            id = remoteUser.id,
+            email = remoteUser.email,
+            name = "${remoteUser.firstName} ${remoteUser.lastName}",
         )
         userDao.upsert(user = entity)
+        preferences.saveUserId(entity.id)
         return entity.toDomain()
     }
 
@@ -46,6 +58,8 @@ class AuthRepository(
     }
 
     suspend fun logout() {
+        val token = preferences.getToken() ?: throw Exception("You are not logged in")
+        api.logout(token = token)
         preferences.clearSession()
         userDao.deleteAll()
     }

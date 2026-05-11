@@ -1,6 +1,6 @@
 [versions]
 # Build toolchain
-agp = "9.0.0-alpha06"
+agp = "9.2.0"
 kotlin = "2.3.20"
 
 # Compose / UI
@@ -68,6 +68,7 @@ koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = 
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
 koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
+
 
 # Kotlinx
 coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme — Compose handles all theming; this just sets the window background -->
     <style name="Theme.KotlinStarter" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/white</item>
+    </style>
+
+    <style name="Theme.KotlinStarter.Splash" parent="Theme.KotlinStarter">
+        <item name="android:windowBackground">@drawable/splash_background</item>
     </style>
 </resources>

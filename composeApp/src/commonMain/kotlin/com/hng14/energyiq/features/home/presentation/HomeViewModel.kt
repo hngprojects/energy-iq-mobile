@@ -29,9 +29,25 @@ class HomeViewModel(
     }
 
     fun onLogout(onLogout: OnLogout) {
+        if (_state.value.isLoggingOut) return
         viewModelScope.launch {
-            repository.logout()
-            onLogout()
+            _state.update { it.copy(isLoggingOut = true, errorMessage = null) }
+            runCatching {
+                repository.logout()
+            }.onSuccess {
+                onLogout()
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        errorMessage = error.message ?: "Unable to sign out. Please try again.",
+                    )
+                }
+            }
+            _state.update { it.copy(isLoggingOut = false) }
         }
+    }
+
+    fun clearError() {
+        _state.update { it.copy(errorMessage = null) }
     }
 }
