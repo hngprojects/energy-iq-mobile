@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.hng14.energyiq.App
 import com.hng14.energyiq.features.auth.presentation.email.EmailVerificationScreen
 
 
@@ -13,11 +14,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            //App(applicationContext)
+            App(applicationContext)
             // App.kt — temporary, remove after testing
-            EmailVerificationScreen(
-                onAction = {}
-            )
+//            EmailVerificationScreen(
+//                onAction = {}
+//            )
         }
     }
 }
