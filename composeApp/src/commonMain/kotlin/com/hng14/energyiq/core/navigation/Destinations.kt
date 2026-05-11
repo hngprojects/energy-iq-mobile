@@ -17,4 +17,6 @@ sealed class AppDestination {
 
     @Serializable
     data object Home : AppDestination()
+    @Serializable
+    data object EmailVerification : AppDestination()
 }

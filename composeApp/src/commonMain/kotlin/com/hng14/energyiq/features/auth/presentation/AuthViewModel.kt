@@ -120,6 +120,35 @@ class AuthViewModel(
         return nameError == null && emailError == null && passwordError == null && confirmPasswordError == null
     }
 
+    fun onFullNameChange(value: String) {
+        _state.update { it.copy(fullName = value, fullNameError = null, generalError = null) }
+    }
+
+    fun resetToMode(mode: AuthMode) {
+        _state.update { AuthState(mode = mode) }
+    }
+
+    fun onShowForgotPassword() {
+        _state.update { it.copy(mode = AuthMode.FORGOT_PASSWORD) }
+    }
+
+    fun onForgotPasswordSubmit() {
+        // TODO: call backend forgot password API
+        _state.update { it.copy(mode = AuthMode.CHECK_MAIL) }
+    }
+
+    fun onResetPasswordSubmit() {
+        // TODO: call backend reset password API
+        _state.update { it.copy(mode = AuthMode.RESET_SUCCESS) }
+    }
+
+    fun onBackToLogin() {
+        _state.update { AuthState(mode = AuthMode.LOGIN) }
+    }
+
+    fun onNavigateToEmailVerification() {
+        _emailVerificationState.update { EmailVerificationState.ConfirmEmailAccount }
+    }
     fun onVerificationCodeSent() {
         _emailVerificationState.update { EmailVerificationState.ConfirmEmailAccount }
     }
