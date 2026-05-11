@@ -13,5 +13,8 @@ sealed class AppDestination {
     data class Auth(val initialMode: AuthMode = AuthMode.LOGIN) : AppDestination()
 
     @Serializable
+    data object InverterSetup : AppDestination()
+
+    @Serializable
     data object Home : AppDestination()
 }

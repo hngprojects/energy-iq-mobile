@@ -11,17 +11,17 @@ data class OnboardingPage(
 val defaultOnboardingPages = listOf(
     OnboardingPage(
         emoji = "🚀",
-        title = "Welcome",
-        description = "This starter is your launchpad. Pull it, rename it, ship it.",
+        title = "Power Your Distribution Business",
+        description = " Manage solar inverter inventory, track sales activity, and keep your operations moving from one place.",
     ),
     OnboardingPage(
         emoji = "🎨",
-        title = "Built for Teams",
-        description = "Vertical slices keep features isolated. Each team owns their slice end-to-end.",
+        title = "Serve Dealers Faster",
+        description = "Access product details, pricing, and stock updates quickly so your team can respond to dealers without delays.",
     ),
     OnboardingPage(
         emoji = "📱",
-        title = "Every Platform",
-        description = "One codebase. Android, iOS, Desktop, and Web — all from Kotlin.",
+        title = "Grow With Better Insights",
+        description = "Monitor orders, distributor performance, and business trends to make smarter decisions and scale confidently.",
     ),
 )

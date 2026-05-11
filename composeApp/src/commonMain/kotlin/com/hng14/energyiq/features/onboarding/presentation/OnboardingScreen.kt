@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.features.onboarding.OnOnboardingComplete
 import com.hng14.energyiq.features.onboarding.defaultOnboardingPages
 import com.hng14.energyiq.features.onboarding.presentation.components.OnboardingPageContent
@@ -37,10 +39,11 @@ import org.koin.compose.viewmodel.koinViewModel
 fun OnboardingScreen(onComplete: OnOnboardingComplete) {
     val viewModel = koinViewModel<OnboardingViewModel>()
     val state by viewModel.state.collectAsState()
+    val energyColors = EnergyTheme.colors
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
+        color = energyColors.appBackground,
         content = {
             Column(
                 modifier = Modifier
@@ -57,7 +60,7 @@ fun OnboardingScreen(onComplete: OnOnboardingComplete) {
                             if (!state.isLastPage) {
                                 TextButton(
                                     onClick = { viewModel.onSkip(onComplete = onComplete) },
-                                    content = { Text(text = "Skip") },
+                                    content = { Text(text = "Skip", color = MaterialTheme.colorScheme.tertiary) },
                                 )
                             }
                         },
@@ -96,6 +99,10 @@ fun OnboardingScreen(onComplete: OnOnboardingComplete) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 32.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
                         content = {
                             Text(
                                 text = when {
@@ -118,6 +125,8 @@ private fun PageIndicator(
     totalPages: Int,
     modifier: Modifier = Modifier,
 ) {
+    val energyColors = EnergyTheme.colors
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -136,7 +145,7 @@ private fun PageIndicator(
                             shape = CircleShape,
                             color = when {
                                 index == currentPage -> MaterialTheme.colorScheme.primary
-                                else -> MaterialTheme.colorScheme.surfaceVariant
+                                else -> energyColors.cardSurfaceMuted
                             },
                             content = {},
                         )

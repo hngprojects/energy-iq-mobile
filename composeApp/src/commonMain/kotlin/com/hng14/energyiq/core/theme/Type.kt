@@ -1,9 +1,21 @@
 package com.hng14.energyiq.core.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.hng14.energyiq.DMSans_Light
+import com.hng14.energyiq.DMSans_Regular
+import com.hng14.energyiq.Res
+import org.jetbrains.compose.resources.Font
+
+@Composable
+fun dmSansFontFamily(): FontFamily = FontFamily(
+    Font(resource = Res.font.DMSans_Light, weight = FontWeight.Light),
+    Font(resource = Res.font.DMSans_Regular, weight = FontWeight.Normal),
+)
 
 val AppTypography = Typography(
     displayLarge = TextStyle(

@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.features.onboarding.OnboardingPage
 
 @Composable
@@ -23,6 +24,8 @@ fun OnboardingPageContent(
     page: OnboardingPage,
     modifier: Modifier = Modifier,
 ) {
+    val energyColors = EnergyTheme.colors
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -33,7 +36,7 @@ fun OnboardingPageContent(
             Surface(
                 modifier = Modifier.size(120.dp),
                 shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = energyColors.brandPrimarySoft,
                 content = {
                     Column(
                         modifier = Modifier.fillMaxSize(),

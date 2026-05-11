@@ -11,6 +11,14 @@ class AuthPreferences(private val store: PreferenceStore) {
         store.put("user_id", userId)
     }
 
+
+    /// temporary work around login endpoint is not working so we cant get token
+    /// this will save session in room db and can be reused for login locally
+    ///  TODO: remove this when login endpoint is working
+    suspend fun saveUserId(userId: String) {
+        store.put("user_id", userId)
+    }
+
     suspend fun clearSession() {
         store.put("auth_token", null)
         store.put("user_id", null)

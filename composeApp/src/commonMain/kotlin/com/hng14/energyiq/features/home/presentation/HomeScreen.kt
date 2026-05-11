@@ -3,197 +3,94 @@ package com.hng14.energyiq.features.home.presentation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.hng14.energyiq.features.auth.domain.model.User
 import com.hng14.energyiq.features.home.OnLogout
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(onLogout: OnLogout) {
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
-    var menuExpanded by remember(calculation = { mutableStateOf(false) })
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.errorMessage) {
+        val errorMessage = state.errorMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(errorMessage)
+        viewModel.clearError()
+    }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "KotlinStarter",
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-                actions = {
-                    IconButton(
-                        onClick = { menuExpanded = true },
-                        content = {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = "Menu",
-                            )
-                        },
-                    )
-                    DropdownMenu(
-                        expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false },
-                        content = {
-                            DropdownMenuItem(
-                                text = { Text(text = "Sign Out") },
-                                onClick = {
-                                    menuExpanded = false
-                                    viewModel.onLogout(onLogout = onLogout)
-                                },
-                            )
-                        },
-                    )
-                },
-            )
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         },
-        content = { paddingValues ->
-            when {
-                state.isLoading -> Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues = paddingValues),
-                    contentAlignment = Alignment.Center,
-                    content = { CircularProgressIndicator() },
-                )
-
-                else -> Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues = paddingValues)
-                        .verticalScroll(state = rememberScrollState())
-                        .padding(all = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    content = {
-                        state.user?.let { user ->
-                            ProfileCard(user = user)
-                        }
-                        PlaceholderSection()
-                    },
-                )
+    ) { paddingValues ->
+        when {
+            state.isLoading -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
             }
-        },
-    )
-}
 
-@Composable
-private fun ProfileCard(user: User) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.primaryContainer,
-        content = {
-            Row(
-                modifier = Modifier.padding(all = 20.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                content = {
-                    Surface(
-                        modifier = Modifier.size(56.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary,
-                        content = {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                content = {
-                                    Text(
-                                        text = user.name.firstOrNull()?.uppercaseChar()?.toString()
-                                            ?: "?",
-                                        style = MaterialTheme.typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                },
-                            )
-                        },
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(
-                        content = {
-                            Text(
-                                text = "Hello, ${user.name} 👋",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = user.email,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                            )
-                        },
-                    )
-                },
-            )
-        },
-    )
-}
+            else -> Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 24.dp, vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = "Welcome to Dashboard",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                )
 
-@Composable
-private fun PlaceholderSection() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = 2.dp,
-        content = {
-            Column(
-                modifier = Modifier.padding(all = 20.dp),
-                content = {
+                Button(
+                    onClick = { viewModel.onLogout(onLogout = onLogout) },
+                    enabled = !state.isLoggingOut,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF141D2F),
+                        contentColor = Color.White,
+                        disabledContainerColor = Color(0xFFCBD0D8),
+                        disabledContentColor = Color.White,
+                    ),
+                ) {
                     Text(
-                        text = "Your feature goes here",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium,
+                        text = if (state.isLoggingOut) "Signing Out..." else "Logout",
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Add new slices under features/ following the vertical slice pattern. Each slice owns its data, domain, and presentation.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
-            )
-        },
-    )
+                }
+            }
+        }
+    }
 }

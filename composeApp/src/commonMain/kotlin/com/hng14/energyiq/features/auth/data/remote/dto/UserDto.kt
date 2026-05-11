@@ -1,11 +1,15 @@
 package com.hng14.energyiq.features.auth.data.remote.dto
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserDto(
-    @SerialName("id") val id: String,
-    @SerialName("email") val email: String,
-    @SerialName("name") val name: String,
+    val id: String,
+    val email: String,
+    val firstName: String,
+    val lastName: String,
+    val role: String,
+    val emailVerified: Boolean,
+    val createdAt: String,
+    val updatedAt: String,
 )
