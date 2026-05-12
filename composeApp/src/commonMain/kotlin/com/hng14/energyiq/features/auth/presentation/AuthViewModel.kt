@@ -56,7 +56,8 @@ class AuthViewModel(
 
     fun onSubmit(onSuccess: OnAuthSuccess) {
 
-        println("AUTH_DEBUG: onSubmit called, mode: ${_state.value.mode}")
+        //println("AUTH_DEBUG: onSubmit called, mode: ${_state.value.mode}")
+        //for logcat
 
         if (!validateInputs()) return
         val current = _state.value
@@ -89,7 +90,7 @@ class AuthViewModel(
                 }
             }
             _state.update {
-                it.copy(isLoading = false)
+                it.copy(isLoading = false, )
             }
         }
     }

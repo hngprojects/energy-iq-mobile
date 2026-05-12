@@ -32,6 +32,8 @@ fun AppNavigation(startDestination: AppDestination) {
                 AuthScreen(
                     initialMode = it.initialMode,
                     onAuthSuccess = { mode ->
+                    //fpr logcat
+                       // println("AUTH_DEBUG: onAuthSuccess called with mode: $mode")
                         backStack.clear()
                         backStack.add(
                             when (mode) {
