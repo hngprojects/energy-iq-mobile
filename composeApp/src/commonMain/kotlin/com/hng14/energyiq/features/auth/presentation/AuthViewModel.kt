@@ -19,6 +19,10 @@ class AuthViewModel(
     private val _state = MutableStateFlow(AuthState(mode = initialMode))
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
+    private val _emailVerificationState: MutableStateFlow<EmailVerificationState?> = MutableStateFlow(null)
+    val emailVerificationState: StateFlow<EmailVerificationState?> = _emailVerificationState.asStateFlow()
+
+
     fun onToggleMode() {
         _state.update { current ->
             AuthState(
@@ -140,6 +144,28 @@ class AuthViewModel(
 
     fun onBackToLogin() {
         _state.update { AuthState(mode = AuthMode.LOGIN) }
+    }
+
+    fun onStartEmailVerification() {
+        _emailVerificationState.update { EmailVerificationState.Typing }
+    }
+
+    fun onOtpChange(value: String) {
+        _state.update { it.copy(otpCode = value, otpError = null) }
+        // clear error state when user starts retyping
+        if (_emailVerificationState.value == EmailVerificationState.Error) {
+            _emailVerificationState.update { EmailVerificationState.Typing }
+        }
+    }
+
+    fun onVerifyOtp(onSuccess: () -> Unit) {
+        // TODO: call backend API — wiring this next
+        _emailVerificationState.update { EmailVerificationState.Verifying }
+    }
+
+    fun onBackToSignUp() {
+        _emailVerificationState.update { null }
+        _state.update { AuthState(mode = AuthMode.REGISTER) }
     }
 
 }

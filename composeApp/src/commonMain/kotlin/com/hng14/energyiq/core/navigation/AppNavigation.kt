@@ -34,7 +34,8 @@ fun AppNavigation(startDestination: AppDestination) {
                         backStack.clear()
                         backStack.add(
                             when (mode) {
-                                AuthMode.REGISTER -> AppDestination.InverterSetup
+                                //AuthMode.REGISTER -> AppDestination.InverterSetup
+                                AuthMode.REGISTER -> AppDestination.EmailVerification
                                 else -> AppDestination.Home
                             },
                         )
@@ -58,6 +59,19 @@ fun AppNavigation(startDestination: AppDestination) {
                     onLogout = {
                         backStack.clear()
                         backStack.add(AppDestination.Auth())
+                    },
+                )
+            }
+
+            entry<AppDestination.EmailVerification> {
+                EmailVerificationScreen(
+                    onContinue = {
+                        backStack.clear()
+                        backStack.add(AppDestination.InverterSetup)
+                    },
+                    onBackToSignUp = {
+                        backStack.clear()
+                        backStack.add(AppDestination.Auth(AuthMode.REGISTER))
                     },
                 )
             }
