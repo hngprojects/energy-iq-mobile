@@ -50,7 +50,7 @@ fun OtpTextField(
                     val isFocused = index == otpValue.length
                     val borderColor = when {
                         isError -> MaterialTheme.colorScheme.error
-                        isFocused || char != null -> Color(0xFF22C55E)
+                        isFocused || char != null -> Color(0xFF4CD964)
                         else -> MaterialTheme.colorScheme.outline
                     }
 

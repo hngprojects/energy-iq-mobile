@@ -6,6 +6,7 @@ import com.hng14.energyiq.features.auth.data.remote.dto.LoginRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.LoginResponse
 import com.hng14.energyiq.features.auth.data.remote.dto.RegisterRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.RegisterResponse
+import com.hng14.energyiq.features.auth.data.remote.dto.VerifyEmailRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -87,6 +88,28 @@ class AuthApi(
             throw Exception(errorResponse.message)
         } catch (e: Exception) {
             print(e)
+            throw e
+        }
+    }
+
+    suspend fun verifyEmail(request: VerifyEmailRequest) {
+        return try {
+            val response = httpClient.post(
+                "${NetworkConfig.BASE_URL}/auth/verify-email"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+            if (response.status.value in 200..299) {
+                Unit
+            } else {
+                val errorResponse = response.body<ApiErrorResponse>()
+                throw Exception(errorResponse.message)
+            }
+        } catch (e: ClientRequestException) {
+            val errorResponse = e.response.body<ApiErrorResponse>()
+            throw Exception(errorResponse.message)
+        } catch (e: Exception) {
             throw e
         }
     }

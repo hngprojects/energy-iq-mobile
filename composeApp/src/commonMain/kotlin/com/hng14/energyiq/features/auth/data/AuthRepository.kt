@@ -6,6 +6,7 @@ import com.hng14.energyiq.features.auth.data.local.UserEntity
 import com.hng14.energyiq.features.auth.data.remote.AuthApi
 import com.hng14.energyiq.features.auth.data.remote.dto.LoginRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.RegisterRequest
+import com.hng14.energyiq.features.auth.data.remote.dto.VerifyEmailRequest
 import com.hng14.energyiq.features.auth.domain.model.User
 
 class AuthRepository(
@@ -62,6 +63,10 @@ class AuthRepository(
         api.logout(token = token)
         preferences.clearSession()
         userDao.deleteAll()
+    }
+
+    suspend fun verifyEmail(email: String, otp: String) {
+        api.verifyEmail(request = VerifyEmailRequest(email = email, otp = otp))
     }
 
     private fun UserEntity.toDomain() = User(id = id, email = email, name = name)

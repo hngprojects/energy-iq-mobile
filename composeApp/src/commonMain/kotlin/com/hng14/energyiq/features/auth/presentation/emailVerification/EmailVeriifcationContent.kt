@@ -23,8 +23,8 @@ import com.hng14.energyiq.features.auth.presentation.components.OtpTextField
 
 //private val DarkButton = Color(0xFF141D2F)
 //private val ErrorRed = Color(0xFFEF4444)
-private val SuccessGreen = Color(0xFF22C55E)
-private val SuccessGreenLight = Color(0xFFDCFCE7)
+private val SuccessGreen = Color(0xFF4CD964)
+private val SuccessGreenLight = Color(0xFF4CD964)
 
 
 @Composable

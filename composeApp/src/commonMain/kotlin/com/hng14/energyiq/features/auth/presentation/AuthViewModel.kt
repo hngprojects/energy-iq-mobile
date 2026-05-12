@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+
 class AuthViewModel(
     private val repository: AuthRepository,
     initialMode: AuthMode = AuthMode.LOGIN,
@@ -54,6 +55,9 @@ class AuthViewModel(
     }
 
     fun onSubmit(onSuccess: OnAuthSuccess) {
+
+        println("AUTH_DEBUG: onSubmit called, mode: ${_state.value.mode}")
+
         if (!validateInputs()) return
         val current = _state.value
         viewModelScope.launch {
@@ -159,8 +163,21 @@ class AuthViewModel(
     }
 
     fun onVerifyOtp(onSuccess: () -> Unit) {
-        // TODO: call backend API — wiring this next
-        _emailVerificationState.update { EmailVerificationState.Verifying }
+        val current = _state.value
+        viewModelScope.launch {
+            _emailVerificationState.update { EmailVerificationState.Verifying }
+            runCatching {
+                repository.verifyEmail(
+                    email = current.email.trim(),
+                    otp = current.otpCode,
+                )
+            }.onSuccess {
+                _emailVerificationState.update { EmailVerificationState.Success }
+            }.onFailure { error ->
+                _emailVerificationState.update { EmailVerificationState.Error }
+                _state.update { it.copy(otpError = error.message ?: "Invalid code") }
+            }
+        }
     }
 
     fun onBackToSignUp() {
