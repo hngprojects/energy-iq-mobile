@@ -7,6 +7,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.hng14.energyiq.features.auth.AuthMode
 import com.hng14.energyiq.features.auth.presentation.AuthScreen
+import com.hng14.energyiq.features.auth.presentation.emailVerification.EmailVerificationScreen
 import com.hng14.energyiq.features.home.presentation.HomeScreen
 import com.hng14.energyiq.features.onboarding.presentation.InverterSetupScreen
 import com.hng14.energyiq.features.onboarding.presentation.OnboardingScreen

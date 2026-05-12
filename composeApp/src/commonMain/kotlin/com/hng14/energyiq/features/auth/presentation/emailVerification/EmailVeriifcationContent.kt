@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hng14.energyiq.core.theme.EnergyPalette
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.features.auth.presentation.components.AuthBrandHeader
