@@ -1,98 +1,195 @@
-# EnergyIQ
+# EnergyIQ Mobile
 
-KMP + Compose Multiplatform project with Vertical Slice Architecture.
+EnergyIQ Mobile is a Kotlin Multiplatform app built with Compose Multiplatform for the EnergyIQ ecosystem. The shared application code lives in `composeApp/` and is currently wired for Android and iOS, with desktop and wasm targets available for local development and UI testing.
 
-**Platforms:** Android · iOS · Desktop (JVM) · Web (wasmJs)
+## Overview
 
-## Quick Start
+- Shared UI and business logic in Kotlin Multiplatform
+- Android app module in `androidApp/`
+- iOS wrapper project in `iosApp/`
+- Compose Desktop and wasm targets for faster iteration outside mobile devices
+- Ktor networking, Koin dependency injection, Room 3, and DataStore-backed preferences
+
+## Project Structure
+
+```text
+energy-iq-mobile/
+|- androidApp/                   Android application entry point
+|- composeApp/                   Shared KMP code
+|  |- src/commonMain/            Shared UI, navigation, data, and feature logic
+|  |- src/androidMain/           Android-specific implementations
+|  |- src/iosMain/               iOS-specific implementations
+|  |- src/desktopMain/           Desktop-specific implementations
+|  `- src/wasmJsMain/            Browser preview target
+|- iosApp/                       Xcode project and SwiftUI host
+|- gradle/                       Gradle version catalog and wrapper config
+`- README.md
+```
+
+## Current App Flow
+
+The app currently includes these main user flows:
+
+- Onboarding: a 3-screen intro experience shown before authentication is completed
+- Authentication: login, registration, forgot password, reset password, and Google sign-in handoff
+- Inverter setup: users choose an inverter type, provide connection details, and complete initial setup
+- Home: post-auth landing screen
+
+The inverter setup flow currently includes options for:
+
+- Victron
+- Luminous
+- Growatt
+- Su-kam
+- Sunsynk
+- Others
+
+## Local Configuration
+
+Important local configuration keys are stored in `local.properties`.
+
+`composeApp/build.gradle.kts` reads:
+
+- `BASE_URL` from `local.properties`
+
+## Getting Started
+
+### Prerequisites
+
+- JDK 17
+- Android Studio for Android development
+- Xcode for iOS development on macOS
+
+### Install dependencies
+
+Gradle dependencies are resolved automatically through the wrapper:
 
 ```bash
-# 1. Clone
-git clone https://github.com/hngprojects/energy-iq-mobile.git
-cd energy-iq-mobile
+./gradlew build
+```
 
-# 3. Replace simulated auth with your real API
-# composeApp/src/commonMain/.../features/auth/data/remote/AuthApi.kt
+On Windows:
 
-# 4. Build & run
-./gradlew :androidApp:assembleDebug          # Android APK
-./gradlew :composeApp:wasmJsBrowserRun       # Web (dev server)
+```powershell
+.\gradlew.bat build
+```
+
+## Running the App
+
+### Android
+
+Build a debug APK:
+
+```bash
+./gradlew :androidApp:assembleDebug
+```
+
+Install on a connected device or emulator:
+
+```bash
+./gradlew :androidApp:installDebug
+```
+
+You can also open the project in Android Studio and run the `androidApp` configuration directly.
+
+### iOS
+
+Open the Xcode project:
+
+```text
+iosApp/iosApp.xcodeproj
+```
+
+Then run the `iosApp` target on a simulator or device from Xcode.
+
+If you want Gradle to build the iOS framework manually, a useful task is:
+
+```bash
+./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+```
+
+### Desktop
+
+Run the desktop target:
+
+```bash
+./gradlew :composeApp:desktopRun
+```
+
+### Web Preview
+
+This repository also includes a wasm target for browser-based previews and development:
+
+```bash
+./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+```
+
+This is helpful for shared UI iteration, but the project itself is primarily a mobile KMP app.
+
+## Useful Gradle Tasks
+
+```text
+:androidApp:assembleDebug                     Build Android debug APK
+:androidApp:installDebug                      Install Android debug build
+:composeApp:desktopRun                        Run desktop app
+:composeApp:wasmJsBrowserDevelopmentRun       Run wasm dev server
+:composeApp:allTests                          Run shared test suite
+:composeApp:build                             Build shared module
+build                                         Build the full project
 ```
 
 ## Architecture
 
-Vertical Slice — each feature is fully self-contained:
+The shared module follows a feature-oriented structure with platform-specific implementations where needed.
 
-```
-features/
-  featureName/
-    FeatureNameContract.kt   ← public API (callbacks, shared types)
-    di/FeatureNameModule.kt  ← Koin DI wiring
-    data/                    ← repository, API client, DAO, preferences
-    domain/                  ← use cases, domain models
-    presentation/            ← screens, viewmodels, UI components
-```
+Typical feature layout:
 
-### Adding a Feature
-
-1. Create `composeApp/src/commonMain/.../features/<name>/` following the structure above
-2. Register the Koin module in `core/di/AppModule.kt`
-3. Add a destination to `core/navigation/Destinations.kt`
-4. Wire the screen in `core/navigation/AppNavigation.kt`
-
-## Structure
-
-```
-kotlin-starter/
-├── androidApp/          Android application entry point
-├── composeApp/          Shared KMP code (UI + logic + data)
-│   └── src/
-│       ├── commonMain/  Shared across all platforms
-│       ├── androidMain/ Android-specific actuals
-│       ├── iosMain/     iOS-specific actuals
-│       ├── desktopMain/ JVM desktop actuals
-│       └── wasmJsMain/  Web actuals
-├── iosApp/              Xcode project (SwiftUI wrapper)
-└── rename.sh            Package rename helper
+```text
+composeApp/src/commonMain/kotlin/com/hng14/energyiq/features/
+`- feature-name/
+   |- data/
+   |- di/
+   |- domain/
+   |- presentation/
+   `- FeatureContract.kt
 ```
 
-## Defaults Included
+Important shared areas:
 
-| Feature    | Details                                                                                                     |
-|------------|-------------------------------------------------------------------------------------------------------------|
-| Onboarding | 3-page horizontal swipe, skip/complete stored in DataStore                                                  |
-| Auth       | Login + Register screens, demo creds `jeffery@logickoder.dev` / `Password1`, swap `AuthApi.kt` for real API |
-| Home       | Scaffold + top bar with logout                                                                              |
-| Theme      | Material 3, light + dark mode, custom color palette                                                         |
-| Navigation | Nav3 with explicit back stack                                                                               |
+- `core/di/` for dependency wiring
+- `core/navigation/` for app destinations and navigation flow
+- `core/network/` for HTTP client setup and API configuration
+- `core/storage/` for preference storage abstractions
+- `core/database/` for Room database setup
 
-## Stack
+## Authentication Notes
 
-| Layer         | Library                                                                     |
-|---------------|-----------------------------------------------------------------------------|
-| UI            | Compose Multiplatform 1.10.3                                                |
-| DI            | Koin 4.x                                                                    |
-| HTTP          | Ktor 3.4.2                                                                  |
-| HTTP caching  | RetroStash 0.0.7                                                            |
-| Database      | Room 3.x (all platforms)                                                    |
-| Preferences   | `PreferenceStore` — DataStore on Android/iOS/Desktop, `localStorage` on Web |
-| Navigation    | Navigation 3                                                                |
-| Serialization | kotlinx.serialization                                                       |
+Authentication requests are implemented in the shared Ktor client under:
 
-## iOS Setup
+- `composeApp/src/commonMain/kotlin/com/hng14/energyiq/features/auth/data/remote/AuthApi.kt`
 
-Open `iosApp/iosApp.xcodeproj` in Xcode and run on a simulator or device.
+The Google sign-in button currently opens:
 
-If you renamed the package with `rename.sh`, also update the iOS bundle identifier:
+```text
+{BASE_URL}/auth/google
+```
 
-1. Open `iosApp/iosApp.xcodeproj` → select the `iosApp` target
-2. **General → Identity → Bundle Identifier** — set to your new package name
-3. Optionally update the display name under **General → Display Name**
+That means your backend must handle the OAuth flow and redirect the user back into the app experience as appropriate for your platform.
 
-## License
+## Testing
 
-MIT
+Run all shared tests:
 
----
+```bash
+./gradlew :composeApp:allTests
+```
 
-Made with ❤️ by [Jeffery Orazulike](https://logickoder.dev) and the HNG projects team.
+Run a full project build:
+
+```bash
+./gradlew build
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
