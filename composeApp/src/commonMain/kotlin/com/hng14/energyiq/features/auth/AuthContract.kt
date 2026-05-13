@@ -5,4 +5,4 @@ import kotlinx.serialization.Serializable
 typealias OnAuthSuccess = (AuthMode) -> Unit
 
 @Serializable
-enum class AuthMode { LOGIN, REGISTER, FORGOT_PASSWORD, CHECK_MAIL, RESET_SUCCESS }
+enum class AuthMode { LOGIN, REGISTER, FORGOT_PASSWORD, EMAIL_SENT, CHECK_MAIL, RESET_SUCCESS }

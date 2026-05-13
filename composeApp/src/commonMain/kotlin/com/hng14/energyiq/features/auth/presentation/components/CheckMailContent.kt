@@ -3,6 +3,7 @@ package com.hng14.energyiq.features.auth.presentation.components
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -20,15 +21,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.dmSansFontFamily
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CheckMailContent(
     email: String,
+    isEmailReadOnly: Boolean,
+    emailError: String?,
     password: String,
     confirmPassword: String,
     passwordError: String?,
     confirmPasswordError: String?,
+    generalError: String?,
     isLoading: Boolean,
+    onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onConfirmPasswordChange: (String) -> Unit,
     onResetPassword: () -> Unit,
@@ -36,7 +43,7 @@ fun CheckMailContent(
 ) {
     val dmSans = dmSansFontFamily()
     val adaptiveSpec = LocalAdaptiveScreenSpec.current
-    val passwordRuleText = "Password must be at least 8 characters and a special key"
+    val passwordRuleText = stringResource(Res.string.auth_password_rule)
     val passwordValid = password.isNotEmpty() &&
         password.length >= 8 &&
         password.any { !it.isLetterOrDigit() }
@@ -51,7 +58,7 @@ fun CheckMailContent(
     val resolvedConfirmPasswordError = when {
         confirmPassword.isEmpty() -> confirmPasswordError
         confirmPasswordValid -> null
-        else -> "Passwords do not match"
+        else -> stringResource(Res.string.auth_passwords_do_not_match)
     }
 
     AuthPageLayout(
@@ -62,7 +69,7 @@ fun CheckMailContent(
         Spacer(modifier = Modifier.height(120.dp))
 
         Text(
-            text = "Check your email",
+            text = stringResource(Res.string.auth_reset_title),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontFamily = dmSans,
                 fontWeight = FontWeight.Bold,
@@ -78,7 +85,11 @@ fun CheckMailContent(
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = "Create a new password for your\n$email EnergyIQ\naccount.",
+            text = if (email.isBlank()) {
+                stringResource(Res.string.auth_reset_desc_no_email)
+            } else {
+                stringResource(Res.string.auth_reset_desc_with_email, email)
+            },
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = dmSans,
                 fontWeight = FontWeight.Normal,
@@ -93,11 +104,25 @@ fun CheckMailContent(
 
         Spacer(modifier = Modifier.height(28.dp))
 
+        AuthTextField(
+            value = email,
+            onValueChange = onEmailChange,
+            label = stringResource(Res.string.auth_email_label),
+            placeholder = stringResource(Res.string.auth_email_placeholder),
+            error = emailError,
+            showSuccess = email.isNotBlank() && emailError == null,
+            imeAction = ImeAction.Next,
+            readOnly = isEmailReadOnly,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(modifier = Modifier.height(18.dp))
+
         PasswordTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = "New Password",
-            placeholder = "Enter your password",
+            label = stringResource(Res.string.auth_new_password),
+            placeholder = stringResource(Res.string.auth_new_password_placeholder),
             error = resolvedPasswordError,
             showSuccess = passwordValid,
             supportingText = if (password.isEmpty()) null else passwordRuleText,
@@ -112,23 +137,36 @@ fun CheckMailContent(
         PasswordTextField(
             value = confirmPassword,
             onValueChange = onConfirmPasswordChange,
-            label = "Confirm New Password",
-            placeholder = "Enter your password",
+            label = stringResource(Res.string.auth_confirm_new_password),
+            placeholder = stringResource(Res.string.auth_new_password_placeholder),
             error = resolvedConfirmPasswordError,
             showSuccess = confirmPasswordValid,
             supportingText = when {
                 confirmPassword.isEmpty() -> null
-                confirmPasswordValid -> "Passwords match"
-                else -> "Passwords do not match"
+                confirmPasswordValid -> stringResource(Res.string.auth_passwords_match)
+                else -> stringResource(Res.string.auth_passwords_do_not_match)
             },
             supportingColor = if (confirmPasswordValid) Color(0xFF4CD964) else Color(0xFFF3A847),
             showStatusIndicator = false,
             imeAction = ImeAction.Done,
-            onImeAction = onResetPassword,
+            onImeAction = {},
             modifier = Modifier.fillMaxWidth(),
         )
 
         Spacer(modifier = Modifier.height(30.dp))
+
+        generalError?.let { error ->
+            Text(
+                text = error,
+                color = Color(0xFFB42318),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = dmSans,
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         Button(
             onClick = onResetPassword,
@@ -144,13 +182,13 @@ fun CheckMailContent(
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.height(20.dp),
+                    modifier = Modifier.size(20.dp),
                     color = Color.White,
                     strokeWidth = 2.dp,
                 )
             } else {
                 Text(
-                    text = "Reset Password",
+                    text = stringResource(Res.string.auth_reset_password),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Normal,
@@ -171,7 +209,7 @@ fun CheckMailContent(
             shape = RoundedCornerShape(12.dp),
         ) {
             Text(
-                text = "Back to Login",
+                text = stringResource(Res.string.auth_back_to_login_title),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,

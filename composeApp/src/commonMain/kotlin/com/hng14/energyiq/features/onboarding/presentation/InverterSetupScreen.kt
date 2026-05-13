@@ -33,6 +33,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -852,42 +853,46 @@ private fun isConnectionFieldValid(
 private fun SetupPageLayout(
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    BoxWithConstraints(
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        val adaptiveSpec = adaptiveScreenSpec(maxWidth)
+    Scaffold { paddingValues ->
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+        ) {
+            val adaptiveSpec = adaptiveScreenSpec(maxWidth)
 
-        CompositionLocalProvider(LocalAdaptiveScreenSpec provides adaptiveSpec) {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = Color(0xFFFAFAF8),
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    AuthWaveDecoration(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .offset(x = (-10).dp, y = (-10).dp)
-                            .size(width = 170.dp, height = 182.dp),
-                    )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .statusBarsPadding()
-                            .navigationBarsPadding()
-                            .imePadding()
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = 20.dp, vertical = 16.dp)
-                            .widthIn(max = adaptiveSpec.contentMaxWidth)
-                            .align(Alignment.TopCenter),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        content = {
-                            Spacer(modifier = Modifier.height(18.dp))
-                            EnergyIqBrandMark()
-                            Spacer(modifier = Modifier.height(16.dp))
-                            content()
-                        },
-                    )
+            CompositionLocalProvider(LocalAdaptiveScreenSpec provides adaptiveSpec) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = Color(0xFFFAFAF8),
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AuthWaveDecoration(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .offset(x = (-10).dp, y = (-10).dp)
+                                .size(width = 170.dp, height = 182.dp),
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                                .statusBarsPadding()
+                                .navigationBarsPadding()
+                                .imePadding()
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = 20.dp, vertical = 16.dp)
+                                .widthIn(max = adaptiveSpec.contentMaxWidth)
+                                .align(Alignment.TopCenter),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            content = {
+                                Spacer(modifier = Modifier.height(18.dp))
+                                EnergyIqBrandMark()
+                                Spacer(modifier = Modifier.height(16.dp))
+                                content()
+                            },
+                        )
+                    }
                 }
             }
         }

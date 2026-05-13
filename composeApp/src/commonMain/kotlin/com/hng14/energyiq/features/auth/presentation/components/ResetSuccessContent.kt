@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.dmSansFontFamily
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ResetSuccessContent(
@@ -33,7 +35,7 @@ fun ResetSuccessContent(
         Spacer(modifier = Modifier.height(260.dp))
 
         Text(
-            text = "You're All Set",
+            text = stringResource(Res.string.auth_reset_success_title),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontFamily = dmSans,
                 fontWeight = FontWeight.Bold,
@@ -49,7 +51,7 @@ fun ResetSuccessContent(
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = "Your password has been updated\nsuccessfully. Sign in.",
+            text = stringResource(Res.string.auth_reset_success_subtitle),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = dmSans,
                 fontWeight = FontWeight.Normal,
@@ -74,7 +76,7 @@ fun ResetSuccessContent(
             ),
         ) {
             Text(
-                text = "Sign In",
+                text = stringResource(Res.string.auth_sign_in),
                 style = MaterialTheme.typography.bodyLarge.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,

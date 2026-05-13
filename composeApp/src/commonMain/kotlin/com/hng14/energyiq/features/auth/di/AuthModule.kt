@@ -15,7 +15,8 @@ fun authModule(): Module = module {
     viewModel { params ->
         AuthViewModel(
             get(),
-            initialMode = params.getOrNull() ?: AuthMode.LOGIN,
+            initialMode = params.getOrNull<AuthMode>() ?: AuthMode.LOGIN,
+            initialResetToken = params.getOrNull<String>(),
         )
     }
 }

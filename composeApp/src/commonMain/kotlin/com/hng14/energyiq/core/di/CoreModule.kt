@@ -13,7 +13,7 @@ fun coreModule(context: Any?): Module = module {
     single { createDatabase(context = context) }
     single { get<AppDatabase>().userDao() }
     single<RetrostashStore> { PreferenceRetrostashStore(get()) }
-    single { createHttpClient(get(), get()) }
+    single { createHttpClient(get(), get(), get()) }
     single<HttpClientEngine> { platformHttpEngine() }
 }
 
