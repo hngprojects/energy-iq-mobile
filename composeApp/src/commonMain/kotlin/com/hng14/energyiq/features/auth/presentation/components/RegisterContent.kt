@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.core.theme.dmSansFontFamily
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun RegisterContent(
@@ -123,8 +126,8 @@ fun RegisterContent(
         AuthTextField(
             value = fullName,
             onValueChange = onFullNameChange,
-            label = "Enter Full Name",
-            placeholder = "Enter your name",
+            label = stringResource(Res.string.auth_register_name_label),
+            placeholder = stringResource(Res.string.auth_register_name_placeholder),
             error = registerFullNameError,
             showSuccess = registerFullNameValid,
             supportingText = registerFullNameSupportingText,
@@ -138,8 +141,8 @@ fun RegisterContent(
         AuthTextField(
             value = email,
             onValueChange = onEmailChange,
-            label = "Email Address",
-            placeholder = "Enter your email address",
+            label = stringResource(Res.string.auth_email_label),
+            placeholder = stringResource(Res.string.auth_email_placeholder),
             error = registerEmailError,
             showSuccess = registerEmailValid,
             supportingText = registerEmailSupportingText,
@@ -154,15 +157,15 @@ fun RegisterContent(
         PasswordTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = "Password",
-            placeholder = "********",
+            label = stringResource(Res.string.auth_password_label),
+            placeholder = stringResource(Res.string.auth_password_placeholder),
             error = registerPasswordError,
             showSuccess = registerPasswordValid,
             supportingText = registerPasswordSupportingText,
             supportingColor = registerPasswordSupportingColor,
             showStatusIndicator = false,
             imeAction = ImeAction.Done,
-            onImeAction = onCreateAccount,
+            onImeAction = {},
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -192,13 +195,13 @@ fun RegisterContent(
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.height(20.dp),
+                    modifier = Modifier.size(20.dp),
                     color = Color.White,
                     strokeWidth = 2.dp,
                 )
             } else {
                 Text(
-                    text = "Create Account",
+                    text = stringResource(Res.string.auth_create_account),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Normal,
@@ -221,7 +224,7 @@ fun RegisterContent(
             shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
         ) {
             Text(
-                text = "Continue with Google",
+                text = stringResource(Res.string.auth_continue_google),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,
@@ -237,7 +240,7 @@ fun RegisterContent(
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "Already have an account?",
+                text = stringResource(Res.string.auth_already_have_account),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,
@@ -249,7 +252,7 @@ fun RegisterContent(
             )
             TextButton(onClick = onLoginClick) {
                 Text(
-                    text = "Log In",
+                    text = stringResource(Res.string.auth_log_in),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -263,7 +266,7 @@ fun RegisterContent(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "By signing up, you agree to our ",
+                text = stringResource(Res.string.auth_signup_terms_prefix),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,
@@ -275,7 +278,7 @@ fun RegisterContent(
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = "Terms of Service",
+                text = stringResource(Res.string.auth_terms_of_service),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.SemiBold,
@@ -288,7 +291,7 @@ fun RegisterContent(
                 textDecoration = TextDecoration.Underline,
             )
             Text(
-                text = " and ",
+                text = stringResource(Res.string.auth_and),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,
@@ -299,7 +302,7 @@ fun RegisterContent(
                 color = Color(0xFF6B7280),
             )
             Text(
-                text = "Privacy Policy",
+                text = stringResource(Res.string.auth_privacy_policy),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,

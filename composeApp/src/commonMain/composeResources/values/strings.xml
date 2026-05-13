@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auth_welcome_back">Welcome Back</string>
+    <string name="auth_login_subtitle">Sign In to your EnergyIQ account. Take\nControl of your Energy.</string>
+    <string name="auth_email_label">Email Address</string>
+    <string name="auth_email_placeholder">Enter your email address</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_password_placeholder">********</string>
+    <string name="auth_remember_password">Remember Password</string>
+    <string name="auth_forgot_password">Forgot Password</string>
+    <string name="auth_sign_in">Sign In</string>
+    <string name="auth_continue_google">Continue with Google</string>
+    <string name="auth_no_account">Don't have an account?</string>
+    <string name="auth_create_one">Create One</string>
+    <string name="auth_terms_prefix">By signing in, you agree to our </string>
+    <string name="auth_terms_of_service">Terms of Service</string>
+    <string name="auth_and"> and </string>
+    <string name="auth_privacy_policy">Privacy Policy</string>
+    <string name="auth_register_name_label">Enter Full Name</string>
+    <string name="auth_register_name_placeholder">Enter your name</string>
+    <string name="auth_create_account">Create Account</string>
+    <string name="auth_already_have_account">Already have an account?</string>
+    <string name="auth_log_in">Log In</string>
+    <string name="auth_signup_terms_prefix">By signing up, you agree to our </string>
+    <string name="auth_forgot_title">Forgot Your Password</string>
+    <string name="auth_forgot_subtitle">Enter your email address and we will send you a reset link.</string>
+    <string name="auth_send_link">Send Link</string>
+    <string name="auth_back_to_login">Back to login</string>
+    <string name="auth_check_email_title">Check your email</string>
+    <string name="auth_email_sent_subtitle">We just sent you a reset link by email.</string>
+    <string name="auth_android_links_help">Android App Links behavior may open this link in a browser first.\nIf that happens: Settings &gt; Apps &gt; EnergyIQ &gt; Open by default &gt; Enable supported links &gt; Allow staging.energy-iq.hng14.com.</string>
+    <string name="auth_resend_link">Resend Link</string>
+    <string name="auth_reset_title">Reset your password</string>
+    <string name="auth_reset_desc_no_email">Create a new password for your EnergyIQ account.</string>
+    <string name="auth_reset_desc_with_email">Create a new password for your\n%1$s EnergyIQ\naccount.</string>
+    <string name="auth_new_password">New Password</string>
+    <string name="auth_new_password_placeholder">Enter your password</string>
+    <string name="auth_confirm_new_password">Confirm New Password</string>
+    <string name="auth_password_rule">Password must be at least 8 characters and a special key</string>
+    <string name="auth_passwords_match">Passwords match</string>
+    <string name="auth_passwords_do_not_match">Passwords do not match</string>
+    <string name="auth_reset_password">Reset Password</string>
+    <string name="auth_back_to_login_title">Back to Login</string>
+    <string name="auth_reset_success_title">You're All Set</string>
+    <string name="auth_reset_success_subtitle">Your password has been updated\nsuccessfully. Sign in.</string>
+</resources>

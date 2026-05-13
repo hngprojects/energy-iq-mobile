@@ -3,7 +3,6 @@ package com.hng14.energyiq.features.auth.presentation.components
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -15,48 +14,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.core.theme.dmSansFontFamily
+import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ForgotPasswordContent(
-    email: String,
-    emailError: String?,
+fun EmailSentContent(
     generalError: String?,
     isLoading: Boolean,
-    onEmailChange: (String) -> Unit,
     onResendLink: () -> Unit,
     onBackToLogin: () -> Unit,
 ) {
     val dmSans = dmSansFontFamily()
-    val energyColors = EnergyTheme.colors
     val adaptiveSpec = LocalAdaptiveScreenSpec.current
-    val forgotPasswordEmailValid = email.isNotEmpty() &&
-        email.contains('@') &&
-        email.substringAfter('@', "").contains('.')
-    val forgotPasswordEmailError = when {
-        email.isEmpty() -> emailError
-        forgotPasswordEmailValid -> null
-        else -> "Enter a valid email address"
-    }
-    val forgotPasswordEmailSupportingText = when {
-        email.isEmpty() -> null
-        forgotPasswordEmailValid -> "Email address is valid"
-        else -> "Enter a valid email address"
-    }
-    val forgotPasswordEmailSupportingColor = when {
-        email.isEmpty() -> null
-        forgotPasswordEmailValid -> Color(0xFF4CD964)
-        else -> Color(0xFFD92D20)
-    }
+    val energyColors = EnergyTheme.colors
 
     AuthPageLayout(
         backgroundColor = Color(0xFFFAFAF8),
@@ -66,7 +42,7 @@ fun ForgotPasswordContent(
         Spacer(modifier = Modifier.height(120.dp))
 
         Text(
-            text = stringResource(Res.string.auth_forgot_title),
+            text = stringResource(Res.string.auth_check_email_title),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontFamily = dmSans,
                 fontWeight = FontWeight.Bold,
@@ -75,12 +51,14 @@ fun ForgotPasswordContent(
                 letterSpacing = 0.sp,
             ),
             color = Color(0xFF1F2430),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
         )
 
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = stringResource(Res.string.auth_forgot_subtitle),
+            text = stringResource(Res.string.auth_email_sent_subtitle),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = dmSans,
                 fontWeight = FontWeight.Normal,
@@ -89,32 +67,34 @@ fun ForgotPasswordContent(
                 letterSpacing = 0.sp,
             ),
             color = Color(0xFF7B8190),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
         )
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        AuthTextField(
-            value = email,
-            onValueChange = onEmailChange,
-            label = stringResource(Res.string.auth_email_label),
-            placeholder = stringResource(Res.string.auth_email_placeholder),
-            error = forgotPasswordEmailError,
-            showSuccess = forgotPasswordEmailValid,
-            supportingText = forgotPasswordEmailSupportingText,
-            supportingColor = forgotPasswordEmailSupportingColor,
-            keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Done,
-            onImeAction = {},
+        Text(
+            text = stringResource(Res.string.auth_android_links_help),
+            style = MaterialTheme.typography.bodySmall.copy(
+                fontFamily = dmSans,
+                fontWeight = FontWeight.Normal,
+                fontSize = 13.sp,
+                lineHeight = 20.sp,
+                letterSpacing = 0.sp,
+            ),
+            color = Color(0xFF7B8190),
+            textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth(),
         )
 
         generalError?.let { error ->
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = error,
                 color = energyColors.danger,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
 
@@ -134,13 +114,13 @@ fun ForgotPasswordContent(
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.height(20.dp),
                     color = Color.White,
                     strokeWidth = 2.dp,
                 )
             } else {
                 Text(
-                    text = stringResource(Res.string.auth_send_link),
+                    text = stringResource(Res.string.auth_resend_link),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Normal,
