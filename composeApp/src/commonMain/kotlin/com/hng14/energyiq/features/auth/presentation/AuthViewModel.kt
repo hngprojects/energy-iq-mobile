@@ -109,20 +109,20 @@ class AuthViewModel(
             s.password.length < 8 -> "Password must be at least 8 characters"
             else -> null
         }
-        val confirmPasswordError =
-            if (s.mode == AuthMode.REGISTER && s.confirmPassword != s.password) {
-                "Passwords do not match"
-            } else null
+//        val confirmPasswordError =
+//            if (s.mode == AuthMode.REGISTER && s.confirmPassword != s.password) {
+//                "Passwords do not match"
+//            } else null
 
         _state.update {
             it.copy(
                 fullNameError = nameError,
                 emailError = emailError,
                 passwordError = passwordError,
-                confirmPasswordError = confirmPasswordError,
+               // confirmPasswordError = confirmPasswordError,
             )
         }
-        return nameError == null && emailError == null && passwordError == null && confirmPasswordError == null
+        return nameError == null && emailError == null && passwordError == null //&& confirmPasswordError == null
     }
 
     fun onFullNameChange(value: String) {
@@ -187,3 +187,27 @@ class AuthViewModel(
     }
 
 }
+
+private data class BackendNameParts(
+    val firstName: String,
+    val lastName: String,
+)
+
+private fun String.normalizedNameParts(): List<String> {
+    return trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+}
+
+private fun startsWithLetter(value: String): Boolean {
+    return value.firstOrNull()?.isLetter() == true
+}
+
+private fun String.toBackendNameParts(): BackendNameParts {
+    val parts = normalizedNameParts()
+    val firstName = parts.firstOrNull().orEmpty()
+    val lastName = parts.drop(1).joinToString(" ")
+    return BackendNameParts(
+        firstName = firstName,
+        lastName = lastName,
+    )
+}
+
