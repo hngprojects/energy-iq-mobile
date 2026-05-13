@@ -56,11 +56,9 @@ class AuthViewModel(
 
     fun onSubmit(onSuccess: OnAuthSuccess) {
 
-        //println("AUTH_DEBUG: onSubmit called, mode: ${_state.value.mode}")
-        //for logcat
-
         if (!validateInputs()) return
         val current = _state.value
+        val splitName = current.fullName.toBackendNameParts()
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, generalError = null) }
             runCatching {
@@ -71,8 +69,8 @@ class AuthViewModel(
                     )
 
                     AuthMode.REGISTER -> repository.register(
-                        firstName = current.fullName.trim(),
-                        lastName = "",
+                        firstName = splitName.firstName,
+                        lastName = splitName.lastName,
                         email = current.email.trim(),
                         password = current.password,
                     )
