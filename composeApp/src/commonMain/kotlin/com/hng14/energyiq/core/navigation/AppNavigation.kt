@@ -61,10 +61,6 @@ fun AppNavigation(startDestination: AppDestination) {
             }
             entry<AppDestination.Home> {
                 HomeScreen(
-                    onLogout = {
-                        backStack.clear()
-                        backStack.add(AppDestination.Auth())
-                    },
                 )
             }
         },
