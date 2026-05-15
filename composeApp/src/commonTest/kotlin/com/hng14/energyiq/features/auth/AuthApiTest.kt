@@ -1,6 +1,7 @@
 package com.hng14.energyiq.features.auth
 
 import com.hng14.energyiq.features.auth.data.remote.AuthApi
+import com.hng14.energyiq.features.auth.data.remote.dto.ForgotPasswordRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.LoginRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.RegisterRequest
 import io.ktor.client.HttpClient
@@ -142,5 +143,32 @@ class AuthApiTest {
         }
 
         assertEquals("The request conflicts with the current resource state", error.message)
+    }
+
+    @Test
+    fun forgotPasswordParsesWrappedSuccessResponse() = runTest {
+        val api = createApi(
+            status = HttpStatusCode.OK,
+            responseBody = """
+                {
+                  "success": true,
+                  "message": "Request completed successfully",
+                  "data": {
+                    "email": "niniokoyra@yopmail.com"
+                  },
+                  "meta": {
+                    "timestamp": "2026-05-11T22:09:55.977Z"
+                  }
+                }
+            """.trimIndent(),
+        )
+
+        val response = api.forgotPassword(
+            ForgotPasswordRequest(email = "niniokoyra@yopmail.com"),
+        )
+
+        assertEquals(true, response.success)
+        assertEquals("niniokoyra@yopmail.com", response.data.email)
+        assertEquals("Request completed successfully", response.message)
     }
 }

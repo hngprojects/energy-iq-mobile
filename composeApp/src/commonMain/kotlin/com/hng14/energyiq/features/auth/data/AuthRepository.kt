@@ -4,9 +4,11 @@ import com.hng14.energyiq.features.auth.data.local.AuthPreferences
 import com.hng14.energyiq.features.auth.data.local.UserDao
 import com.hng14.energyiq.features.auth.data.local.UserEntity
 import com.hng14.energyiq.features.auth.data.remote.AuthApi
+import com.hng14.energyiq.features.auth.data.remote.dto.ForgotPasswordRequest
+import com.hng14.energyiq.features.auth.data.remote.dto.ForgotPasswordResponse
 import com.hng14.energyiq.features.auth.data.remote.dto.LoginRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.RegisterRequest
-import com.hng14.energyiq.features.auth.data.remote.dto.VerifyEmailRequest
+import com.hng14.energyiq.features.auth.data.remote.dto.ResetPasswordRequest
 import com.hng14.energyiq.features.auth.domain.model.User
 
 class AuthRepository(
@@ -17,8 +19,11 @@ class AuthRepository(
 
     suspend fun login(email: String, password: String): User {
         val response = api.login(request = LoginRequest(email = email, password = password))
-        val remoteUser = response.data.user
-        preferences.saveSession(token = response.data.accessToken, userId = remoteUser.id)
+        val accessToken = response.data.accessToken
+        val refreshToken = response.data.refreshToken
+        val loginUser = response.data.user
+        preferences.saveSession(token = accessToken, refreshToken = refreshToken, userId = loginUser.id)
+        val remoteUser = api.me(token = accessToken).data
         val entity = UserEntity(
             id = remoteUser.id,
             email = remoteUser.email,
@@ -53,6 +58,34 @@ class AuthRepository(
         return entity.toDomain()
     }
 
+    suspend fun forgotPassword(email: String): ForgotPasswordResponse {
+        return api.forgotPassword(
+            request = ForgotPasswordRequest(email = email),
+        )
+    }
+
+    suspend fun resetPassword(email: String, password: String, token: String) {
+        api.resetPassword(
+            request = ResetPasswordRequest(
+                email = email,
+                password = password,
+                token = token,
+            ),
+        )
+    }
+
+    suspend fun savePendingResetEmail(email: String) {
+        preferences.savePendingResetEmail(email)
+    }
+
+    suspend fun getPendingResetEmail(): String? {
+        return preferences.getPendingResetEmail()
+    }
+
+    suspend fun clearPendingResetEmail() {
+        preferences.clearPendingResetEmail()
+    }
+
     suspend fun getCurrentUser(): User? {
         val userId = preferences.getUserId() ?: return null
         return userDao.findById(id = userId)?.toDomain()
@@ -63,10 +96,6 @@ class AuthRepository(
         api.logout(token = token)
         preferences.clearSession()
         userDao.deleteAll()
-    }
-
-    suspend fun verifyEmail(email: String, otp: String) {
-        api.verifyEmail(request = VerifyEmailRequest(email = email, otp = otp))
     }
 
     private fun UserEntity.toDomain() = User(id = id, email = email, name = name)

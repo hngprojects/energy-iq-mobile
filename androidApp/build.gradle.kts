@@ -1,6 +1,18 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
+}
+
+val syncComposeAppResources by tasks.registering(Copy::class) {
+    dependsOn(":composeApp:prepareComposeResourcesTaskForCommonMain")
+    from(
+        project(":composeApp")
+            .layout
+            .buildDirectory
+            .dir("generated/compose/resourceGenerator/preparedResources/commonMain/composeResources"),
+    )
+    into(layout.buildDirectory.dir("generated/composeAppAssets/composeResources/com.hng14.energyiq"))
 }
 
 android {
@@ -31,6 +43,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    sourceSets.named("main") {
+        assets.srcDir("$buildDir/generated/composeAppAssets")
+    }
 }
 
 kotlin {
@@ -45,4 +61,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.runner)
     androidTestImplementation(libs.espresso.core)
+}
+
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
+    dependsOn(syncComposeAppResources)
 }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,82 +42,86 @@ fun OnboardingScreen(onComplete: OnOnboardingComplete) {
     val state by viewModel.state.collectAsState()
     val energyColors = EnergyTheme.colors
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = energyColors.appBackground,
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-                    .navigationBarsPadding(),
-                content = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.End,
-                        content = {
-                            if (!state.isLastPage) {
-                                TextButton(
-                                    onClick = { viewModel.onSkip(onComplete = onComplete) },
-                                    content = { Text(text = "Skip", color = MaterialTheme.colorScheme.tertiary) },
-                                )
-                            }
-                        },
-                    )
-
-                    AnimatedContent(
-                        targetState = state.currentPage,
-                        transitionSpec = {
-                            when {
-                                targetState > initialState -> slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
-                                else -> slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                        content = { page ->
-                            OnboardingPageContent(page = defaultOnboardingPages[page])
-                        },
-                        label = "onboarding_page",
-                    )
-
-                    PageIndicator(
-                        currentPage = state.currentPage,
-                        totalPages = state.totalPages,
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        onClick = {
-                            when {
-                                state.isLastPage -> viewModel.onGetStarted(onComplete = onComplete)
-                                else -> viewModel.onNextPage()
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        ),
-                        content = {
-                            Text(
-                                text = when {
-                                    state.isLastPage -> "Get Started"; else -> "Next"
+    Scaffold { paddingValues ->
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            color = energyColors.appBackground,
+            content = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .navigationBarsPadding(),
+                    content = {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.End,
+                            content = {
+                                if (!state.isLastPage) {
+                                    TextButton(
+                                        onClick = { viewModel.onSkip(onComplete = onComplete) },
+                                        content = { Text(text = "Skip", color = MaterialTheme.colorScheme.tertiary) },
+                                    )
                                 }
-                            )
-                        },
-                    )
+                            },
+                        )
 
-                    Spacer(modifier = Modifier.height(32.dp))
-                },
-            )
-        },
-    )
+                        AnimatedContent(
+                            targetState = state.currentPage,
+                            transitionSpec = {
+                                when {
+                                    targetState > initialState -> slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+                                    else -> slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            content = { page ->
+                                OnboardingPageContent(page = defaultOnboardingPages[page])
+                            },
+                            label = "onboarding_page",
+                        )
+
+                        PageIndicator(
+                            currentPage = state.currentPage,
+                            totalPages = state.totalPages,
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Button(
+                            onClick = {
+                                when {
+                                    state.isLastPage -> viewModel.onGetStarted(onComplete = onComplete)
+                                    else -> viewModel.onNextPage()
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 32.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                            ),
+                            content = {
+                                Text(
+                                    text = when {
+                                        state.isLastPage -> "Get Started"; else -> "Next"
+                                    }
+                                )
+                            },
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+                    },
+                )
+            },
+        )
+    }
 }
 
 @Composable

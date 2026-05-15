@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.core.theme.dmSansFontFamily
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun LoginContent(
@@ -69,7 +71,7 @@ fun LoginContent(
         Spacer(modifier = Modifier.height(34.dp))
 
         Text(
-            text = "Welcome Back",
+            text = stringResource(Res.string.auth_welcome_back),
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontFamily = dmSans,
                 fontWeight = FontWeight.SemiBold,
@@ -81,7 +83,7 @@ fun LoginContent(
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-            text = "Sign In to your EnergyIQ account. Take\nControl of your Energy.",
+            text = stringResource(Res.string.auth_login_subtitle),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = dmSans,
                 fontWeight = FontWeight.Normal,
@@ -99,8 +101,8 @@ fun LoginContent(
         AuthTextField(
             value = email,
             onValueChange = onEmailChange,
-            label = "Email Address",
-            placeholder = "Enter your email address",
+            label = stringResource(Res.string.auth_email_label),
+            placeholder = stringResource(Res.string.auth_email_placeholder),
             error = emailError,
             showSuccess = emailLooksValid,
             keyboardType = KeyboardType.Email,
@@ -113,13 +115,13 @@ fun LoginContent(
         PasswordTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = "Password",
-            placeholder = "********",
+            label = stringResource(Res.string.auth_password_label),
+            placeholder = stringResource(Res.string.auth_password_placeholder),
             error = passwordError,
             showSuccess = passwordLooksValid,
             showStatusIndicator = false,
             imeAction = ImeAction.Done,
-            onImeAction = onSubmit,
+            onImeAction = {},
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -158,7 +160,7 @@ fun LoginContent(
                 }
 
                 Text(
-                    text = "Remember Password",
+                    text = stringResource(Res.string.auth_remember_password),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Normal,
@@ -175,7 +177,7 @@ fun LoginContent(
                 contentPadding = PaddingValues(0.dp),
             ) {
                 Text(
-                    text = "Forgot Password",
+                    text = stringResource(Res.string.auth_forgot_password),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.SemiBold,
@@ -220,7 +222,7 @@ fun LoginContent(
                 )
             } else {
                 Text(
-                    text = "Sign In",
+                    text = stringResource(Res.string.auth_sign_in),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Normal,
@@ -243,7 +245,7 @@ fun LoginContent(
             shape = RoundedCornerShape(12.dp),
         ) {
             Text(
-                text = "Continue with Google",
+                text = stringResource(Res.string.auth_continue_google),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,
@@ -262,7 +264,7 @@ fun LoginContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Don't have an account?",
+                text = stringResource(Res.string.auth_no_account),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,
@@ -278,7 +280,7 @@ fun LoginContent(
                 contentPadding = PaddingValues(0.dp),
             ) {
                 Text(
-                    text = "Create One",
+                    text = stringResource(Res.string.auth_create_one),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.SemiBold,
@@ -298,7 +300,7 @@ fun LoginContent(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "By signing in, you agree to our ",
+                text = stringResource(Res.string.auth_terms_prefix),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,
@@ -310,7 +312,7 @@ fun LoginContent(
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = "Terms of Service",
+                text = stringResource(Res.string.auth_terms_of_service),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.SemiBold,
@@ -322,7 +324,7 @@ fun LoginContent(
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = " and ",
+                text = stringResource(Res.string.auth_and),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,
@@ -333,7 +335,7 @@ fun LoginContent(
                 color = Color(0xFF6B7280),
             )
             Text(
-                text = "Privacy Policy",
+                text = stringResource(Res.string.auth_privacy_policy),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.SemiBold,

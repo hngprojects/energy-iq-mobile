@@ -47,6 +47,7 @@ fun AuthTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
     onImeAction: () -> Unit = {},
+    readOnly: Boolean = false,
 ) {
     val dmSans = dmSansFontFamily()
     val fieldShape = RoundedCornerShape(10.dp)
@@ -93,6 +94,7 @@ fun AuthTextField(
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             textStyle = textStyle,
+            readOnly = readOnly,
             keyboardOptions = KeyboardOptions(
                 keyboardType = keyboardType,
                 imeAction = imeAction,

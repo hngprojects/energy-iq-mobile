@@ -11,18 +11,54 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-
 class AuthViewModel(
     private val repository: AuthRepository,
     initialMode: AuthMode = AuthMode.LOGIN,
+    initialResetToken: String? = null,
 ) : ViewModel() {
+    private val fullNameRuleMessage = "Enter your first and last name, for example John Doe"
+    private val passwordRuleMessage = "Password must be at least 8 characters and a special key"
 
-    private val _state = MutableStateFlow(AuthState(mode = initialMode))
+    private val _state = MutableStateFlow(
+        AuthState(
+            mode = initialMode,
+            resetToken = initialResetToken,
+        ),
+    )
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
-    private val _emailVerificationState: MutableStateFlow<EmailVerificationState?> = MutableStateFlow(null)
-    val emailVerificationState: StateFlow<EmailVerificationState?> = _emailVerificationState.asStateFlow()
+    init {
+        if (initialMode == AuthMode.CHECK_MAIL && initialResetToken?.isNotBlank() == true) {
+            viewModelScope.launch {
+                val savedEmail = repository.getPendingResetEmail()?.trim().orEmpty()
+                if (savedEmail.isNotBlank()) {
+                    _state.update {
+                        it.copy(
+                            email = savedEmail,
+                            isResetEmailLocked = true,
+                            emailError = null,
+                        )
+                    }
+                }
+            }
+        }
+    }
 
+    fun resetToMode(mode: AuthMode, resetToken: String? = null) {
+        _state.update { current ->
+            if (current.mode == mode && current.fullName.isEmpty() && current.email.isEmpty() &&
+                current.password.isEmpty() && current.confirmPassword.isEmpty() &&
+                current.fullNameError == null && current.emailError == null &&
+                current.passwordError == null && current.confirmPasswordError == null &&
+                current.resetToken == resetToken &&
+                current.generalError == null && !current.isLoading
+            ) {
+                current
+            } else {
+                AuthState(mode = mode, resetToken = resetToken)
+            }
+        }
+    }
 
     fun onToggleMode() {
         _state.update { current ->
@@ -30,19 +66,131 @@ class AuthViewModel(
                 mode = when (current.mode) {
                     AuthMode.LOGIN -> AuthMode.REGISTER
                     AuthMode.REGISTER -> AuthMode.LOGIN
-                    AuthMode.FORGOT_PASSWORD -> AuthMode.FORGOT_PASSWORD
-                    AuthMode.CHECK_MAIL -> AuthMode.CHECK_MAIL
-                    AuthMode.RESET_SUCCESS -> AuthMode.RESET_SUCCESS
+                    AuthMode.FORGOT_PASSWORD -> AuthMode.LOGIN
+                    AuthMode.EMAIL_SENT -> AuthMode.LOGIN
+                    AuthMode.CHECK_MAIL -> AuthMode.LOGIN
+                    AuthMode.RESET_SUCCESS -> AuthMode.LOGIN
                 },
             )
         }
     }
 
-    fun onNameChange(value: String) {
+    fun onShowForgotPassword() {
+        _state.update {
+            AuthState(
+                mode = AuthMode.FORGOT_PASSWORD,
+                email = it.email,
+            )
+        }
+    }
+
+    fun onBackToLogin() {
+        _state.update {
+            AuthState(
+                mode = AuthMode.LOGIN,
+                email = it.email,
+                resetToken = it.resetToken,
+            )
+        }
+    }
+
+    fun onForgotPasswordSubmit() {
+        if (_state.value.isLoading) return
+        val emailError = validateEmail(_state.value.email.trim())
+        if (emailError != null) {
+            _state.update {
+                it.copy(
+                    emailError = emailError,
+                    generalError = null,
+                )
+            }
+            return
+        }
+        val email = _state.value.email.trim()
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    emailError = null,
+                    generalError = null,
+                )
+            }
+            runCatching {
+                repository.forgotPassword(email = email)
+            }.onSuccess { response ->
+                repository.savePendingResetEmail(response.data.email)
+                val resetToken = _state.value.resetToken
+                _state.value = AuthState(
+                    mode = AuthMode.EMAIL_SENT,
+                    email = response.data.email,
+                    resetToken = resetToken,
+                    snackbarMessage = response.message,
+                )
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        generalError = error.message ?: "Something went wrong. Please try again.",
+                    )
+                }
+            }
+        }
+    }
+
+    fun onResendForgotPasswordLink() {
+        if (_state.value.isLoading) return
+        val email = _state.value.email.trim()
+        val emailError = validateEmail(email)
+        if (emailError != null) {
+            _state.update {
+                it.copy(
+                    emailError = emailError,
+                    generalError = null,
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    generalError = null,
+                )
+            }
+            runCatching {
+                repository.forgotPassword(email = email)
+            }.onSuccess { response ->
+                repository.savePendingResetEmail(response.data.email)
+                _state.update {
+                    it.copy(
+                        email = response.data.email,
+                        isLoading = false,
+                        generalError = null,
+                        snackbarMessage = response.message,
+                    )
+                }
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        generalError = error.message ?: "Something went wrong. Please try again.",
+                    )
+                }
+            }
+        }
+    }
+
+    fun onSnackbarShown() {
+        _state.update { it.copy(snackbarMessage = null) }
+    }
+
+    fun onFullNameChange(value: String) {
         _state.update { it.copy(fullName = value, fullNameError = null, generalError = null) }
     }
 
     fun onEmailChange(value: String) {
+        if (_state.value.mode == AuthMode.CHECK_MAIL && _state.value.isResetEmailLocked) return
         _state.update { it.copy(email = value, emailError = null, generalError = null) }
     }
 
@@ -51,11 +199,83 @@ class AuthViewModel(
     }
 
     fun onConfirmPasswordChange(value: String) {
-        _state.update { it.copy(confirmPassword = value, confirmPasswordError = null) }
+        _state.update { it.copy(confirmPassword = value, confirmPasswordError = null, generalError = null) }
+    }
+
+    fun onResetPasswordSubmit() {
+        if (_state.value.isLoading) return
+        val emailError = validateEmail(_state.value.email.trim())
+        val passwordError = when {
+            _state.value.password.isBlank() -> "Password is required"
+            !isPasswordValid(_state.value.password) -> passwordRuleMessage
+            else -> null
+        }
+        val confirmPasswordError = when {
+            _state.value.confirmPassword.isBlank() -> "Confirm password is required"
+            _state.value.confirmPassword != _state.value.password -> "Passwords do not match"
+            else -> null
+        }
+
+        if (emailError != null || passwordError != null || confirmPasswordError != null) {
+            _state.update {
+                it.copy(
+                    emailError = emailError,
+                    passwordError = passwordError,
+                    confirmPasswordError = confirmPasswordError,
+                    generalError = null,
+                )
+            }
+            return
+        }
+
+        val current = _state.value
+        val token = current.resetToken?.trim().orEmpty()
+        if (token.isBlank()) {
+            _state.update {
+                it.copy(generalError = "Reset token is missing. Open the reset link from your email and try again.")
+            }
+            return
+        }
+
+        val email = current.email.trim()
+        val password = current.password
+
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    emailError = null,
+                    passwordError = null,
+                    confirmPasswordError = null,
+                    generalError = null,
+                )
+            }
+
+            runCatching {
+                repository.resetPassword(
+                    email = email,
+                    password = password,
+                    token = token,
+                )
+            }.onSuccess {
+                repository.clearPendingResetEmail()
+                _state.value = AuthState(
+                    mode = AuthMode.RESET_SUCCESS,
+                    email = email,
+                )
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        generalError = error.message ?: "Something went wrong. Please try again.",
+                    )
+                }
+            }
+        }
     }
 
     fun onSubmit(onSuccess: OnAuthSuccess) {
-
+        if (_state.value.isLoading) return
         if (!validateInputs()) return
         val current = _state.value
         val splitName = current.fullName.toBackendNameParts()
@@ -74,11 +294,11 @@ class AuthViewModel(
                         email = current.email.trim(),
                         password = current.password,
                     )
-                    AuthMode.FORGOT_PASSWORD -> { /* TODO: implement forgot password */ }
-                    AuthMode.CHECK_MAIL -> { /* TODO: implement check mail */ }
-                    AuthMode.RESET_SUCCESS -> { /* TODO: implement reset success */ }
+
+                    AuthMode.FORGOT_PASSWORD, AuthMode.EMAIL_SENT, AuthMode.CHECK_MAIL, AuthMode.RESET_SUCCESS -> Unit
                 }
             }.onSuccess {
+                _state.value = AuthState(mode = current.mode)
                 onSuccess(current.mode)
             }.onFailure { error ->
                 _state.update {
@@ -88,124 +308,89 @@ class AuthViewModel(
                 }
             }
             _state.update {
-                it.copy(isLoading = false, )
+                it.copy(isLoading = false)
             }
         }
     }
 
     private fun validateInputs(): Boolean {
         val s = _state.value
-        val nameError =
-            if (s.mode == AuthMode.REGISTER && s.fullName.isBlank()) "Name is required" else null
-        val emailError = when {
-            s.email.isBlank() -> "Email is required"
-            !s.email.contains('@') -> "Enter a valid email address"
-            else -> null
+        val fullNameError = validateFullName(s)
+        val emailError = validateEmail(s.email)
+        val passwordError = when (s.mode) {
+            AuthMode.LOGIN, AuthMode.REGISTER -> when {
+                s.password.isBlank() -> "Password is required"
+                !isPasswordValid(s.password) -> passwordRuleMessage
+                else -> null
+            }
+
+            AuthMode.FORGOT_PASSWORD, AuthMode.EMAIL_SENT, AuthMode.CHECK_MAIL, AuthMode.RESET_SUCCESS -> null
         }
-        val passwordError = when {
-            s.password.isBlank() -> "Password is required"
-            s.password.length < 8 -> "Password must be at least 8 characters"
-            else -> null
-        }
-//        val confirmPasswordError =
-//            if (s.mode == AuthMode.REGISTER && s.confirmPassword != s.password) {
-//                "Passwords do not match"
-//            } else null
 
         _state.update {
             it.copy(
-                fullNameError = nameError,
+                fullNameError = fullNameError,
                 emailError = emailError,
                 passwordError = passwordError,
-               // confirmPasswordError = confirmPasswordError,
             )
         }
-        return nameError == null && emailError == null && passwordError == null //&& confirmPasswordError == null
+        return fullNameError == null && emailError == null && passwordError == null
     }
 
-    fun onFullNameChange(value: String) {
-        _state.update { it.copy(fullName = value, fullNameError = null, generalError = null) }
-    }
-
-    fun resetToMode(mode: AuthMode) {
-        _state.update { AuthState(mode = mode) }
-    }
-
-    fun onShowForgotPassword() {
-        _state.update { it.copy(mode = AuthMode.FORGOT_PASSWORD) }
-    }
-
-    fun onForgotPasswordSubmit() {
-        // TODO: call backend forgot password API
-        _state.update { it.copy(mode = AuthMode.CHECK_MAIL) }
-    }
-
-    fun onResetPasswordSubmit() {
-        // TODO: call backend reset password API
-        _state.update { it.copy(mode = AuthMode.RESET_SUCCESS) }
-    }
-
-    fun onBackToLogin() {
-        _state.update { AuthState(mode = AuthMode.LOGIN) }
-    }
-
-    fun onStartEmailVerification() {
-        _emailVerificationState.update { EmailVerificationState.Typing }
-    }
-
-    fun onOtpChange(value: String) {
-        _state.update { it.copy(otpCode = value, otpError = null) }
-        // clear error state when user starts retyping
-        if (_emailVerificationState.value == EmailVerificationState.Error) {
-            _emailVerificationState.update { EmailVerificationState.Typing }
+    private fun validateEmail(email: String): String? {
+        val normalizedEmail = email.trim()
+        return when {
+            normalizedEmail.isBlank() -> "Email is required"
+            !EMAIL_REGEX.matches(normalizedEmail) -> "Enter a valid email address"
+            else -> null
         }
     }
 
-    fun onVerifyOtp(onSuccess: () -> Unit) {
-        val current = _state.value
-        viewModelScope.launch {
-            _emailVerificationState.update { EmailVerificationState.Verifying }
-            runCatching {
-                repository.verifyEmail(
-                    email = current.email.trim(),
-                    otp = current.otpCode,
-                )
-            }.onSuccess {
-                _emailVerificationState.update { EmailVerificationState.Success }
-            }.onFailure { error ->
-                _emailVerificationState.update { EmailVerificationState.Error }
-                _state.update { it.copy(otpError = error.message ?: "Invalid code") }
-            }
+    private companion object {
+        val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+    }
+
+    private fun validateFullName(state: AuthState): String? {
+        if (state.mode != AuthMode.REGISTER) return null
+
+        val normalized = state.fullName.normalizedNameParts()
+        return when {
+            normalized.isEmpty() -> "Full name is required"
+            normalized.size < 2 -> fullNameRuleMessage
+            !startsWithLetter(normalized.first()) -> "First name must start with a letter"
+            !startsWithLetter(normalized.drop(1).joinToString(" ")) -> "Last name must start with a letter"
+            normalized.first().length < 2 -> "First name is too short"
+            normalized.drop(1).joinToString(" ").length < 2 -> "Last name is too short"
+            else -> null
         }
     }
 
-    fun onBackToSignUp() {
-        _emailVerificationState.update { null }
-        _state.update { AuthState(mode = AuthMode.REGISTER) }
+    private fun isPasswordValid(password: String): Boolean {
+        val hasMinLength = password.length >= 8
+        val hasSpecialCharacter = password.any { !it.isLetterOrDigit() }
+        return hasMinLength && hasSpecialCharacter
     }
 
-}
-
-private data class BackendNameParts(
-    val firstName: String,
-    val lastName: String,
-)
-
-private fun String.normalizedNameParts(): List<String> {
-    return trim().split(Regex("\\s+")).filter { it.isNotBlank() }
-}
-
-private fun startsWithLetter(value: String): Boolean {
-    return value.firstOrNull()?.isLetter() == true
-}
-
-private fun String.toBackendNameParts(): BackendNameParts {
-    val parts = normalizedNameParts()
-    val firstName = parts.firstOrNull().orEmpty()
-    val lastName = parts.drop(1).joinToString(" ")
-    return BackendNameParts(
-        firstName = firstName,
-        lastName = lastName,
+    private data class BackendNameParts(
+        val firstName: String,
+        val lastName: String,
     )
-}
 
+    private fun String.normalizedNameParts(): List<String> {
+        return trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+    }
+
+    private fun startsWithLetter(value: String): Boolean {
+        return value.firstOrNull()?.isLetter() == true
+    }
+
+    private fun String.toBackendNameParts(): BackendNameParts {
+        val parts = normalizedNameParts()
+        val firstName = parts.firstOrNull().orEmpty()
+        val lastName = parts.drop(1).joinToString(" ")
+        return BackendNameParts(
+            firstName = firstName,
+            lastName = lastName,
+        )
+    }
+}

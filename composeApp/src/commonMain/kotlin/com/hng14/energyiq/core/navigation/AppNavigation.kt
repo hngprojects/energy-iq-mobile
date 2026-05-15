@@ -1,6 +1,7 @@
 package com.hng14.energyiq.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.entryProvider
@@ -15,6 +16,10 @@ import com.hng14.energyiq.features.onboarding.presentation.OnboardingScreen
 @Composable
 fun AppNavigation(startDestination: AppDestination) {
     val backStack = remember { mutableStateListOf(startDestination) }
+    LaunchedEffect(startDestination) {
+        backStack.clear()
+        backStack.add(startDestination)
+    }
 
     NavDisplay(
         backStack = backStack,
@@ -31,6 +36,7 @@ fun AppNavigation(startDestination: AppDestination) {
             entry<AppDestination.Auth> {
                 AuthScreen(
                     initialMode = it.initialMode,
+                    initialResetToken = it.initialResetToken,
                     onAuthSuccess = { mode ->
                     //fpr logcat
                        // println("AUTH_DEBUG: onAuthSuccess called with mode: $mode")
