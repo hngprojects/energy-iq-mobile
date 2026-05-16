@@ -21,6 +21,7 @@ val DarkSurfaceVariant = EnergyPalette.CardSurfaceDark
 val DarkOnSurfaceVariant = EnergyPalette.Grey
 val DarkOutline = EnergyPalette.Grey
 
+
 val LightColorScheme = lightColorScheme(
     primary = EnergyPalette.Amber,
     onPrimary = EnergyPalette.DarkBackground,

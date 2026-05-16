@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hng14.energyiq.features.auth.AuthMode
 import com.hng14.energyiq.features.auth.OnAuthSuccess
 import com.hng14.energyiq.features.auth.data.AuthRepository
+import com.hng14.energyiq.features.auth.presentation.emailVerification.EmailVerificationState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,9 +49,11 @@ class AuthViewModel(
         _state.update { current ->
             if (current.mode == mode && current.fullName.isEmpty() && current.email.isEmpty() &&
                 current.password.isEmpty() && current.confirmPassword.isEmpty() &&
+                current.otpCode.isEmpty() &&
                 current.fullNameError == null && current.emailError == null &&
                 current.passwordError == null && current.confirmPasswordError == null &&
                 current.resetToken == resetToken &&
+                current.emailVerificationState == EmailVerificationState.Typing &&
                 current.generalError == null && !current.isLoading
             ) {
                 current
@@ -202,6 +205,80 @@ class AuthViewModel(
         _state.update { it.copy(confirmPassword = value, confirmPasswordError = null, generalError = null) }
     }
 
+    fun onStartEmailVerification(fullName: String, email: String) {
+        val normalizedEmail = email.trim()
+        _state.update { current ->
+            if (current.fullName == fullName &&
+                current.email == normalizedEmail &&
+                current.otpCode.isEmpty() &&
+                current.emailVerificationState == EmailVerificationState.Typing
+            ) {
+                current
+            } else {
+                current.copy(
+                    fullName = fullName,
+                    email = normalizedEmail,
+                    otpCode = "",
+                    emailVerificationState = EmailVerificationState.Typing,
+                    generalError = null,
+                    isLoading = false,
+                )
+            }
+        }
+    }
+
+    fun onOtpChange(value: String) {
+        val filtered = value.filter(Char::isDigit).take(6)
+        _state.update {
+            it.copy(
+                otpCode = filtered,
+                emailVerificationState = if (it.emailVerificationState == EmailVerificationState.Error) {
+                    EmailVerificationState.Typing
+                } else {
+                    it.emailVerificationState
+                },
+                generalError = null,
+            )
+        }
+    }
+
+    fun onVerifyEmailSubmit() {
+        val current = _state.value
+        if (current.isLoading || current.otpCode.length != 6) return
+
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    generalError = null,
+                    emailVerificationState = EmailVerificationState.Verifying,
+                )
+            }
+
+            runCatching {
+                repository.verifyEmail(
+                    email = current.email.trim(),
+                    otp = current.otpCode,
+                )
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        emailVerificationState = EmailVerificationState.Success,
+                    )
+                }
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        generalError = error.message ?: "Something went wrong. Please try again.",
+                        emailVerificationState = EmailVerificationState.Error,
+                    )
+                }
+            }
+        }
+    }
+
     fun onResetPasswordSubmit() {
         if (_state.value.isLoading) return
         val emailError = validateEmail(_state.value.email.trim())
@@ -299,7 +376,7 @@ class AuthViewModel(
                 }
             }.onSuccess {
                 _state.value = AuthState(mode = current.mode)
-                onSuccess(current.mode)
+                onSuccess(current.mode, current.fullName, current.email.trim())
             }.onFailure { error ->
                 _state.update {
                     it.copy(

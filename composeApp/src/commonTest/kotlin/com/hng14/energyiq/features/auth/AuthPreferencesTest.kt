@@ -19,14 +19,14 @@ class AuthPreferencesTest {
 
     @Test
     fun saveSessionStoresTokenAndUserId() = runTest {
-        prefs.saveSession(token = "tok123", userId = "u1")
+        prefs.saveSession(token = "tok123", refreshToken = "ref123", userId = "u1")
         assertEquals("tok123", prefs.getToken())
         assertEquals("u1", prefs.getUserId())
     }
 
     @Test
     fun clearSessionRemovesTokenAndUserId() = runTest {
-        prefs.saveSession(token = "tok123", userId = "u1")
+        prefs.saveSession(token = "tok123", refreshToken = "ref123", userId = "u1")
         prefs.clearSession()
         assertNull(prefs.getToken())
         assertNull(prefs.getUserId())
@@ -34,8 +34,8 @@ class AuthPreferencesTest {
 
     @Test
     fun saveSessionOverwritesPreviousSession() = runTest {
-        prefs.saveSession(token = "old", userId = "old-user")
-        prefs.saveSession(token = "new", userId = "new-user")
+        prefs.saveSession(token = "old", refreshToken = "old-refresh", userId = "old-user")
+        prefs.saveSession(token = "new", refreshToken = "new-refresh", userId = "new-user")
         assertEquals("new", prefs.getToken())
         assertEquals("new-user", prefs.getUserId())
     }
