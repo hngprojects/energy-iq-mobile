@@ -37,14 +37,14 @@ fun AppNavigation(startDestination: AppDestination) {
                 AuthScreen(
                     initialMode = it.initialMode,
                     initialResetToken = it.initialResetToken,
-                    onAuthSuccess = { mode ->
-                    //fpr logcat
-                       // println("AUTH_DEBUG: onAuthSuccess called with mode: $mode")
+                    onAuthSuccess = { mode, fullName, email ->
                         backStack.clear()
                         backStack.add(
                             when (mode) {
-                                //AuthMode.REGISTER -> AppDestination.InverterSetup
-                                AuthMode.REGISTER -> AppDestination.EmailVerification
+                                AuthMode.REGISTER -> AppDestination.EmailVerification(
+                                    fullName = fullName,
+                                    email = email,
+                                )
                                 else -> AppDestination.Home
                             },
                         )
@@ -57,10 +57,6 @@ fun AppNavigation(startDestination: AppDestination) {
                         backStack.clear()
                         backStack.add(AppDestination.Home)
                     },
-                    onSignIn = {
-                        backStack.clear()
-                        backStack.add(AppDestination.Auth(AuthMode.LOGIN))
-                    },
                 )
             }
             entry<AppDestination.Home> {
@@ -70,6 +66,8 @@ fun AppNavigation(startDestination: AppDestination) {
 
             entry<AppDestination.EmailVerification> {
                 EmailVerificationScreen(
+                    fullName = it.fullName,
+                    email = it.email,
                     onContinue = {
                         backStack.clear()
                         backStack.add(AppDestination.InverterSetup)
@@ -80,8 +78,6 @@ fun AppNavigation(startDestination: AppDestination) {
                     },
                 )
             }
-
-
         },
     )
 }

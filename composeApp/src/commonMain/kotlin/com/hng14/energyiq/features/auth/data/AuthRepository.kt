@@ -9,6 +9,7 @@ import com.hng14.energyiq.features.auth.data.remote.dto.ForgotPasswordResponse
 import com.hng14.energyiq.features.auth.data.remote.dto.LoginRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.RegisterRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.ResetPasswordRequest
+import com.hng14.energyiq.features.auth.data.remote.dto.VerifyEmailRequest
 import com.hng14.energyiq.features.auth.domain.model.User
 
 class AuthRepository(
@@ -24,6 +25,22 @@ class AuthRepository(
         val loginUser = response.data.user
         preferences.saveSession(token = accessToken, refreshToken = refreshToken, userId = loginUser.id)
         val remoteUser = api.me(token = accessToken).data
+        val entity = UserEntity(
+            id = remoteUser.id,
+            email = remoteUser.email,
+            name = "${remoteUser.firstName} ${remoteUser.lastName}",
+        )
+        userDao.upsert(user = entity)
+        return entity.toDomain()
+    }
+
+    suspend fun signInWithAccessToken(accessToken: String): User {
+        val remoteUser = api.me(token = accessToken).data
+        preferences.saveSession(
+            token = accessToken,
+            refreshToken = null,
+            userId = remoteUser.id,
+        )
         val entity = UserEntity(
             id = remoteUser.id,
             email = remoteUser.email,
@@ -72,6 +89,30 @@ class AuthRepository(
                 token = token,
             ),
         )
+    }
+
+    suspend fun verifyEmail(email: String, otp: String): User {
+        val response = api.verifyEmail(
+            request = VerifyEmailRequest(
+                email = email,
+                otp = otp,
+            ),
+        )
+        val accessToken = response.data.accessToken
+        val refreshToken = response.data.refreshToken
+        val verifiedUser = response.data.user
+        preferences.saveSession(
+            token = accessToken,
+            refreshToken = refreshToken,
+            userId = verifiedUser.id,
+        )
+        val entity = UserEntity(
+            id = verifiedUser.id,
+            email = verifiedUser.email,
+            name = "${verifiedUser.firstName} ${verifiedUser.lastName}",
+        )
+        userDao.upsert(user = entity)
+        return entity.toDomain()
     }
 
     suspend fun savePendingResetEmail(email: String) {

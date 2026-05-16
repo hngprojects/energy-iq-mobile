@@ -1,40 +1,63 @@
 package com.hng14.energyiq.features.auth.presentation.emailVerification
 
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hng14.energyiq.features.auth.presentation.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
-
 @Composable
 fun EmailVerificationScreen(
+    fullName: String,
+    email: String,
     onContinue: () -> Unit,
     onBackToSignUp: () -> Unit,
 ) {
     val viewModel = koinViewModel<AuthViewModel>()
-    val authState by viewModel.state.collectAsStateWithLifecycle()
-    val verificationState by viewModel.emailVerificationState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsState()
 
-    // Set initial state to Typing when screen loads
-    LaunchedEffect(Unit) {
-        viewModel.onStartEmailVerification()
+    LaunchedEffect(fullName, email) {
+        viewModel.onStartEmailVerification(
+            fullName = fullName,
+            email = email,
+        )
     }
 
-    val currentState = verificationState ?: return
+    when (state.emailVerificationState) {
+        EmailVerificationState.Typing -> EmailVerificationContent(
+            firstName = fullName.substringBefore(" ").ifBlank { fullName },
+            otpValue = state.otpCode,
+            onOtpChange = viewModel::onOtpChange,
+            isError = false,
+            isVerifying = false,
+            onVerifyClick = viewModel::onVerifyEmailSubmit,
+            onBackToSignUp = onBackToSignUp,
+        )
 
-    EmailVerificationRoute(
-        state = currentState,
-        firstName = authState.fullName.substringBefore(" ").ifBlank { authState.fullName },
-        otpValue = authState.otpCode,
-        onOtpChange = viewModel::onOtpChange,
-        onVerifyClick = { viewModel.onVerifyOtp(onSuccess = onContinue) },
-        onBackToSignUp = {
-            viewModel.onBackToSignUp()
-            onBackToSignUp()
-        },
-        onContinue = onContinue,
-    )
+        EmailVerificationState.Verifying -> EmailVerificationContent(
+            firstName = fullName.substringBefore(" ").ifBlank { fullName },
+            otpValue = state.otpCode,
+            onOtpChange = viewModel::onOtpChange,
+            isError = false,
+            isVerifying = true,
+            onVerifyClick = {},
+            onBackToSignUp = onBackToSignUp,
+        )
+
+        EmailVerificationState.Error -> EmailVerificationContent(
+            firstName = fullName.substringBefore(" ").ifBlank { fullName },
+            otpValue = state.otpCode,
+            onOtpChange = viewModel::onOtpChange,
+            isError = true,
+            isVerifying = false,
+            onVerifyClick = viewModel::onVerifyEmailSubmit,
+            onBackToSignUp = onBackToSignUp,
+        )
+
+        EmailVerificationState.Success -> EmailVerificationSuccessContent(
+            firstName = fullName.substringBefore(" ").ifBlank { fullName },
+            onContinue = onContinue,
+        )
+    }
 }

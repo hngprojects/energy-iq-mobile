@@ -20,6 +20,10 @@ sealed class AppDestination {
 
     @Serializable
     data object Home : AppDestination()
+
     @Serializable
-    data object EmailVerification : AppDestination()
+    data class EmailVerification(
+        val fullName: String,
+        val email: String,
+    ) : AppDestination()
 }
