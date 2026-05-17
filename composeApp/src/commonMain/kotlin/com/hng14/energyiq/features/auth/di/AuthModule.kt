@@ -4,6 +4,7 @@ import com.hng14.energyiq.features.auth.AuthMode
 import com.hng14.energyiq.features.auth.data.AuthRepository
 import com.hng14.energyiq.features.auth.data.remote.AuthApi
 import com.hng14.energyiq.features.auth.presentation.AuthViewModel
+import com.hng14.energyiq.features.profile.presentation.ProfileViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -19,4 +20,5 @@ fun authModule(): Module = module {
             initialResetToken = params.getOrNull<String>(),
         )
     }
+    viewModel { ProfileViewModel(get()) }
 }

@@ -1,6 +1,7 @@
 package com.hng14.energyiq.features.auth.presentation
 
 import com.hng14.energyiq.features.auth.AuthMode
+import com.hng14.energyiq.features.auth.presentation.emailVerification.EmailVerificationState
 
 data class AuthState(
     val mode: AuthMode = AuthMode.LOGIN,
@@ -9,6 +10,8 @@ data class AuthState(
     val isResetEmailLocked: Boolean = false,
     val password: String = "",
     val confirmPassword: String = "",
+    val otpCode: String = "",
+    val emailVerificationState: EmailVerificationState = EmailVerificationState.Typing,
     val resetToken: String? = null,
     val fullNameError: String? = null,
     val emailError: String? = null,

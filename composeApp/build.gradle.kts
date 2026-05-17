@@ -8,7 +8,7 @@ val localProperties = Properties().apply {
     }
 }
 
-val baseUrl = localProperties.getProperty("BASE_URL") ?: "http://10.0.2.2:8080"
+val baseUrl = localProperties.getProperty("BASE_URL") ?: "https://api.staging.energy-iq.hng14.com/api/v1/"
 
 val generateLocalConfig by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/source/localConfig/commonMain/kotlin")
@@ -130,6 +130,7 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation(libs.activity.compose)
             implementation(libs.datastore.preferences)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)

@@ -33,10 +33,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +64,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.CompositionLocalProvider
+import org.koin.compose.viewmodel.koinViewModel
 
 private enum class InverterSetupStep {
     SELECT,
@@ -116,8 +117,9 @@ private data class InverterOption(
     val connection: ConnectionContent,
 )
 
-private val inverterOptions = listOf(
-    InverterOption(
+private fun inverterOptionFor(title: String): InverterOption? {
+    return when (title.lowercase()) {
+        "victron" -> InverterOption(
         title = "Victron",
         subtitle = "Vrm OAuth",
         connection = ConnectionContent(
@@ -149,8 +151,8 @@ private val inverterOptions = listOf(
                 "Find your API token in your Profile -> API Access Tokens -> Generate token",
             ),
         ),
-    ),
-    InverterOption(
+        )
+        "luminous" -> InverterOption(
         title = "Luminous",
         subtitle = "No API",
         connection = ConnectionContent(
@@ -189,8 +191,8 @@ private val inverterOptions = listOf(
                 "Solar Array Size: enter values like 1.8kWp or 4 x 450W",
             ),
         ),
-    ),
-    InverterOption(
+        )
+        "growatt" -> InverterOption(
         title = "Growatt",
         subtitle = "API key",
         connection = ConnectionContent(
@@ -224,8 +226,8 @@ private val inverterOptions = listOf(
                 "Plant ID: enter the numeric plant identifier, e.g. 123456",
             ),
         ),
-    ),
-    InverterOption(
+        )
+        "su-kam", "sukam", "su kam" -> InverterOption(
         title = "Su-kam",
         subtitle = "No API",
         connection = ConnectionContent(
@@ -264,8 +266,8 @@ private val inverterOptions = listOf(
                 "Solar Array Size: enter values like 1.8kWp or 4 x 450W",
             ),
         ),
-    ),
-    InverterOption(
+        )
+        "sunsynk" -> InverterOption(
         title = "Sunsynk",
         subtitle = "API key",
         connection = ConnectionContent(
@@ -297,13 +299,47 @@ private val inverterOptions = listOf(
                 "SolarMan Email: use the email linked to your SolarMan account",
                 "SolarMan Password: use your SolarMan account password",
             ),
-        ),
-    ),
-    InverterOption(
-        title = "Others",
-        subtitle = "We'll guide",
+            ),
+        )
+        "deye" -> InverterOption(
+        title = "Deye",
+        subtitle = "API key",
         connection = ConnectionContent(
-            title = "Other Inverter\nConnection",
+            title = "Deye Inverter\nConnection",
+            subtitle = "Enter specific details of your inverter type",
+            fields = listOf(
+                ConnectionField(
+                    id = "solarman_app_id",
+                    label = "Enter SolarMan App ID",
+                    placeholder = "e.g 123456",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+                ConnectionField(
+                    id = "solarman_email",
+                    label = "Enter SolarMan Email",
+                    placeholder = "you@email.com",
+                    type = ConnectionFieldType.EMAIL,
+                ),
+                ConnectionField(
+                    id = "solarman_password",
+                    label = "Enter SolarMan Password",
+                    placeholder = "************",
+                    type = ConnectionFieldType.PASSWORD,
+                ),
+            ),
+            primaryButtonText = "Save Inverter",
+            helperLines = listOf(
+                "SolarMan App ID: enter the numeric app or plant identifier, e.g. 123456",
+                "SolarMan Email: use the email linked to your SolarMan account",
+                "SolarMan Password: use your SolarMan account password",
+            ),
+        ),
+    )
+        else -> InverterOption(
+            title = title.lowercase().replaceFirstChar { it.titlecase() },
+            subtitle = "We'll guide",
+            connection = ConnectionContent(
+            title = "${title.lowercase().replaceFirstChar { it.titlecase() }} Inverter\nConnection",
             subtitle = "Enter number specific to your inverter type",
             fields = listOf(
                 ConnectionField(
@@ -337,26 +373,35 @@ private val inverterOptions = listOf(
                 "Battery Bank Size: enter values like 2 x 200Ah or 4.8kWh",
                 "Solar Array Size: enter values like 1.8kWp or 4 x 450W",
             ),
-        ),
-    ),
-)
+            ),
+        )
+    }
+}
 
 @Composable
 fun InverterSetupScreen(
     onComplete: () -> Unit,
-    onSignIn: () -> Unit,
 ) {
+    val viewModel = koinViewModel<InverterSetupViewModel>()
+    val setupState by viewModel.state.collectAsState()
     var step by remember { mutableStateOf(InverterSetupStep.SELECT) }
     var selectedOption by remember { mutableStateOf<InverterOption?>(null) }
     var connectionValues by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var victronTestState by remember { mutableStateOf<VictronTestState>(VictronTestState.Idle) }
     var victronTestJob by remember { mutableStateOf<Job?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val inverterOptions = remember(setupState.supportedBrands) {
+        setupState.supportedBrands.mapNotNull(::inverterOptionFor).distinctBy { it.title }
+    }
 
     when (step) {
         InverterSetupStep.SELECT -> InverterSelectionContent(
+            supportedBrands = inverterOptions,
+            isLoading = setupState.isLoading,
+            errorMessage = setupState.errorMessage,
             selectedOption = selectedOption,
             onSelectOption = { selectedOption = it },
+            onRetry = viewModel::loadSupportedBrands,
             onContinue = {
                 selectedOption?.let { option ->
                     connectionValues = option.connection.fields.associate { field -> field.id to "" }
@@ -399,16 +444,18 @@ fun InverterSetupScreen(
             }
         }
 
-        InverterSetupStep.SUCCESS -> InverterSavedSuccessContent(
-            onSignIn = onSignIn,
-        )
+        InverterSetupStep.SUCCESS -> InverterSavedSuccessContent(onContinue = onComplete)
     }
 }
 
 @Composable
 private fun InverterSelectionContent(
+    supportedBrands: List<InverterOption>,
+    isLoading: Boolean,
+    errorMessage: String?,
     selectedOption: InverterOption?,
     onSelectOption: (InverterOption) -> Unit,
+    onRetry: () -> Unit,
     onContinue: () -> Unit,
 ) {
     SetupPageLayout {
@@ -452,55 +499,85 @@ private fun InverterSelectionContent(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
-                    verticalArrangement = Arrangement.spacedBy(18.dp),
-                    maxItemsInEachRow = adaptiveSpec.inverterGridColumns,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    inverterOptions.forEach { option ->
-                        val isSelected = selectedOption == option
-                        Surface(
-                            modifier = Modifier
-                                .width(adaptiveSpec.inverterCardWidth)
-                                .clickable { onSelectOption(option) },
-                            shape = RoundedCornerShape(14.dp),
-                            color = Color.White,
-                            border = BorderStroke(
-                                width = if (isSelected) 1.5.dp else 1.dp,
-                                color = if (isSelected) Color(0xFF6FD08C) else Color(0xFFE5E7EB),
-                            ),
-                        ) {
-                            Column(
+                when {
+                    isLoading -> {
+                        CircularProgressIndicator(color = Color(0xFF141D2F))
+                    }
+
+                    errorMessage != null -> {
+                        Text(
+                            text = errorMessage,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFFD92D20),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedButton(onClick = onRetry) {
+                            Text(text = "Retry")
+                        }
+                    }
+
+                    supportedBrands.isEmpty() -> {
+                        Text(
+                            text = "No supported inverter brands are available right now.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF7B8190),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+
+                    else -> FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
+                        verticalArrangement = Arrangement.spacedBy(18.dp),
+                        maxItemsInEachRow = adaptiveSpec.inverterGridColumns,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        supportedBrands.forEach { option ->
+                            val isSelected = selectedOption == option
+                            Surface(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 18.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
+                                    .width(adaptiveSpec.inverterCardWidth)
+                                    .clickable { onSelectOption(option) },
+                                shape = RoundedCornerShape(14.dp),
+                                color = Color.White,
+                                border = BorderStroke(
+                                    width = if (isSelected) 1.5.dp else 1.dp,
+                                    color = if (isSelected) Color(0xFF6FD08C) else Color(0xFFE5E7EB),
+                                ),
                             ) {
-                                InverterCardIcon(
-                                    modifier = Modifier.size(width = 36.dp, height = 28.dp),
-                                    contentDescription = "${option.title} icon",
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Text(
-                                    text = option.title,
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = if (adaptiveSpec.tier == com.hng14.energyiq.core.ui.WidthTier.COMPACT) 16.sp else 17.sp,
-                                    ),
-                                    color = Color(0xFF374151),
-                                    textAlign = TextAlign.Center,
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = option.subtitle,
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        fontSize = 12.sp,
-                                    ),
-                                    color = Color(0xFF9CA3AF),
-                                    textAlign = TextAlign.Center,
-                                )
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 18.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                ) {
+                                    InverterCardIcon(
+                                        modifier = Modifier.size(width = 36.dp, height = 28.dp),
+                                        contentDescription = "${option.title} icon",
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    Text(
+                                        text = option.title,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = if (adaptiveSpec.tier == com.hng14.energyiq.core.ui.WidthTier.COMPACT) 16.sp else 17.sp,
+                                        ),
+                                        color = Color(0xFF374151),
+                                        textAlign = TextAlign.Center,
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        text = option.subtitle,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontSize = 12.sp,
+                                        ),
+                                        color = Color(0xFF9CA3AF),
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
                             }
                         }
                     }
@@ -764,7 +841,7 @@ private fun InverterConnectionContent(
 
 @Composable
 private fun InverterSavedSuccessContent(
-    onSignIn: () -> Unit,
+    onContinue: () -> Unit,
 ) {
     SetupPageLayout {
         val adaptiveSpec = LocalAdaptiveScreenSpec.current
@@ -815,7 +892,7 @@ private fun InverterSavedSuccessContent(
         }
 
         Button(
-            onClick = onSignIn,
+            onClick = onContinue,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(adaptiveSpec.buttonHeight),
@@ -825,7 +902,7 @@ private fun InverterSavedSuccessContent(
                 contentColor = Color.White,
             ),
         ) {
-            Text(text = "Sign In", fontSize = 16.sp)
+            Text(text = "Continue", fontSize = 16.sp)
         }
     }
 }
@@ -853,46 +930,40 @@ private fun isConnectionFieldValid(
 private fun SetupPageLayout(
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Scaffold { paddingValues ->
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-        ) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFFAFAF8),
+    ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val adaptiveSpec = adaptiveScreenSpec(maxWidth)
 
             CompositionLocalProvider(LocalAdaptiveScreenSpec provides adaptiveSpec) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFFFAFAF8),
-                ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        AuthWaveDecoration(
-                            modifier = Modifier
-                                .align(Alignment.TopStart)
-                                .offset(x = (-10).dp, y = (-10).dp)
-                                .size(width = 170.dp, height = 182.dp),
-                        )
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight()
-                                .statusBarsPadding()
-                                .navigationBarsPadding()
-                                .imePadding()
-                                .verticalScroll(rememberScrollState())
-                                .padding(horizontal = 20.dp, vertical = 16.dp)
-                                .widthIn(max = adaptiveSpec.contentMaxWidth)
-                                .align(Alignment.TopCenter),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            content = {
-                                Spacer(modifier = Modifier.height(18.dp))
-                                EnergyIqBrandMark()
-                                Spacer(modifier = Modifier.height(16.dp))
-                                content()
-                            },
-                        )
-                    }
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AuthWaveDecoration(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .offset(x = (-10).dp, y = (-10).dp)
+                            .size(width = 170.dp, height = 182.dp),
+                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                            .statusBarsPadding()
+                            .navigationBarsPadding()
+                            .imePadding()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 20.dp, vertical = 16.dp)
+                            .widthIn(max = adaptiveSpec.contentMaxWidth)
+                            .align(Alignment.TopCenter),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        content = {
+                            Spacer(modifier = Modifier.height(18.dp))
+                            EnergyIqBrandMark(modifier = Modifier.fillMaxWidth())
+                            Spacer(modifier = Modifier.height(16.dp))
+                            content()
+                        },
+                    )
                 }
             }
         }

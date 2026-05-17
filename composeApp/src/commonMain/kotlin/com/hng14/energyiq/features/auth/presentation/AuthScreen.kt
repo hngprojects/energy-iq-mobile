@@ -1,13 +1,12 @@
 package com.hng14.energyiq.features.auth.presentation
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -15,12 +14,15 @@ import androidx.compose.material3.SnackbarHostState
 import com.hng14.energyiq.core.network.NetworkConfig
 import com.hng14.energyiq.features.auth.AuthMode
 import com.hng14.energyiq.features.auth.OnAuthSuccess
+import com.hng14.energyiq.features.auth.data.AuthRepository
 import com.hng14.energyiq.features.auth.presentation.components.CheckMailContent
 import com.hng14.energyiq.features.auth.presentation.components.EmailSentContent
 import com.hng14.energyiq.features.auth.presentation.components.ForgotPasswordContent
 import com.hng14.energyiq.features.auth.presentation.components.LoginContent
 import com.hng14.energyiq.features.auth.presentation.components.RegisterContent
 import com.hng14.energyiq.features.auth.presentation.components.ResetSuccessContent
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -36,6 +38,8 @@ fun AuthScreen(
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val uriHandler = LocalUriHandler.current
+    val scope = rememberCoroutineScope()
+    val repository = koinInject<AuthRepository>()
     val googleAuthUrl = remember { "${NetworkConfig.BASE_URL}/auth/google" }
 
     LaunchedEffect(initialMode, initialResetToken) {
@@ -48,15 +52,18 @@ fun AuthScreen(
         viewModel.onSnackbarShown()
     }
 
-    val onGoogleLoginClick = remember(uriHandler, googleAuthUrl) {
-        {
-            println("Google auth: opening $googleAuthUrl")
-            runCatching {
-                uriHandler.openUri(googleAuthUrl)
-            }.onSuccess {
-                println("Google auth: browser open triggered")
-            }.onFailure { error ->
-                println("Google auth: failed to open $googleAuthUrl -> ${error.message}")
+    val onGoogleAuthClick = remember(uriHandler, googleAuthUrl, repository, scope) {
+        { mode: AuthMode ->
+            scope.launch {
+                repository.savePendingGoogleAuthMode(mode)
+                println("Google auth: opening $googleAuthUrl for mode=$mode")
+                runCatching {
+                    uriHandler.openUri(googleAuthUrl)
+                }.onSuccess {
+                    println("Google auth: browser open triggered")
+                }.onFailure { error ->
+                    println("Google auth: failed to open $googleAuthUrl -> ${error.message}")
+                }
             }
             Unit
         }
@@ -86,7 +93,7 @@ fun AuthScreen(
                     onEmailChange = viewModel::onEmailChange,
                     onPasswordChange = viewModel::onPasswordChange,
                     onCreateAccount = { viewModel.onSubmit(onSuccess = onAuthSuccess) },
-                    onGoogleClick = {},
+                    onGoogleClick = { onGoogleAuthClick(AuthMode.REGISTER) },
                     onLoginClick = viewModel::onToggleMode,
                 )
 
@@ -102,7 +109,7 @@ fun AuthScreen(
                     onSubmit = { viewModel.onSubmit(onSuccess = onAuthSuccess) },
                     onToggleMode = viewModel::onToggleMode,
                     onForgotPasswordClick = viewModel::onShowForgotPassword,
-                    onGoogleClick = onGoogleLoginClick,
+                    onGoogleClick = { onGoogleAuthClick(AuthMode.LOGIN) },
                 )
 
                 AuthMode.FORGOT_PASSWORD -> ForgotPasswordContent(
