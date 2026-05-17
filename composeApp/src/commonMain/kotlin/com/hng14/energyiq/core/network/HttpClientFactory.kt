@@ -65,7 +65,7 @@ private fun HttpClientConfig<*>.installAuth(authPreferences: AuthPreferences) {
             loadTokens {
                 val accessToken = authPreferences.getToken()?.trim().orEmpty()
                 val refreshToken = authPreferences.getRefreshToken()?.trim().orEmpty()
-                if (accessToken.isBlank() || refreshToken.isBlank()) {
+                if (accessToken.isBlank()) {
                     null
                 } else {
                     BearerTokens(accessToken = accessToken, refreshToken = refreshToken)

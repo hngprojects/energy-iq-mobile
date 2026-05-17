@@ -1,5 +1,6 @@
 package com.hng14.energyiq.features.auth.presentation.components
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -46,6 +49,7 @@ fun AuthPageLayout(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val focusManager = LocalFocusManager.current
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = backgroundColor,
@@ -54,7 +58,15 @@ fun AuthPageLayout(
             val adaptiveSpec = adaptiveScreenSpec(maxWidth)
 
             CompositionLocalProvider(LocalAdaptiveScreenSpec provides adaptiveSpec) {
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                focusManager.clearFocus()
+                            }
+                        },
+                ) {
                     AuthWaveDecoration(
                         modifier = Modifier
                             .align(Alignment.TopStart)
@@ -86,7 +98,7 @@ fun AuthBrandHeader(
     topSpacing: Dp = 12.dp,
 ) {
     Spacer(modifier = Modifier.height(topSpacing))
-    EnergyIqBrandMark()
+    EnergyIqBrandMark(modifier = Modifier.fillMaxWidth())
 }
 
 @Composable

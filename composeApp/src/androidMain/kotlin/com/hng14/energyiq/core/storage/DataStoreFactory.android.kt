@@ -31,6 +31,6 @@ private class EncryptedPreferenceStore(context: Context) : PreferenceStore {
         } else {
             editor.remove(key)
         }
-        editor.apply()
+        editor.commit() // Changed from apply() to commit() to ensure synchronous write for session data
     }
 }

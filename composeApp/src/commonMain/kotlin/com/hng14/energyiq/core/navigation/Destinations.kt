@@ -22,6 +22,20 @@ sealed class AppDestination {
     data object Home : AppDestination()
 
     @Serializable
+    data object SmartAlerts : AppDestination()
+
+    @Serializable
+    data object Chat : AppDestination()
+
+    @Serializable
+    data object ChatList : AppDestination()
+
+    @Serializable
+    data class ChatDetail(
+        val conversationId: String,
+    ) : AppDestination()
+
+    @Serializable
     data class EmailVerification(
         val fullName: String,
         val email: String,

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,13 +42,14 @@ import kotlin.math.roundToInt
 
 @Composable
 internal fun DraggableFab(
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
 
     FloatingActionButton(
-        onClick = {},
+        onClick = onClick,
         modifier = modifier
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
             .pointerInput(Unit) {
@@ -82,32 +84,29 @@ internal fun HomeTopBar(name: String?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            imageVector = Icons.Outlined.Menu,
-            contentDescription = "Menu",
-            tint = Color(0xFF2A2F3C),
-            modifier = Modifier.size(18.dp),
+        com.hng14.energyiq.core.ui.EnergyIqBrandMark(
+            horizontalArrangement = Arrangement.Start
         )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             BellIcon(
                 contentDescription = "Notifications",
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Surface(
                 modifier = Modifier.size(24.dp),
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Surface(
+                modifier = Modifier.size(32.dp),
                 shape = CircleShape,
                 color = Color(0xFFFFD3A5),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
                         text = initials,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelMedium,
                         color = Color(0xFF2A2F3C),
                         fontWeight = FontWeight.Bold,
                     )
