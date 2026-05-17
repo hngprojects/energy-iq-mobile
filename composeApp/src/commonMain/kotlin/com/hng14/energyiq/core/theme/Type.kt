@@ -7,14 +7,18 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.DMSans_Light
+import com.hng14.energyiq.DMSans_Medium
 import com.hng14.energyiq.DMSans_Regular
+import com.hng14.energyiq.DMSans_SemiBold
 import com.hng14.energyiq.Res
 import org.jetbrains.compose.resources.Font
 
 @Composable
 fun dmSansFontFamily(): FontFamily = FontFamily(
     Font(resource = Res.font.DMSans_Light, weight = FontWeight.Light),
+    Font(resource = Res.font.DMSans_Medium, weight = FontWeight.Medium),
     Font(resource = Res.font.DMSans_Regular, weight = FontWeight.Normal),
+    Font(resource = Res.font.DMSans_SemiBold, weight = FontWeight.SemiBold),
 )
 
 val AppTypography = Typography(

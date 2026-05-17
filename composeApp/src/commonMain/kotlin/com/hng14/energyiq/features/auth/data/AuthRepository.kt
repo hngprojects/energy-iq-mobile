@@ -1,5 +1,6 @@
 package com.hng14.energyiq.features.auth.data
 
+import com.hng14.energyiq.features.auth.AuthMode
 import com.hng14.energyiq.features.auth.data.local.AuthPreferences
 import com.hng14.energyiq.features.auth.data.local.UserDao
 import com.hng14.energyiq.features.auth.data.local.UserEntity
@@ -127,16 +128,45 @@ class AuthRepository(
         preferences.clearPendingResetEmail()
     }
 
+    suspend fun savePendingGoogleAuthMode(mode: AuthMode) {
+        preferences.savePendingGoogleAuthMode(mode.name)
+    }
+
+    suspend fun getPendingGoogleAuthMode(): AuthMode? {
+        val rawMode = preferences.getPendingGoogleAuthMode() ?: return null
+        return runCatching { AuthMode.valueOf(rawMode) }.getOrNull()
+    }
+
+    suspend fun clearPendingGoogleAuthMode() {
+        preferences.clearPendingGoogleAuthMode()
+    }
+
     suspend fun getCurrentUser(): User? {
         val userId = preferences.getUserId() ?: return null
         return userDao.findById(id = userId)?.toDomain()
     }
 
     suspend fun logout() {
-        val token = preferences.getToken() ?: throw Exception("You are not logged in")
-        api.logout(token = token)
+        runCatching {
+            val token = preferences.getToken()
+            if (token != null) {
+                api.logout(token = token)
+            }
+        }
         preferences.clearSession()
         userDao.deleteAll()
+    }
+
+    suspend fun getMe(): User {
+        val token = preferences.getToken() ?: throw Exception("Not logged in")
+        val remoteUser = api.me(token = token).data
+        val entity = UserEntity(
+            id = remoteUser.id,
+            email = remoteUser.email,
+            name = "${remoteUser.firstName} ${remoteUser.lastName}",
+        )
+        userDao.upsert(user = entity)
+        return entity.toDomain()
     }
 
     private fun UserEntity.toDomain() = User(id = id, email = email, name = name)

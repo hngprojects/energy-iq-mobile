@@ -23,8 +23,15 @@ class HomeViewModel(
 
     private fun loadUser() {
         viewModelScope.launch {
-            val user = repository.getCurrentUser()
-            _state.update { it.copy(user = user, isLoading = false) }
+            _state.update { it.copy(isLoading = true) }
+            runCatching {
+                repository.getMe()
+            }.onSuccess { user ->
+                _state.update { it.copy(user = user, isLoading = false) }
+            }.onFailure {
+                val user = repository.getCurrentUser()
+                _state.update { it.copy(user = user, isLoading = false) }
+            }
         }
     }
 

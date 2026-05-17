@@ -130,6 +130,7 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation(libs.activity.compose)
             implementation(libs.datastore.preferences)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)

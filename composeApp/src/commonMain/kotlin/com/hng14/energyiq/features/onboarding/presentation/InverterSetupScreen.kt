@@ -959,7 +959,7 @@ private fun SetupPageLayout(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         content = {
                             Spacer(modifier = Modifier.height(18.dp))
-                            EnergyIqBrandMark()
+                            EnergyIqBrandMark(modifier = Modifier.fillMaxWidth())
                             Spacer(modifier = Modifier.height(16.dp))
                             content()
                         },

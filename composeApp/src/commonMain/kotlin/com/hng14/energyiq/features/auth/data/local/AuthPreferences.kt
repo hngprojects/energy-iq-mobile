@@ -8,12 +8,14 @@ class AuthPreferences(private val store: PreferenceStore) {
         const val RefreshTokenKey = "refresh_token"
         const val UserIdKey = "user_id"
         const val PendingResetEmailKey = "pending_reset_email"
+        const val PendingGoogleAuthModeKey = "pending_google_auth_mode"
     }
 
     suspend fun getToken(): String? = store.get(AuthTokenKey)
     suspend fun getRefreshToken(): String? = store.get(RefreshTokenKey)
     suspend fun getUserId(): String? = store.get(UserIdKey)
     suspend fun getPendingResetEmail(): String? = store.get(PendingResetEmailKey)
+    suspend fun getPendingGoogleAuthMode(): String? = store.get(PendingGoogleAuthModeKey)
 
     suspend fun saveSession(token: String, refreshToken: String?, userId: String) {
         store.put(AuthTokenKey, token)
@@ -38,8 +40,16 @@ class AuthPreferences(private val store: PreferenceStore) {
         store.put(PendingResetEmailKey, email)
     }
 
+    suspend fun savePendingGoogleAuthMode(mode: String?) {
+        store.put(PendingGoogleAuthModeKey, mode)
+    }
+
     suspend fun clearPendingResetEmail() {
         store.put(PendingResetEmailKey, null)
+    }
+
+    suspend fun clearPendingGoogleAuthMode() {
+        store.put(PendingGoogleAuthModeKey, null)
     }
 
     suspend fun clearSession() {
@@ -47,5 +57,6 @@ class AuthPreferences(private val store: PreferenceStore) {
         store.put(RefreshTokenKey, null)
         store.put(UserIdKey, null)
         clearPendingResetEmail()
+        clearPendingGoogleAuthMode()
     }
 }
