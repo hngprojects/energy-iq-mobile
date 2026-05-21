@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 
 class AuthViewModel(
     private val repository: AuthRepository,
@@ -119,7 +121,9 @@ class AuthViewModel(
                 )
             }
             runCatching {
-                repository.forgotPassword(email = email)
+                withTimeout(120_000) {
+                    repository.forgotPassword(email = email)
+                }
             }.onSuccess { response ->
                 repository.savePendingResetEmail(response.data.email)
                 val resetToken = _state.value.resetToken
@@ -130,10 +134,14 @@ class AuthViewModel(
                     snackbarMessage = response.message,
                 )
             }.onFailure { error ->
+                val message = when (error) {
+                    is TimeoutCancellationException -> "Request is taking too long. Please check your internet and try again."
+                    else -> error.message ?: "Something went wrong. Please try again."
+                }
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        generalError = error.message ?: "Something went wrong. Please try again.",
+                        generalError = message,
                     )
                 }
             }
@@ -162,7 +170,9 @@ class AuthViewModel(
                 )
             }
             runCatching {
-                repository.forgotPassword(email = email)
+                withTimeout(120_000) {
+                    repository.forgotPassword(email = email)
+                }
             }.onSuccess { response ->
                 repository.savePendingResetEmail(response.data.email)
                 _state.update {
@@ -174,10 +184,14 @@ class AuthViewModel(
                     )
                 }
             }.onFailure { error ->
+                val message = when (error) {
+                    is TimeoutCancellationException -> "Request is taking too long. Please check your internet and try again."
+                    else -> error.message ?: "Something went wrong. Please try again."
+                }
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        generalError = error.message ?: "Something went wrong. Please try again.",
+                        generalError = message,
                     )
                 }
             }
@@ -186,6 +200,10 @@ class AuthViewModel(
 
     fun onSnackbarShown() {
         _state.update { it.copy(snackbarMessage = null) }
+    }
+
+    fun onDismissGeneralError() {
+        _state.update { it.copy(generalError = null) }
     }
 
     fun onFullNameChange(value: String) {
@@ -242,6 +260,10 @@ class AuthViewModel(
         }
     }
 
+    fun onOtpReset() {
+        _state.update { it.copy(otpCode = "") }
+    }
+
     fun onVerifyEmailSubmit() {
         val current = _state.value
         if (current.isLoading || current.otpCode.length != 6) return
@@ -256,10 +278,12 @@ class AuthViewModel(
             }
 
             runCatching {
-                repository.verifyEmail(
-                    email = current.email.trim(),
-                    otp = current.otpCode,
-                )
+                withTimeout(120_000) {
+                    repository.verifyEmail(
+                        email = current.email.trim(),
+                        otp = current.otpCode,
+                    )
+                }
             }.onSuccess {
                 _state.update {
                     it.copy(
@@ -268,10 +292,14 @@ class AuthViewModel(
                     )
                 }
             }.onFailure { error ->
+                val message = when (error) {
+                    is TimeoutCancellationException -> "Verification is taking too long. Please check your internet and try again."
+                    else -> error.message ?: "Something went wrong. Please try again."
+                }
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        generalError = error.message ?: "Something went wrong. Please try again.",
+                        generalError = message,
                         emailVerificationState = EmailVerificationState.Error,
                     )
                 }

@@ -4,6 +4,17 @@ import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.util.network.UnresolvedAddressException
 import io.ktor.utils.io.errors.IOException
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+
+fun JsonElement.toErrorMessage(): String = when (this) {
+    is JsonPrimitive -> content
+    is JsonArray -> joinToString(", ") {
+        (it as? JsonPrimitive)?.content ?: it.toString()
+    }
+    else -> toString()
+}
 
 internal fun Throwable.toFriendlyNetworkException(): Exception {
     return when (this) {

@@ -44,6 +44,7 @@ fun EmailVerificationContent(
     onOtpChange: (String) -> Unit,
     isError: Boolean = false,
     isVerifying: Boolean = false,
+    errorMessage: String? = null,
     onVerifyClick: () -> Unit,
     onBackToSignUp: () -> Unit,
 ) {
@@ -78,17 +79,19 @@ fun EmailVerificationContent(
             otpValue = otpValue,
             onOtpChange = onOtpChange,
             isError = isError,
+            enabled = !isVerifying,
         )
 
         if (isError) {
             Spacer(Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "⚠ Oh no! The code you entered is incorrect.",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
+            Text(
+                text = errorMessage?.takeIf { it.isNotBlank() }
+                    ?: "The code you entered is incorrect.",
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
 
         Spacer(Modifier.weight(1f))

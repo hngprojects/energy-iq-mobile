@@ -1,20 +1,26 @@
 package com.hng14.energyiq.features.onboarding.data.remote
 
 import com.hng14.energyiq.core.network.NetworkConfig
+import com.hng14.energyiq.core.network.toErrorMessage
 import com.hng14.energyiq.core.network.toFriendlyNetworkException
 import com.hng14.energyiq.features.auth.data.remote.dto.ApiErrorResponse
+import com.hng14.energyiq.features.onboarding.data.remote.dto.ConnectInverterRequest
+import com.hng14.energyiq.features.onboarding.data.remote.dto.ConnectInverterResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 
 class OnboardingApi(
     private val httpClient: HttpClient,
@@ -28,12 +34,34 @@ class OnboardingApi(
                 parseSupportedBrands(response.bodyAsText())
             } else {
                 val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message)
+                throw Exception(errorResponse.message.toErrorMessage())
             }
         } catch (e: ClientRequestException) {
             val errorResponse = e.response.body<ApiErrorResponse>()
             print(errorResponse)
-            throw Exception(errorResponse.message)
+            throw Exception(errorResponse.message.toErrorMessage())
+        } catch (e: Exception) {
+            print(e)
+            throw e.toFriendlyNetworkException()
+        }
+    }
+
+    suspend fun connectInverter(request: ConnectInverterRequest): ConnectInverterResponse {
+        return try {
+            val response = httpClient.post("${NetworkConfig.BASE_URL}/inverters/connect") {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+            if (response.status.value in 200..299) {
+                response.body<ConnectInverterResponse>()
+            } else {
+                val errorResponse = response.body<ApiErrorResponse>()
+                throw Exception(errorResponse.message.toErrorMessage())
+            }
+        } catch (e: ClientRequestException) {
+            val errorResponse = e.response.body<ApiErrorResponse>()
+            print(errorResponse)
+            throw Exception(errorResponse.message.toErrorMessage())
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -41,8 +69,7 @@ class OnboardingApi(
     }
 
     private fun parseSupportedBrands(raw: String): List<String> {
-        val root = json.parseToJsonElement(raw)
-        val items = when (root) {
+        val items = when (val root = json.parseToJsonElement(raw)) {
             is JsonArray -> root
             is JsonObject -> root["data"]?.jsonArray ?: JsonArray(emptyList())
             else -> JsonArray(emptyList())
