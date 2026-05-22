@@ -87,17 +87,6 @@ fun EmailSentContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        generalError?.let { error ->
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = error,
-                color = energyColors.danger,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-
         Spacer(modifier = Modifier.height(30.dp))
 
         Button(

@@ -4,4 +4,6 @@ data class InverterSetupUiState(
     val supportedBrands: List<String> = emptyList(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
+    val isConnecting: Boolean = false,
+    val connectError: String? = null,
 )

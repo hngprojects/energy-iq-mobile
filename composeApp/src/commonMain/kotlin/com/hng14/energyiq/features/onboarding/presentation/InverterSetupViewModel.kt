@@ -49,4 +49,70 @@ class InverterSetupViewModel(
             }
         }
     }
+
+    fun connectVictron(
+        victronAccessToken: String,
+        onSuccess: () -> Unit,
+    ) {
+        if (_state.value.isConnecting) return
+        val token = victronAccessToken.trim()
+        if (token.isBlank()) {
+            _state.update { it.copy(connectError = "Victron access token is required.") }
+            return
+        }
+
+        viewModelScope.launch {
+            _state.update { it.copy(isConnecting = true, connectError = null) }
+
+            runCatching {
+                repository.connectVictron(victronAccessToken = token)
+            }.onSuccess {
+                _state.update { it.copy(isConnecting = false, connectError = null) }
+                onSuccess()
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isConnecting = false,
+                        connectError = error.message ?: "Unable to connect inverter.",
+                    )
+                }
+            }
+        }
+    }
+
+    fun connectSandbox(
+        sandboxAccessToken: String,
+        onSuccess: () -> Unit,
+    ) {
+        if (_state.value.isConnecting) return
+        val token = sandboxAccessToken.trim()
+        if (token.isBlank()) {
+            _state.update { it.copy(connectError = "Sandbox access token is required.") }
+            return
+        }
+
+        viewModelScope.launch {
+            _state.update { it.copy(isConnecting = true, connectError = null) }
+
+            runCatching {
+                repository.connectSandbox(sandboxAccessToken = token)
+            }.onSuccess {
+                _state.update { it.copy(isConnecting = false, connectError = null) }
+                onSuccess()
+            }.onFailure {
+                // Temporarily allow user to pass through even on failure
+                _state.update {
+                    it.copy(
+                        isConnecting = false,
+                        connectError = null, // Clear error to hide dialog
+                    )
+                }
+                onSuccess() // Still navigate to next screen
+            }
+        }
+    }
+
+    fun onConnectErrorDismissed() {
+        _state.update { it.copy(connectError = null) }
+    }
 }

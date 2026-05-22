@@ -1,16 +1,15 @@
 package com.hng14.energyiq.features.alerts.data
 
-import androidx.compose.ui.graphics.Color
+import com.hng14.energyiq.features.alerts.data.remote.AlertsApi
 import com.hng14.energyiq.features.alerts.domain.model.*
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
-class AlertRepository {
-    val smartAlertStats = listOf(
-        AlertStat("Active Alerts", "14", "Last 7 days", Color(0xFF84CC16)),
-        AlertStat("Critical", "1", "Need action now", Color(0xFFEF4444)),
-        AlertStat("Warning", "3", "Awaiting review", Color(0xFFF59E0B)),
-        AlertStat("Unresolved", "5", "Still open", Color(0xFF111827)),
-    )
-
+class AlertRepository(
+    private val api: AlertsApi,
+) {
     val smartAlertItems = listOf(
         SmartAlertItem(
             id = "battery-critically-low-3",
@@ -97,5 +96,103 @@ class AlertRepository {
             explanation = "This alert was raised because the system detected unusual behavior that needs review.",
             primaryActionLabel = "Resolve Now",
         )
+    }
+
+    suspend fun fetchAlerts(
+        alertType: AlertType?,
+        pageNumber: Int,
+        pageSize: Int,
+    ): List<SmartAlertItem> {
+        val response = api.fetchAlerts(
+            alertType = alertType?.apiValue,
+            pageNumber = pageNumber,
+            pageSize = pageSize,
+        )
+
+        val items = extractAlertItems(response.data)
+        if (items.isEmpty()) return emptyList()
+
+        return items.mapIndexed { index, element -> element.toSmartAlertItem(fallbackId = "alert-$index") }
+    }
+
+    private fun extractAlertItems(data: JsonElement?): List<JsonObject> {
+        if (data == null) return emptyList()
+        return when (data) {
+            is JsonArray -> data.mapNotNull { it as? JsonObject }
+            is JsonObject -> {
+                val inner = data["alerts"] ?: data["items"] ?: data["data"]
+                when (inner) {
+                    is JsonArray -> inner.mapNotNull { it as? JsonObject }
+                    else -> emptyList()
+                }
+            }
+            else -> emptyList()
+        }
+    }
+
+    private fun JsonObject.toSmartAlertItem(fallbackId: String): SmartAlertItem {
+        val id = string("id")
+            ?: string("_id")
+            ?: string("alertId")
+            ?: fallbackId
+        val title = string("title")
+            ?: string("name")
+            ?: string("type")
+            ?: "Alert"
+        val description = string("message")
+            ?: string("description")
+            ?: string("details")
+            ?: ""
+        val rawSeverity = string("severity")
+            ?: string("level")
+            ?: string("priority")
+        val severity = when (rawSeverity?.uppercase()) {
+            "CRITICAL", "HIGH" -> AlertSeverity.CRITICAL
+            "WARNING", "MEDIUM" -> AlertSeverity.WARNING
+            "SUCCESS", "INFO", "LOW" -> AlertSeverity.SUCCESS
+            else -> AlertSeverity.WARNING
+        }
+
+        val resolved = boolean("resolved")
+            ?: boolean("isResolved")
+            ?: (string("status")?.uppercase() == "RESOLVED")
+
+        val icon = when {
+            title.contains("battery", ignoreCase = true) || description.contains("battery", ignoreCase = true) -> AlertCardIcon.BATTERY
+            title.contains("solar", ignoreCase = true) || description.contains("solar", ignoreCase = true) -> AlertCardIcon.SOLAR
+            title.contains("hvac", ignoreCase = true) || description.contains("ac", ignoreCase = true) -> AlertCardIcon.HVAC
+            else -> AlertCardIcon.AUTOMATION
+        }
+
+        val timestamp = string("createdAt")
+            ?: string("timestamp")
+            ?: ""
+
+        return SmartAlertItem(
+            id = id,
+            severity = severity,
+            title = title,
+            description = description,
+            timestamp = timestamp,
+            actionLabel = if (resolved) "Resolved" else "Inspect",
+            resolved = resolved,
+            icon = icon,
+        )
+    }
+
+    private fun JsonObject.string(key: String): String? {
+        val value = this[key] as? JsonPrimitive ?: return null
+        return runCatching { value.content }.getOrNull()?.takeIf { it.isNotBlank() }
+    }
+
+    private fun JsonObject.boolean(key: String): Boolean? {
+        val value = this[key] as? JsonPrimitive ?: return null
+        // Compatibility: kotlinx.serialization versions differ on booleanOrNull availability.
+        val raw = runCatching { value.content }.getOrNull()?.trim().orEmpty()
+        return when (raw.lowercase()) {
+            "true" -> true
+            "false" -> false
+            else -> null
+        }
     }
 }

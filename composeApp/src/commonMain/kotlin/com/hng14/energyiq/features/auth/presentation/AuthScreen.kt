@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import com.hng14.energyiq.core.network.NetworkConfig
+import com.hng14.energyiq.core.ui.ServerErrorDialog
 import com.hng14.energyiq.features.auth.AuthMode
 import com.hng14.energyiq.features.auth.OnAuthSuccess
 import com.hng14.energyiq.features.auth.data.AuthRepository
@@ -79,6 +80,13 @@ fun AuthScreen(
 //                .fillMaxSize()
 //                .padding(paddingValues),
         ) {
+            state.generalError?.let { message ->
+                ServerErrorDialog(
+                    message = message,
+                    onDismiss = viewModel::onDismissGeneralError,
+                )
+            }
+
             when (state.mode) {
                 AuthMode.REGISTER -> RegisterContent(
                     fullName = state.fullName,

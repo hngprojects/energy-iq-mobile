@@ -37,6 +37,7 @@ import com.hng14.energyiq.core.ui.DangerVectorIcon
 import com.hng14.energyiq.core.ui.TransactionHistoryIcon
 import com.hng14.energyiq.features.alerts.presentation.SmartAlertsScreen
 import com.hng14.energyiq.features.profile.presentation.ProfileScreen
+import com.hng14.energyiq.features.reports.presentation.ReportsScreen
 import com.hng14.energyiq.features.home.presentation.components.BatteryCard
 import com.hng14.energyiq.features.home.presentation.components.DraggableFab
 import com.hng14.energyiq.features.home.presentation.components.EnergyUsageCard
@@ -108,6 +109,14 @@ fun HomeScreen(
 
                 HomeTab.Profile -> Box(modifier = Modifier.padding(paddingValues)) {
                     ProfileScreen(onLogout = onLogout)
+                }
+
+                HomeTab.Reports -> Box(modifier = Modifier.padding(paddingValues)) {
+                    ReportsScreen(
+                        name = name,
+                        onViewReport = {},
+                        onDownloadReport = {},
+                    )
                 }
 
                 else -> Column(

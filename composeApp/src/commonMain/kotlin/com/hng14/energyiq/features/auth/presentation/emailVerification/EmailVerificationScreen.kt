@@ -24,40 +24,27 @@ fun EmailVerificationScreen(
         )
     }
 
-    when (state.emailVerificationState) {
-        EmailVerificationState.Typing -> EmailVerificationContent(
-            firstName = fullName.substringBefore(" ").ifBlank { fullName },
-            otpValue = state.otpCode,
-            onOtpChange = viewModel::onOtpChange,
-            isError = false,
-            isVerifying = false,
-            onVerifyClick = viewModel::onVerifyEmailSubmit,
-            onBackToSignUp = onBackToSignUp,
-        )
-
-        EmailVerificationState.Verifying -> EmailVerificationContent(
-            firstName = fullName.substringBefore(" ").ifBlank { fullName },
-            otpValue = state.otpCode,
-            onOtpChange = viewModel::onOtpChange,
-            isError = false,
-            isVerifying = true,
-            onVerifyClick = {},
-            onBackToSignUp = onBackToSignUp,
-        )
-
-        EmailVerificationState.Error -> EmailVerificationContent(
-            firstName = fullName.substringBefore(" ").ifBlank { fullName },
-            otpValue = state.otpCode,
-            onOtpChange = viewModel::onOtpChange,
-            isError = true,
-            isVerifying = false,
-            onVerifyClick = viewModel::onVerifyEmailSubmit,
-            onBackToSignUp = onBackToSignUp,
-        )
-
-        EmailVerificationState.Success -> EmailVerificationSuccessContent(
+    if (state.emailVerificationState == EmailVerificationState.Success) {
+        EmailVerificationSuccessContent(
             firstName = fullName.substringBefore(" ").ifBlank { fullName },
             onContinue = onContinue,
         )
+        return
     }
+
+    // Keep the same composable instance across Typing/Error/Verifying so the OTP field retains focus.
+    EmailVerificationContent(
+        firstName = fullName.substringBefore(" ").ifBlank { fullName },
+        otpValue = state.otpCode,
+        onOtpChange = viewModel::onOtpChange,
+        isError = state.emailVerificationState == EmailVerificationState.Error,
+        isVerifying = state.emailVerificationState == EmailVerificationState.Verifying,
+        errorMessage = if (state.emailVerificationState == EmailVerificationState.Error) state.generalError else null,
+        onVerifyClick = if (state.emailVerificationState == EmailVerificationState.Verifying) {
+            {}
+        } else {
+            viewModel::onVerifyEmailSubmit
+        },
+        onBackToSignUp = onBackToSignUp,
+    )
 }

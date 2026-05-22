@@ -2,6 +2,7 @@ package com.hng14.energyiq.features.auth.data.remote
 
 import com.hng14.energyiq.core.network.NetworkConfig
 import com.hng14.energyiq.core.network.toFriendlyNetworkException
+import com.hng14.energyiq.core.network.toErrorMessage
 import com.hng14.energyiq.features.auth.data.remote.dto.ApiErrorResponse
 import com.hng14.energyiq.features.auth.data.remote.dto.ForgotPasswordRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.ForgotPasswordResponse
@@ -24,6 +25,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 
 class AuthApi(
     private val httpClient: HttpClient,
@@ -42,12 +46,12 @@ class AuthApi(
                 response.body<LoginResponse>()
             } else {
                 val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message)
+                throw Exception(errorResponse.message.toErrorMessage())
             }
         } catch (e: ClientRequestException) {
             val errorResponse = e.response.body<ApiErrorResponse>()
             print(errorResponse)
-            throw Exception(errorResponse.message)
+            throw Exception(errorResponse.message.toErrorMessage())
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -66,12 +70,12 @@ class AuthApi(
                 response.body<RegisterResponse>()
             } else {
                 val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message)
+                throw Exception(errorResponse.message.toErrorMessage())
             }
         } catch (e: ClientRequestException) {
             val errorResponse = e.response.body<ApiErrorResponse>()
             print(errorResponse)
-            throw Exception(errorResponse.message)
+            throw Exception(errorResponse.message.toErrorMessage())
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -90,12 +94,12 @@ class AuthApi(
                 response.body<ForgotPasswordResponse>()
             } else {
                 val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message)
+                throw Exception(errorResponse.message.toErrorMessage())
             }
         } catch (e: ClientRequestException) {
             val errorResponse = e.response.body<ApiErrorResponse>()
             print(errorResponse)
-            throw Exception(errorResponse.message)
+            throw Exception(errorResponse.message.toErrorMessage())
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -114,12 +118,12 @@ class AuthApi(
                 Unit
             } else {
                 val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message)
+                throw Exception(errorResponse.message.toErrorMessage())
             }
         } catch (e: ClientRequestException) {
             val errorResponse = e.response.body<ApiErrorResponse>()
             print(errorResponse)
-            throw Exception(errorResponse.message)
+            throw Exception(errorResponse.message.toErrorMessage())
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -140,12 +144,12 @@ class AuthApi(
                 json.decodeFromString<MeResponse>(raw)
             } else {
                 val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message)
+                throw Exception(errorResponse.message.toErrorMessage())
             }
         } catch (e: ClientRequestException) {
             val errorResponse = e.response.body<ApiErrorResponse>()
             print(errorResponse)
-            throw Exception(errorResponse.message)
+            throw Exception(errorResponse.message.toErrorMessage())
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -164,12 +168,12 @@ class AuthApi(
                 Unit
             } else {
                 val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message)
+                throw Exception(errorResponse.message.toErrorMessage())
             }
         } catch (e: ClientRequestException) {
             val errorResponse = e.response.body<ApiErrorResponse>()
             print(errorResponse)
-            throw Exception(errorResponse.message)
+            throw Exception(errorResponse.message.toErrorMessage())
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -188,12 +192,12 @@ class AuthApi(
                 response.body<LoginResponse>()
             } else {
                 val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message)
+                throw Exception(errorResponse.message.toErrorMessage())
             }
         } catch (e: ClientRequestException) {
             val errorResponse = e.response.body<ApiErrorResponse>()
             print(errorResponse)
-            throw Exception(errorResponse.message)
+            throw Exception(errorResponse.message.toErrorMessage())
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()

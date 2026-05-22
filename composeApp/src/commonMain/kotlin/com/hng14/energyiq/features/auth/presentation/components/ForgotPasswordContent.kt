@@ -108,16 +108,6 @@ fun ForgotPasswordContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        generalError?.let { error ->
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = error,
-                color = energyColors.danger,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-            )
-        }
-
         Spacer(modifier = Modifier.height(30.dp))
 
         Button(

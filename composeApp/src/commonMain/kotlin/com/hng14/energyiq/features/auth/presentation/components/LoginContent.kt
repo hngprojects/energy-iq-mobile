@@ -39,6 +39,7 @@ import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -190,16 +191,6 @@ fun LoginContent(
             }
         }
 
-        generalError?.let { error ->
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = error,
-                color = energyColors.danger,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-            )
-        }
-
         Spacer(modifier = Modifier.height(64.dp))
 
         Button(
@@ -244,17 +235,30 @@ fun LoginContent(
             modifier = Modifier.fillMaxWidth().height(adaptiveSpec.buttonHeight),
             shape = RoundedCornerShape(12.dp),
         ) {
-            Text(
-                text = stringResource(Res.string.auth_continue_google),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = dmSans,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp,
-                    lineHeight = 14.sp,
-                    letterSpacing = 0.sp,
-                ),
-                color = Color(0xFF2A2F3C),
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.social_icon),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.Unspecified,
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = stringResource(Res.string.auth_continue_google),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = dmSans,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        lineHeight = 14.sp,
+                        letterSpacing = 0.sp,
+                    ),
+                    color = Color(0xFF2A2F3C),
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(22.dp))
