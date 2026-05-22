@@ -9,7 +9,6 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
@@ -39,7 +38,6 @@ fun createHttpClient(
             installContentNegotiation()
             installAuth(authPreferences = authPreferences)
             installLogging()
-            installTimeout()
         },
     )
 
@@ -117,13 +115,5 @@ private fun HttpClientConfig<*>.installLogging() {
     install(plugin = Logging) {
         logger = Logger.SIMPLE
         level = if (NetworkConfig.IS_DEBUG) LogLevel.ALL else LogLevel.NONE
-    }
-}
-
-private fun HttpClientConfig<*>.installTimeout() {
-    install(plugin = HttpTimeout) {
-        requestTimeoutMillis = NetworkConfig.TIMEOUT_MS
-        connectTimeoutMillis = NetworkConfig.TIMEOUT_MS
-        socketTimeoutMillis = NetworkConfig.TIMEOUT_MS
     }
 }

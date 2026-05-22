@@ -155,19 +155,6 @@ fun CheckMailContent(
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        generalError?.let { error ->
-            Text(
-                text = error,
-                color = Color(0xFFB42318),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = dmSans,
-                ),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
         Button(
             onClick = onResetPassword,
             enabled = !isLoading,

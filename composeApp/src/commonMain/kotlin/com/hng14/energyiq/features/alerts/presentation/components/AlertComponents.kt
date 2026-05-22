@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -27,7 +29,53 @@ import androidx.compose.ui.window.PopupProperties
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.core.ui.BatteryChargingIcon
 import com.hng14.energyiq.core.ui.DangerVectorIcon
+import com.hng14.energyiq.core.ui.InsightButtonVariant
+import com.hng14.energyiq.core.ui.InsightOutlinedCard
+import com.hng14.energyiq.core.ui.InsightSmallButton
+import com.hng14.energyiq.core.ui.InsightStatCard
+import com.hng14.energyiq.core.ui.InsightStatusChip
 import com.hng14.energyiq.features.alerts.domain.model.*
+
+@Composable
+fun AlertTypeTabs(
+    selectedType: AlertType?,
+    onTypeSelected: (AlertType?) -> Unit,
+) {
+    val dmSans = dmSansFontFamily()
+    val options: List<Pair<String, AlertType?>> = buildList {
+        add("All" to null)
+        addAll(AlertType.entries.map { it.label to it })
+    }
+
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(horizontal = 2.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        items(items = options, key = { it.first }) { (label, type) ->
+            val selected = type == selectedType
+            Surface(
+                shape = RoundedCornerShape(999.dp),
+                color = if (selected) Color(0xFF141D2F) else Color.White,
+                border = BorderStroke(1.dp, if (selected) Color(0xFF141D2F) else Color(0xFFE5E7EB)),
+                modifier = Modifier
+                    .clickable { onTypeSelected(type) },
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = dmSans,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                    ),
+                    color = if (selected) Color.White else Color(0xFF111827),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun SmartAlertStatCard(
@@ -35,58 +83,14 @@ fun SmartAlertStatCard(
     modifier: Modifier = Modifier,
 ) {
     val dmSans = dmSansFontFamily()
-    Surface(
+    InsightStatCard(
+        title = stat.title,
+        value = stat.value,
+        subtitle = stat.subtitle,
+        dotColor = stat.dotColor,
         modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFECEEF1)),
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(5.dp)
-                        .background(stat.dotColor, CircleShape),
-                )
-                Text(
-                    text = stat.title,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = dmSans,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        lineHeight = 21.sp,
-                    ),
-                    color = Color(0xFF666666),
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = stat.value,
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = dmSans,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 28.sp,
-                    lineHeight = 33.6.sp,
-                    letterSpacing = (-0.28).sp,
-                ),
-                color = Color(0xFF080C13),
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = stat.subtitle,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = dmSans,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                    lineHeight = 18.sp,
-                ),
-                color = Color(0xFF666666),
-            )
-        }
-    }
+        fontFamily = dmSans,
+    )
 }
 
 @Composable
@@ -258,13 +262,12 @@ fun SmartAlertCard(
     onInspect: () -> Unit,
 ) {
     val dmSans = dmSansFontFamily()
-    Surface(
+    InsightOutlinedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFECEEF1)),
+        shapeSize = 12.dp,
+        paddingValues = PaddingValues(24.dp),
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column {
             SeverityBadge(severity = alert.severity)
             Spacer(modifier = Modifier.height(14.dp))
             Row(
@@ -317,32 +320,14 @@ fun SmartAlertCard(
                     ),
                     color = Color(0xFF525252),
                 )
-                Surface(
-                    modifier = Modifier
-                        .size(width = 94.dp, height = 40.dp)
-                        .clickable(enabled = !alert.resolved, onClick = onInspect),
-                    shape = RoundedCornerShape(8.dp),
-                    color = if (alert.resolved) Color(0xFFF3F4F6) else Color(0xFF111827),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = alert.actionLabel,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                fontFamily = dmSans,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp,
-                                lineHeight = 20.sp,
-                            ),
-                            color = if (alert.resolved) Color(0xFF9CA3AF) else Color.White,
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                }
+                InsightSmallButton(
+                    label = alert.actionLabel,
+                    onClick = onInspect,
+                    modifier = Modifier.size(width = 94.dp, height = 40.dp),
+                    enabled = !alert.resolved,
+                    variant = InsightButtonVariant.Primary,
+                    fontFamily = dmSans,
+                )
             }
         }
     }
@@ -536,33 +521,13 @@ private fun SeverityBadge(
         AlertSeverity.WARNING -> SeverityPalette("Warning", Color(0xFFFFF7E6), Color(0xFFD97706), Color(0xFFF59E0B))
         AlertSeverity.SUCCESS -> SeverityPalette("Success", Color(0xFFECFDF3), Color(0xFF16A34A), Color(0xFF22C55E))
     }
-    Surface(
-        shape = RoundedCornerShape(999.dp),
-        color = palette.background,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(5.dp)
-                    .background(palette.dot, CircleShape),
-            )
-            Text(
-                text = palette.label,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = dmSans,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
-                    lineHeight = 14.sp,
-                ),
-                color = palette.foreground,
-                textAlign = TextAlign.Center,
-            )
-        }
-    }
+    InsightStatusChip(
+        label = palette.label,
+        background = palette.background,
+        foreground = palette.foreground,
+        dot = palette.dot,
+        fontFamily = dmSans,
+    )
 }
 
 @Composable

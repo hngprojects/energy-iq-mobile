@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.hng14.energyiq.core.ui.ServerErrorDialog
 import com.hng14.energyiq.features.alerts.domain.model.*
 import com.hng14.energyiq.features.alerts.presentation.components.*
 import com.hng14.energyiq.features.home.presentation.components.HomeTopBar
@@ -41,6 +42,10 @@ fun SmartAlertsScreen(
                 onFilterSelected = viewModel::onFilterSelected,
             )
             Spacer(modifier = Modifier.height(16.dp))
+            if (state.isLoading) {
+                androidx.compose.material3.CircularProgressIndicator(color = Color(0xFF141D2F))
+                Spacer(modifier = Modifier.height(16.dp))
+            }
             viewModel.visibleAlerts.forEachIndexed { index, alert ->
                 SmartAlertCard(
                     alert = alert,
@@ -52,6 +57,13 @@ fun SmartAlertsScreen(
             }
             Spacer(modifier = Modifier.height(20.dp))
         }
+    }
+
+    state.errorMessage?.let { message ->
+        ServerErrorDialog(
+            message = message,
+            onDismiss = viewModel::onErrorDismissed,
+        )
     }
 
     state.inspectedAlertId?.let { alertId ->

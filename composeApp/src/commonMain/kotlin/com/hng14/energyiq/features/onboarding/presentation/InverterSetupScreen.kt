@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.ui.AuthWaveDecoration
@@ -56,6 +57,7 @@ import com.hng14.energyiq.core.ui.EnergyIqBrandMark
 import com.hng14.energyiq.core.ui.InverterCardIcon
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.ui.OnboardingSuccessIllustration
+import com.hng14.energyiq.core.ui.ServerErrorDialog
 import com.hng14.energyiq.core.ui.adaptiveScreenSpec
 import com.hng14.energyiq.features.auth.presentation.components.AuthTextField
 import com.hng14.energyiq.features.auth.presentation.components.PasswordTextField
@@ -101,6 +103,8 @@ private data class ConnectionField(
     val placeholder: String,
     val type: ConnectionFieldType = ConnectionFieldType.TEXT,
     val optional: Boolean = false,
+    val readOnly: Boolean = false,
+    val initialValue: String = "",
 )
 
 private data class ConnectionContent(
@@ -335,6 +339,34 @@ private fun inverterOptionFor(title: String): InverterOption? {
             ),
         ),
     )
+        "sandbox" -> InverterOption(
+        title = "Sandbox",
+        subtitle = "Mock API",
+        connection = ConnectionContent(
+            title = "Sandbox Inverter\nConnection",
+            subtitle = "Enter your sandbox credentials",
+            fields = listOf(
+                ConnectionField(
+                    id = "brand",
+                    label = "Brand",
+                    placeholder = "SANDBOX",
+                    type = ConnectionFieldType.TEXT,
+                    readOnly = true,
+                    initialValue = "SANDBOX",
+                ),
+                ConnectionField(
+                    id = "sandbox_access_token",
+                    label = "Sandbox Access Token",
+                    placeholder = "mock-token-a",
+                    type = ConnectionFieldType.PASSWORD,
+                ),
+            ),
+            primaryButtonText = "Connect",
+            helperLines = listOf(
+                "Enter the sandbox access token provided to you",
+            ),
+        ),
+    )
         else -> InverterOption(
             title = title.lowercase().replaceFirstChar { it.titlecase() },
             subtitle = "We'll guide",
@@ -394,6 +426,13 @@ fun InverterSetupScreen(
         setupState.supportedBrands.mapNotNull(::inverterOptionFor).distinctBy { it.title }
     }
 
+    setupState.connectError?.let { message ->
+        ServerErrorDialog(
+            message = message,
+            onDismiss = viewModel::onConnectErrorDismissed,
+        )
+    }
+
     when (step) {
         InverterSetupStep.SELECT -> InverterSelectionContent(
             supportedBrands = inverterOptions,
@@ -404,7 +443,7 @@ fun InverterSetupScreen(
             onRetry = viewModel::loadSupportedBrands,
             onContinue = {
                 selectedOption?.let { option ->
-                    connectionValues = option.connection.fields.associate { field -> field.id to "" }
+                    connectionValues = option.connection.fields.associate { field -> field.id to field.initialValue }
                     victronTestJob?.cancel()
                     victronTestState = VictronTestState.Idle
                     step = InverterSetupStep.CONNECTION
@@ -419,6 +458,7 @@ fun InverterSetupScreen(
                     option = option,
                     values = connectionValues,
                     victronTestState = victronTestState,
+                    isSubmitting = setupState.isConnecting,
                     onValueChange = { fieldId, value ->
                         connectionValues = connectionValues + (fieldId to value)
                         if (option.title == "Victron") {
@@ -438,7 +478,20 @@ fun InverterSetupScreen(
                     },
                     onBack = { step = InverterSetupStep.SELECT },
                     onSubmit = {
-                        step = InverterSetupStep.SUCCESS
+                        if (option.title == "Victron") {
+                            val token = connectionValues["vrm_api_token"].orEmpty()
+                            viewModel.connectVictron(victronAccessToken = token) {
+                                step = InverterSetupStep.SUCCESS
+                            }
+                        } else if (option.title == "Sandbox") {
+                            val token = connectionValues["sandbox_access_token"].orEmpty()
+                            viewModel.connectSandbox(sandboxAccessToken = token) {
+                                step = InverterSetupStep.SUCCESS
+                            }
+                        } else {
+                            // TODO: connect other brands when endpoints are ready.
+                            step = InverterSetupStep.SUCCESS
+                        }
                     },
                 )
             }
@@ -458,13 +511,14 @@ private fun InverterSelectionContent(
     onRetry: () -> Unit,
     onContinue: () -> Unit,
 ) {
-    SetupPageLayout {
+    // Only tighten spacing on the selection screen so "What type of inverter..." sits higher.
+    SetupPageLayout(topSpacer = 12.dp, afterBrandSpacer = 8.dp) {
         val adaptiveSpec = LocalAdaptiveScreenSpec.current
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.TopCenter,
         ) {
             Column(
                 modifier = Modifier
@@ -609,6 +663,7 @@ private fun InverterConnectionContent(
     option: InverterOption,
     values: Map<String, String>,
     victronTestState: VictronTestState,
+    isSubmitting: Boolean,
     onValueChange: (String, String) -> Unit,
     onRunVictronTest: () -> Unit,
     onBack: () -> Unit,
@@ -676,6 +731,7 @@ private fun InverterConnectionContent(
                     },
                     imeAction = if (index == content.fields.lastIndex) ImeAction.Done else ImeAction.Next,
                     showStatusIndicator = false,
+                    readOnly = field.readOnly,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -784,7 +840,7 @@ private fun InverterConnectionContent(
 
         Button(
             onClick = onSubmit,
-            enabled = canSubmit,
+            enabled = canSubmit && !isSubmitting,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(adaptiveSpec.buttonHeight),
@@ -796,7 +852,15 @@ private fun InverterConnectionContent(
                 disabledContentColor = Color.White,
             ),
         ) {
-            Text(text = content.primaryButtonText, fontSize = 16.sp)
+            if (isSubmitting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Text(text = content.primaryButtonText, fontSize = 16.sp)
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -928,6 +992,8 @@ private fun isConnectionFieldValid(
 
 @Composable
 private fun SetupPageLayout(
+    topSpacer: Dp = 18.dp,
+    afterBrandSpacer: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(
@@ -957,15 +1023,15 @@ private fun SetupPageLayout(
                             .widthIn(max = adaptiveSpec.contentMaxWidth)
                             .align(Alignment.TopCenter),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        content = {
-                            Spacer(modifier = Modifier.height(18.dp))
-                            EnergyIqBrandMark(modifier = Modifier.fillMaxWidth())
-                            Spacer(modifier = Modifier.height(16.dp))
-                            content()
-                        },
-                    )
-                }
+                    content = {
+                        Spacer(modifier = Modifier.height(topSpacer))
+                        EnergyIqBrandMark(modifier = Modifier.fillMaxWidth())
+                        Spacer(modifier = Modifier.height(afterBrandSpacer))
+                        content()
+                    },
+                )
             }
         }
     }
+}
 }
