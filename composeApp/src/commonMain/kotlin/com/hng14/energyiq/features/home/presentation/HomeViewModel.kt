@@ -57,46 +57,42 @@ class HomeViewModel(
                     }
                 }
 
-                // If no cache, mark as initial sync
-                if (_state.value.dashboardData == null) {
-                    _state.update { it.copy(isInitialSync = true) }
-                }
-
                 // Step 2: Fetch from network with extended retry for first-time setup
                 var attempt = 0
-                val maxAttempts = 3
+                val maxAttempts = 5
                 var success = false
                 
                 while (attempt < maxAttempts && !success) {
                     runCatching {
                         homeRepository.getInverterDashboard()
                     }.onSuccess { response ->
+                        // We only consider it a 'success' if we got actual measurements
+                        // OR if we already have some data to show from cache
                         val data = response?.data
                         if (data?.currentReadings != null) {
-                            _state.update { it.copy(dashboardData = data, isInitialSync = false, errorMessage = null) }
+                            _state.update { it.copy(dashboardData = data, errorMessage = null) }
                             success = true
                         } else if (_state.value.dashboardData != null) {
-                            _state.update { it.copy(isInitialSync = false) }
+                            // If we have cache but network returned empty, just stop retrying
                             success = true
                         }
                     }
                     
                     if (!success) {
-                        delay(2000)
+                        delay(3000) // Wait 3 seconds before next retry
                     }
                     attempt++
                 }
                 
-                if (_state.value.dashboardData == null && !success) {
-                    _state.update { 
-                        it.copy(
-                            isLoading = false,
-                            isInitialSync = true,
-                            errorMessage = "We're setting up your dashboard. This usually takes a few moments as we connect to your inverter."
-                        ) 
+                // If after all retries we still have nothing, check if we at least have an empty dashboard object
+                if (_state.value.dashboardData == null) {
+                    runCatching { homeRepository.getInverterDashboard() }.onSuccess { response ->
+                        if (response?.data != null) {
+                            _state.update { it.copy(dashboardData = response.data, errorMessage = null) }
+                        } else {
+                            _state.update { it.copy(errorMessage = "Connecting to inverter... Pull to refresh in a moment.") }
+                        }
                     }
-                } else {
-                    _state.update { it.copy(isInitialSync = false) }
                 }
             }
 
