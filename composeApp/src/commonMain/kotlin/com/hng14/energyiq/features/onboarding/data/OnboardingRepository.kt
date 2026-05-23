@@ -14,20 +14,24 @@ class OnboardingRepository(
     suspend fun fetchSupportedBrands(): List<String> = api.fetchSupportedBrands()
 
     suspend fun connectVictron(victronAccessToken: String) {
-        api.connectInverter(
+        val response = api.connectInverter(
             request = com.hng14.energyiq.features.onboarding.data.remote.dto.ConnectInverterRequest(
                 brand = "VICTRON",
                 victronAccessToken = victronAccessToken,
             ),
         )
+        prefs.saveInverterId(response.data.inverter.id)
     }
 
     suspend fun connectSandbox(sandboxAccessToken: String) {
-        api.connectInverter(
+        val response = api.connectInverter(
             request = com.hng14.energyiq.features.onboarding.data.remote.dto.ConnectInverterRequest(
                 brand = "SANDBOX",
                 sandboxAccessToken = sandboxAccessToken,
             ),
         )
+        prefs.saveInverterId(response.data.inverter.id)
     }
+
+    suspend fun getSavedInverterId(): String? = prefs.getInverterId()
 }

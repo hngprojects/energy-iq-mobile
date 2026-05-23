@@ -223,6 +223,10 @@ class AuthViewModel(
         _state.update { it.copy(confirmPassword = value, confirmPasswordError = null, generalError = null) }
     }
 
+    fun onRememberMeChange(value: Boolean) {
+        _state.update { it.copy(rememberMe = value) }
+    }
+
     fun onStartEmailVerification(fullName: String, email: String) {
         val normalizedEmail = email.trim()
         _state.update { current ->
@@ -391,6 +395,7 @@ class AuthViewModel(
                     AuthMode.LOGIN -> repository.login(
                         email = current.email.trim(),
                         password = current.password,
+                        isRememberMe = current.rememberMe,
                     )
 
                     AuthMode.REGISTER -> repository.register(

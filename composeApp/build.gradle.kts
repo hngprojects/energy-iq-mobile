@@ -111,10 +111,6 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.auth)
 
-            // RetroStash — annotation-driven HTTP caching over Ktor
-            implementation(libs.retrostash.core)
-            implementation(libs.retrostash.ktor)
-
             // Room
             implementation(libs.room.runtime)
 

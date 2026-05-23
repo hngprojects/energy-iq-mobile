@@ -45,13 +45,14 @@ class AuthApi(
             if (response.status.value in 200..299) {
                 response.body<LoginResponse>()
             } else {
-                val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message.toErrorMessage())
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Login failed (${response.status.value})")
             }
         } catch (e: ClientRequestException) {
-            val errorResponse = e.response.body<ApiErrorResponse>()
-            print(errorResponse)
-            throw Exception(errorResponse.message.toErrorMessage())
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -69,13 +70,14 @@ class AuthApi(
             if (response.status.value in 200..299) {
                 response.body<RegisterResponse>()
             } else {
-                val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message.toErrorMessage())
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Registration failed (${response.status.value})")
             }
         } catch (e: ClientRequestException) {
-            val errorResponse = e.response.body<ApiErrorResponse>()
-            print(errorResponse)
-            throw Exception(errorResponse.message.toErrorMessage())
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -93,13 +95,14 @@ class AuthApi(
             if (response.status.value in 200..299) {
                 response.body<ForgotPasswordResponse>()
             } else {
-                val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message.toErrorMessage())
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${response.status.value})")
             }
         } catch (e: ClientRequestException) {
-            val errorResponse = e.response.body<ApiErrorResponse>()
-            print(errorResponse)
-            throw Exception(errorResponse.message.toErrorMessage())
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -117,39 +120,40 @@ class AuthApi(
             if (response.status.value in 200..299) {
                 Unit
             } else {
-                val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message.toErrorMessage())
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Logout failed (${response.status.value})")
             }
         } catch (e: ClientRequestException) {
-            val errorResponse = e.response.body<ApiErrorResponse>()
-            print(errorResponse)
-            throw Exception(errorResponse.message.toErrorMessage())
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
         }
     }
 
-    suspend fun me(token: String): MeResponse {
+    suspend fun me(
+        token: String
+    ): MeResponse {
         return try {
-            val response = httpClient.get(
-                "${NetworkConfig.BASE_URL}/auth/me",
-            ) {
+            val url = "${NetworkConfig.BASE_URL}/auth/me"
+            val response = httpClient.get(url) {
                 header(HttpHeaders.Authorization, "Bearer $token")
                 contentType(ContentType.Application.Json)
             }
             if (response.status.value in 200..299) {
-                val raw = response.bodyAsText()
-                println("AuthApi.me raw response: $raw")
-                json.decodeFromString<MeResponse>(raw)
+                response.body<MeResponse>()
             } else {
-                val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message.toErrorMessage())
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Profile load failed (${response.status.value})")
             }
         } catch (e: ClientRequestException) {
-            val errorResponse = e.response.body<ApiErrorResponse>()
-            print(errorResponse)
-            throw Exception(errorResponse.message.toErrorMessage())
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -167,13 +171,14 @@ class AuthApi(
             if (response.status.value in 200..299) {
                 Unit
             } else {
-                val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message.toErrorMessage())
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Logout failed (${response.status.value})")
             }
         } catch (e: ClientRequestException) {
-            val errorResponse = e.response.body<ApiErrorResponse>()
-            print(errorResponse)
-            throw Exception(errorResponse.message.toErrorMessage())
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -191,13 +196,14 @@ class AuthApi(
             if (response.status.value in 200..299) {
                 response.body<LoginResponse>()
             } else {
-                val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message.toErrorMessage())
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Login failed (${response.status.value})")
             }
         } catch (e: ClientRequestException) {
-            val errorResponse = e.response.body<ApiErrorResponse>()
-            print(errorResponse)
-            throw Exception(errorResponse.message.toErrorMessage())
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()

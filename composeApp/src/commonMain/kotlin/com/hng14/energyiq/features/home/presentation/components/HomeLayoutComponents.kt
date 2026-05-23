@@ -1,11 +1,13 @@
 package com.hng14.energyiq.features.home.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -14,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -71,7 +72,11 @@ internal fun DraggableFab(
 }
 
 @Composable
-internal fun HomeTopBar(name: String?) {
+internal fun HomeTopBar(
+    name: String?,
+    onNotificationClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
+) {
     val initials = name
         ?.trim()
         ?.split(Regex("\\s+"))
@@ -95,11 +100,15 @@ internal fun HomeTopBar(name: String?) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             BellIcon(
                 contentDescription = "Notifications",
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onNotificationClick() },
             )
             Spacer(modifier = Modifier.width(12.dp))
             Surface(
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onProfileClick() },
                 shape = CircleShape,
                 color = Color(0xFFFFD3A5),
             ) {
@@ -117,13 +126,18 @@ internal fun HomeTopBar(name: String?) {
 }
 
 @Composable
-internal fun WarningBanner() {
+internal fun WarningBanner(
+    reason: String,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val dmSans = dmSansFontFamily()
 
     Surface(
         color = Color(0xFFFCEAEA),
         shape = RoundedCornerShape(18.dp),
         border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFC61C15)),
+        modifier = modifier
     ) {
         Row(
             modifier = Modifier
@@ -137,12 +151,12 @@ internal fun WarningBanner() {
                 modifier = Modifier.size(30.dp),
             )
             Text(
-                text = "Your battery will run flat by 10am. Switch off the AC in the back room now.",
+                text = reason,
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Normal,
-                    fontSize = 10.sp,
-                    lineHeight = 15.sp,
+                    fontSize = 11.sp,
+                    lineHeight = 16.sp,
                     letterSpacing = TextUnit.Unspecified,
                 ),
                 color = Color(0xFFC81E1E),
@@ -152,7 +166,9 @@ internal fun WarningBanner() {
                 imageVector = Icons.Outlined.Close,
                 contentDescription = "Dismiss warning",
                 tint = Color(0xFFC61C15),
-                modifier = Modifier.size(30.dp),
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onDismiss() },
             )
         }
     }

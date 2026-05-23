@@ -11,4 +11,8 @@ private class LocalStoragePreferenceStore : PreferenceStore {
         if (value != null) localStorage.setItem(key, value)
         else localStorage.removeItem(key)
     }
+
+    override suspend fun clear() {
+        localStorage.clear()
+    }
 }
