@@ -1,5 +1,7 @@
 package com.hng14.energyiq.features.auth.presentation.components
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +35,16 @@ fun OtpTextField(
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    val infiniteTransition = rememberInfiniteTransition(label = "otp_cursor")
+    val cursorAlpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "cursor_alpha"
+    )
 
     BasicTextField(
         modifier = modifier.fillMaxWidth(),
@@ -75,6 +88,14 @@ fun OtpTextField(
                                 ),
                             contentAlignment = Alignment.Center,
                         ) {
+                            if (isFocused) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(2.dp)
+                                        .height(24.dp)
+                                        .background(Color(0xFF4CD964).copy(alpha = cursorAlpha))
+                                )
+                            }
                             Text(
                                 text = char?.toString() ?: "",
                                 fontSize = 20.sp,

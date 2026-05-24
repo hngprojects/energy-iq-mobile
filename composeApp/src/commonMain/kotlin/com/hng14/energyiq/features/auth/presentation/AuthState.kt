@@ -18,6 +18,7 @@ data class AuthState(
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
     val isLoading: Boolean = false,
+    val rememberMe: Boolean = true,
     val generalError: String? = null,
     val snackbarMessage: String? = null,
 )

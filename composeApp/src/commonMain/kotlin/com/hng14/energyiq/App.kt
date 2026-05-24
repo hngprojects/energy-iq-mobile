@@ -87,9 +87,7 @@ private fun Content(
             else -> {
                 val user = auth.getCurrentUser()
                 if (user != null) {
-                    // Try to refresh profile to ensure session is still valid
-                    val isValid = runCatching { auth.getMe() }.isSuccess
-                    if (isValid) AppDestination.Home else AppDestination.Auth()
+                    AppDestination.Home
                 } else {
                     AppDestination.Auth()
                 }

@@ -106,8 +106,8 @@ fun EmailVerificationContent(
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),
                 contentColor = Color.White,
-                disabledContainerColor = Color(0xFF141D2F),
-                disabledContentColor = Color.White,
+                disabledContainerColor = Color(0xFFE5E7EB),
+                disabledContentColor = Color(0xFF9CA3AF),
             ),
         ) {
             if (isVerifying) {

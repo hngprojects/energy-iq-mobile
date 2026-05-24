@@ -19,12 +19,17 @@ class AuthRepository(
     private val userDao: UserDao,
 ) {
 
-    suspend fun login(email: String, password: String): User {
+    suspend fun login(email: String, password: String, isRememberMe: Boolean = true): User {
         val response = api.login(request = LoginRequest(email = email, password = password))
         val accessToken = response.data.accessToken
         val refreshToken = response.data.refreshToken
         val loginUser = response.data.user
-        preferences.saveSession(token = accessToken, refreshToken = refreshToken, userId = loginUser.id)
+        preferences.saveSession(
+            token = accessToken, 
+            refreshToken = refreshToken, 
+            userId = loginUser.id,
+            isPersistent = isRememberMe
+        )
         val remoteUser = api.me(token = accessToken).data
         val entity = UserEntity(
             id = remoteUser.id,
@@ -35,12 +40,13 @@ class AuthRepository(
         return entity.toDomain()
     }
 
-    suspend fun signInWithAccessToken(accessToken: String): User {
+    suspend fun signInWithAccessToken(accessToken: String, isRememberMe: Boolean = true): User {
         val remoteUser = api.me(token = accessToken).data
         preferences.saveSession(
             token = accessToken,
             refreshToken = null,
             userId = remoteUser.id,
+            isPersistent = isRememberMe
         )
         val entity = UserEntity(
             id = remoteUser.id,
@@ -72,7 +78,6 @@ class AuthRepository(
             name = "${remoteUser.firstName} ${remoteUser.lastName}",
         )
         userDao.upsert(user = entity)
-        preferences.saveUserId(entity.id)
         return entity.toDomain()
     }
 
@@ -142,7 +147,15 @@ class AuthRepository(
     }
 
     suspend fun getCurrentUser(): User? {
+        val isPersistent = preferences.isPersistentSession()
         val userId = preferences.getUserId() ?: return null
+        
+        if (!isPersistent) {
+            // User opted out of "Remember Me", so clear the session on app restart
+            logout()
+            return null
+        }
+
         return userDao.findById(id = userId)?.toDomain()
     }
 

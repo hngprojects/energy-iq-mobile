@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.hng14.energyiq.core.ui.ServerErrorDialog
 import com.hng14.energyiq.features.auth.presentation.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -21,6 +22,13 @@ fun EmailVerificationScreen(
         viewModel.onStartEmailVerification(
             fullName = fullName,
             email = email,
+        )
+    }
+
+    state.generalError?.let { message ->
+        ServerErrorDialog(
+            message = message,
+            onDismiss = viewModel::onDismissGeneralError,
         )
     }
 

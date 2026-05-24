@@ -46,12 +46,14 @@ import org.jetbrains.compose.resources.stringResource
 fun LoginContent(
     email: String,
     password: String,
+    rememberMe: Boolean,
     emailError: String?,
     passwordError: String?,
     generalError: String?,
     isLoading: Boolean,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onRememberMeChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
     onToggleMode: () -> Unit,
     onForgotPasswordClick: () -> Unit,
@@ -60,7 +62,6 @@ fun LoginContent(
     val energyColors = EnergyTheme.colors
     val dmSans = dmSansFontFamily()
     val adaptiveSpec = LocalAdaptiveScreenSpec.current
-    val rememberPassword = remember { mutableStateOf(false) }
     val emailLooksValid = email.isNotBlank() && email.contains('@') && emailError == null
     val passwordLooksValid = password.length >= 8 && password.any { !it.isLetterOrDigit() } && passwordError == null
 
@@ -134,17 +135,17 @@ fun LoginContent(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
-                modifier = Modifier.clickable { rememberPassword.value = !rememberPassword.value },
+                modifier = Modifier.clickable { onRememberMeChange(!rememberMe) },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Surface(
                     modifier = Modifier.size(14.dp),
                     shape = RoundedCornerShape(4.dp),
-                    color = if (rememberPassword.value) Color(0xFFF3A847) else Color.Transparent,
+                    color = if (rememberMe) Color(0xFFF3A847) else Color.Transparent,
                     border = BorderStroke(1.dp, Color(0xFFF3A847)),
                 ) {
-                    if (rememberPassword.value) {
+                    if (rememberMe) {
                         Row(
                             modifier = Modifier.fillMaxWidth().height(14.dp),
                             horizontalArrangement = Arrangement.Center,

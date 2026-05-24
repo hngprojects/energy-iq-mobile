@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 class InverterSetupViewModel(
     private val repository: OnboardingRepository,
@@ -66,6 +67,15 @@ class InverterSetupViewModel(
 
             runCatching {
                 repository.connectVictron(victronAccessToken = token)
+                // Double check that the ID is actually saved
+                var savedId: String? = null
+                var retries = 0
+                while (savedId == null && retries < 5) {
+                    savedId = repository.getSavedInverterId()
+                    if (savedId == null) delay(500)
+                    retries++
+                }
+                if (savedId == null) throw Exception("System error: Failed to save inverter configuration.")
             }.onSuccess {
                 _state.update { it.copy(isConnecting = false, connectError = null) }
                 onSuccess()
@@ -96,18 +106,25 @@ class InverterSetupViewModel(
 
             runCatching {
                 repository.connectSandbox(sandboxAccessToken = token)
+                // Double check that the ID is actually saved
+                var savedId: String? = null
+                var retries = 0
+                while (savedId == null && retries < 5) {
+                    savedId = repository.getSavedInverterId()
+                    if (savedId == null) delay(500)
+                    retries++
+                }
+                if (savedId == null) throw Exception("System error: Failed to save inverter configuration.")
             }.onSuccess {
                 _state.update { it.copy(isConnecting = false, connectError = null) }
                 onSuccess()
-            }.onFailure {
-                // Temporarily allow user to pass through even on failure
+            }.onFailure { error ->
                 _state.update {
                     it.copy(
                         isConnecting = false,
-                        connectError = null, // Clear error to hide dialog
+                        connectError = error.message ?: "Unable to connect inverter.",
                     )
                 }
-                onSuccess() // Still navigate to next screen
             }
         }
     }

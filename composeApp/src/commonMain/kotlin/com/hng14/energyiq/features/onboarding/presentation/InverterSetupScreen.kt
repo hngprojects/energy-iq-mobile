@@ -56,6 +56,7 @@ import com.hng14.energyiq.core.ui.AuthWaveDecoration
 import com.hng14.energyiq.core.ui.EnergyIqBrandMark
 import com.hng14.energyiq.core.ui.InverterCardIcon
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
+import com.hng14.energyiq.core.ui.ComingSoonDialog
 import com.hng14.energyiq.core.ui.OnboardingSuccessIllustration
 import com.hng14.energyiq.core.ui.ServerErrorDialog
 import com.hng14.energyiq.core.ui.adaptiveScreenSpec
@@ -421,6 +422,7 @@ fun InverterSetupScreen(
     var connectionValues by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var victronTestState by remember { mutableStateOf<VictronTestState>(VictronTestState.Idle) }
     var victronTestJob by remember { mutableStateOf<Job?>(null) }
+    var showComingSoonFor by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val inverterOptions = remember(setupState.supportedBrands) {
         setupState.supportedBrands.mapNotNull(::inverterOptionFor).distinctBy { it.title }
@@ -430,6 +432,13 @@ fun InverterSetupScreen(
         ServerErrorDialog(
             message = message,
             onDismiss = viewModel::onConnectErrorDismissed,
+        )
+    }
+
+    showComingSoonFor?.let { brand ->
+        ComingSoonDialog(
+            featureName = brand,
+            onDismiss = { showComingSoonFor = null }
         )
     }
 
@@ -443,6 +452,10 @@ fun InverterSetupScreen(
             onRetry = viewModel::loadSupportedBrands,
             onContinue = {
                 selectedOption?.let { option ->
+                    if (option.title != "Sandbox") {
+                        showComingSoonFor = option.title
+                        return@InverterSelectionContent
+                    }
                     connectionValues = option.connection.fields.associate { field -> field.id to field.initialValue }
                     victronTestJob?.cancel()
                     victronTestState = VictronTestState.Idle
@@ -913,12 +926,13 @@ private fun InverterSavedSuccessContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.TopCenter,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight(),
+                    .wrapContentHeight()
+                    .padding(top = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(

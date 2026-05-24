@@ -9,7 +9,6 @@ lifecycle = "2.10.0"
 
 # Networking
 ktor = "3.4.2"
-retrostash = "0.0.7"
 
 # Database / Storage
 room = "3.0.0-alpha03"
@@ -50,10 +49,6 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
-
-# RetroStash
-retrostash-core = { group = "dev.logickoder", name = "retrostash-core", version.ref = "retrostash" }
-retrostash-ktor = { group = "dev.logickoder", name = "retrostash-ktor", version.ref = "retrostash" }
 
 # Room 3.x KMP
 room-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room" }

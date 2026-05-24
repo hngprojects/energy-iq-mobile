@@ -1,7 +1,5 @@
 package com.hng14.energyiq.core.network
 
-import dev.logickoder.retrostash.core.RetrostashStore
-import dev.logickoder.retrostash.ktor.RetrostashPlugin
 import com.hng14.energyiq.features.auth.data.local.AuthPreferences
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -28,24 +26,16 @@ import kotlinx.serialization.json.jsonPrimitive
 
 fun createHttpClient(
     engine: HttpClientEngine,
-    retrostashStore: RetrostashStore,
     authPreferences: AuthPreferences,
 ): HttpClient =
     HttpClient(
         engine = engine,
         block = {
-            installRetrostash(store = retrostashStore)
             installContentNegotiation()
             installAuth(authPreferences = authPreferences)
             installLogging()
         },
     )
-
-private fun HttpClientConfig<*>.installRetrostash(store: RetrostashStore) {
-    install(plugin = RetrostashPlugin) {
-        this.store = store
-    }
-}
 
 private fun HttpClientConfig<*>.installContentNegotiation() {
     install(plugin = ContentNegotiation) {

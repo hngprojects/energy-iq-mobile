@@ -8,7 +8,20 @@ import kotlinx.serialization.json.JsonElement
 data class ConnectInverterResponse(
     val success: Boolean,
     val message: String,
-    val data: JsonElement? = null,
+    val data: ConnectInverterData,
     val meta: ResponseMetaDto,
+)
+
+@Serializable
+data class ConnectInverterData(
+    val inverter: InverterDto,
+    val created: Boolean,
+)
+
+@Serializable
+data class InverterDto(
+    val id: String,
+    val brand: String,
+    val model: String? = null,
 )
 

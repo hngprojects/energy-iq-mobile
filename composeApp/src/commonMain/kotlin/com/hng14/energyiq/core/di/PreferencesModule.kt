@@ -8,6 +8,6 @@ import org.koin.dsl.module
 
 fun preferencesModule(context: Any?): Module = module {
     single { createPreferenceStore(context) }
-    single { OnboardingPreferences(get()) }
+    single { OnboardingPreferences(get(), get()) }
     single { AuthPreferences(get()) }
 }
