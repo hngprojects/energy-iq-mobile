@@ -6,11 +6,14 @@ import com.hng14.energyiq.core.network.toErrorMessage
 import com.hng14.energyiq.features.auth.data.remote.dto.ApiErrorResponse
 import com.hng14.energyiq.features.auth.data.remote.dto.ForgotPasswordRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.ForgotPasswordResponse
+import com.hng14.energyiq.features.auth.data.remote.dto.GoogleMobileRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.LoginRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.LoginResponse
 import com.hng14.energyiq.features.auth.data.remote.dto.MeResponse
 import com.hng14.energyiq.features.auth.data.remote.dto.RegisterRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.RegisterResponse
+import com.hng14.energyiq.features.auth.data.remote.dto.ResendEmailOtpRequest
+import com.hng14.energyiq.features.auth.data.remote.dto.ResendEmailOtpResponse
 import com.hng14.energyiq.features.auth.data.remote.dto.ResetPasswordRequest
 import com.hng14.energyiq.features.auth.data.remote.dto.VerifyEmailRequest
 import io.ktor.client.HttpClient
@@ -34,6 +37,72 @@ class AuthApi(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
+    suspend fun resendEmailOtp(request: ResendEmailOtpRequest): ResendEmailOtpResponse {
+        return try {
+            val response = httpClient.post(
+                "${NetworkConfig.BASE_URL}/auth/resend-email-otp",
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+            if (response.status.value in 200..299) {
+                response.body<ResendEmailOtpResponse>()
+            } else {
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw AuthException(
+                    errorResponse = errorResponse,
+                    httpStatus = response.status.value,
+                    message = errorResponse?.message?.toErrorMessage() ?: "Resend OTP failed (${response.status.value})",
+                )
+            }
+        } catch (e: ClientRequestException) {
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw AuthException(
+                errorResponse = errorResponse,
+                httpStatus = e.response.status.value,
+                message = errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})",
+            )
+        } catch (e: Exception) {
+            print(e)
+            throw e.toFriendlyNetworkException()
+        }
+    }
+
+    suspend fun googleMobileSignIn(request: GoogleMobileRequest): LoginResponse {
+        return try {
+            val response = httpClient.post(
+                "${NetworkConfig.BASE_URL}/auth/google/mobile",
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+            if (response.status.value in 200..299) {
+                response.body<LoginResponse>()
+            } else {
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw AuthException(
+                    errorResponse = errorResponse,
+                    httpStatus = response.status.value,
+                    message = errorResponse?.message?.toErrorMessage() ?: "Google sign-in failed (${response.status.value})",
+                )
+            }
+        } catch (e: ClientRequestException) {
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw AuthException(
+                errorResponse = errorResponse,
+                httpStatus = e.response.status.value,
+                message = errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})",
+            )
+        } catch (e: Exception) {
+            print(e)
+            throw e.toFriendlyNetworkException()
+        }
+    }
+
     suspend fun login(request: LoginRequest): LoginResponse {
         return try {
             val response = httpClient.post(
@@ -47,12 +116,20 @@ class AuthApi(
             } else {
                 val body = response.bodyAsText()
                 val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
-                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Login failed (${response.status.value})")
+                throw AuthException(
+                    errorResponse = errorResponse,
+                    httpStatus = response.status.value,
+                    message = errorResponse?.message?.toErrorMessage() ?: "Login failed (${response.status.value})"
+                )
             }
         } catch (e: ClientRequestException) {
             val body = e.response.bodyAsText()
             val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
-            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
+            throw AuthException(
+                errorResponse = errorResponse,
+                httpStatus = e.response.status.value,
+                message = errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})"
+            )
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -198,12 +275,20 @@ class AuthApi(
             } else {
                 val body = response.bodyAsText()
                 val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
-                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Login failed (${response.status.value})")
+                throw AuthException(
+                    errorResponse = errorResponse,
+                    httpStatus = response.status.value,
+                    message = errorResponse?.message?.toErrorMessage() ?: "Login failed (${response.status.value})"
+                )
             }
         } catch (e: ClientRequestException) {
             val body = e.response.bodyAsText()
             val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
-            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
+            throw AuthException(
+                errorResponse = errorResponse,
+                httpStatus = e.response.status.value,
+                message = errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})"
+            )
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()

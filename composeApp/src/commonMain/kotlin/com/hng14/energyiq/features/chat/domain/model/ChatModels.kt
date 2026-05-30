@@ -8,13 +8,38 @@ data class ChatMessage(
     val isUser: Boolean,
     val timestamp: String,
     val kind: ChatMessageKind = ChatMessageKind.PLAIN,
+    // Used for grouping/dividers (e.g., Today/Yesterday) when we have server timestamps.
+    val createdAtIso: String? = null,
+    val cards: List<ChatCard> = emptyList(),
 )
 
 enum class ChatMessageKind {
     PLAIN,
     ALERT_SUMMARY,
     FOLLOW_UP,
+    CARDS,
 }
+
+enum class ChatCardType {
+    SUMMARY,
+    INSIGHTS,
+    RECOMMENDATION,
+    ANOMALY,
+}
+
+enum class ChatCardSeverity {
+    LOW,
+    MEDIUM,
+    HIGH,
+    CRITICAL,
+}
+
+data class ChatCard(
+    val type: ChatCardType,
+    val title: String,
+    val content: String,
+    val severity: ChatCardSeverity? = null,
+)
 
 data class ConversationMeta(
     val title: String,

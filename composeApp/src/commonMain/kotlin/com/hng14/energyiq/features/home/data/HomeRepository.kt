@@ -15,10 +15,69 @@ class HomeRepository(
 ) {
     private companion object {
         const val CACHE_KEY = "home_dashboard_cache"
+        const val SELECTED_INVERTER_KEY = "home_selected_inverter_id"
     }
 
-    suspend fun getInverterDashboard(): com.hng14.energyiq.features.home.data.remote.dto.InverterMetricsResponse? {
-        val inverterId = onboardingRepository.getSavedInverterId() ?: return null
+    // We intentionally do not rely on a persisted inverterId to avoid stale/mismatched data
+    // when users switch accounts or their active inverter changes server-side.
+    // We still cache the resolved inverterId for the current app session to avoid calling
+    // the "user inverters" endpoint on every poll/refresh.
+    private var sessionUserId: String? = null
+    private var sessionInverterId: String? = null
+
+    data class DashboardFetch(
+        val userId: String,
+        val inverterId: String,
+        val response: com.hng14.energyiq.features.home.data.remote.dto.InverterMetricsResponse,
+    )
+
+    fun peekSessionInverterId(): String? = sessionInverterId
+
+    suspend fun getSelectedInverterId(): String? {
+        val scopedKey = authPreferences.getUserScopedKey(SELECTED_INVERTER_KEY)
+        return store.get(scopedKey)
+    }
+
+    suspend fun setSelectedInverterId(inverterId: String?) {
+        val scopedKey = authPreferences.getUserScopedKey(SELECTED_INVERTER_KEY)
+        store.put(scopedKey, inverterId)
+        sessionInverterId = inverterId
+    }
+
+    suspend fun getInverterDashboard(): DashboardFetch? {
+        val userId = authPreferences.getUserId() ?: return null
+
+        // HomeRepository is typically a singleton; make the in-memory cache user-scoped
+        // so switching accounts doesn't reuse the previous user's inverterId.
+        if (sessionUserId != userId) {
+            sessionUserId = userId
+            sessionInverterId = null
+        }
+
+        var inverterId = sessionInverterId
+
+        // If the session doesn't have an inverterId yet, attempt to restore the user's last selection.
+        if (inverterId.isNullOrBlank()) {
+            inverterId = getSelectedInverterId()
+            if (!inverterId.isNullOrBlank()) {
+                sessionInverterId = inverterId
+            }
+        }
+
+        if (inverterId.isNullOrBlank()) {
+            // Always resolve inverterId from server for the current user, then cache in-session.
+            val userInverters = inverterApi.fetchUserInverters(userId)
+            val selected = userInverters.data.firstOrNull { it.isActive } ?: userInverters.data.firstOrNull()
+            inverterId = selected?.id ?: return null
+
+            sessionInverterId = inverterId
+            // Optional persistence (useful for offline/first paint), but we do NOT read from it.
+            onboardingRepository.saveInverterId(inverterId)
+
+            // Persist the selection so we can restore on next app start.
+            setSelectedInverterId(inverterId)
+        }
+
         return try {
             val response = inverterApi.fetchInverterDashboard(inverterId)
 
@@ -27,7 +86,7 @@ class HomeRepository(
 
             // Save to manual cache on success
             store.put(scopedKey, json.encodeToString(com.hng14.energyiq.features.home.data.remote.dto.InverterMetricsResponse.serializer(), response))
-            response
+            DashboardFetch(userId = userId, inverterId = inverterId, response = response)
         } catch (e: Exception) {
             throw e
         }
@@ -43,5 +102,10 @@ class HomeRepository(
         } catch (e: Exception) {
             null
         }
+    }
+
+    suspend fun getUserInverters(): List<com.hng14.energyiq.features.home.data.remote.dto.InverterDto> {
+        val userId = authPreferences.getUserId() ?: return emptyList()
+        return inverterApi.fetchUserInverters(userId).data
     }
 }

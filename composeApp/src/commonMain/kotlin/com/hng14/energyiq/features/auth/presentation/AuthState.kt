@@ -13,6 +13,8 @@ data class AuthState(
     val otpCode: String = "",
     val emailVerificationState: EmailVerificationState = EmailVerificationState.Typing,
     val resetToken: String? = null,
+    val resendOtpCooldownSeconds: Int = 0,
+    val isResendingOtp: Boolean = false,
     val fullNameError: String? = null,
     val emailError: String? = null,
     val passwordError: String? = null,
@@ -20,5 +22,6 @@ data class AuthState(
     val isLoading: Boolean = false,
     val rememberMe: Boolean = true,
     val generalError: String? = null,
+    val isVerificationRequired: Boolean = false,
     val snackbarMessage: String? = null,
 )

@@ -10,6 +10,7 @@ import org.koin.dsl.module
 fun coreModule(context: Any?): Module = module {
     single { createDatabase(context = context) }
     single { get<AppDatabase>().userDao() }
+    single { get<AppDatabase>().batteryHealthLogDao() }
     single { createHttpClient(get(), get()) }
     single<HttpClientEngine> { platformHttpEngine() }
 }

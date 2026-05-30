@@ -1,6 +1,7 @@
 package com.hng14.energyiq.features.home.di
 
 import com.hng14.energyiq.features.home.data.HomeRepository
+import com.hng14.energyiq.features.home.data.HealthLogRepository
 import com.hng14.energyiq.features.home.data.remote.InverterApi
 import com.hng14.energyiq.features.home.presentation.HomeViewModel
 import kotlinx.serialization.json.Json
@@ -10,6 +11,7 @@ import org.koin.dsl.module
 
 fun homeModule(): Module = module {
     single { InverterApi(get(), get()) }
+    single { HealthLogRepository(get()) }
     single {
         HomeRepository(
             inverterApi = get(),
@@ -20,6 +22,6 @@ fun homeModule(): Module = module {
         )
     }
     viewModel {
-        HomeViewModel(get(), get())
+        HomeViewModel(get(), get(), get())
     }
 }
