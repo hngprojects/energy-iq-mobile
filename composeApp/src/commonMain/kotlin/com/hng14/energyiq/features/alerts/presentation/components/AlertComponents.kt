@@ -97,6 +97,9 @@ fun SmartAlertStatCard(
 fun AlertToolbar(
     selectedFilter: AlertFilter,
     onFilterSelected: (AlertFilter) -> Unit,
+    unresolvedCount: Int,
+    isRefreshing: Boolean = false,
+    onRefreshClick: () -> Unit,
 ) {
     val dmSans = dmSansFontFamily()
     var isFilterExpanded by remember { mutableStateOf(false) }
@@ -196,6 +199,7 @@ fun AlertToolbar(
             shape = RoundedCornerShape(10.dp),
             color = Color.White,
             border = BorderStroke(1.dp, Color(0xFFECEEF1)),
+            modifier = Modifier.clickable(enabled = !isRefreshing) { onRefreshClick() }
         ) {
             Column(
                 modifier = Modifier,
@@ -215,7 +219,7 @@ fun AlertToolbar(
                             .background(Color(0xFF111827), CircleShape),
                     )
                     Text(
-                        text = "You have 2 unread alerts",
+                        text = "You have $unresolvedCount unresolved ${if (unresolvedCount == 1) "alert" else "alerts"}",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontFamily = dmSans,
                             fontWeight = FontWeight.Medium,
@@ -234,7 +238,7 @@ fun AlertToolbar(
                     horizontalArrangement = Arrangement.End,
                 ) {
                     Text(
-                        text = "last updated 30 secs ago",
+                        text = if (isRefreshing) "Refreshing..." else "Real-time updates",
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontFamily = dmSans,
                             fontWeight = FontWeight.Medium,
@@ -244,12 +248,20 @@ fun AlertToolbar(
                         color = Color(0xFF666666),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.Outlined.Refresh,
-                        contentDescription = null,
-                        tint = Color(0xFF666666),
-                        modifier = Modifier.size(20.dp),
-                    )
+                    if (isRefreshing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = Color(0xFF141D2F),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.Refresh,
+                            contentDescription = "Refresh",
+                            tint = Color(0xFF666666),
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
                 }
             }
         }
@@ -338,9 +350,10 @@ fun SmartAlertInspectDialog(
     content: SmartAlertDialogContent,
     onDismiss: () -> Unit,
     onPrimaryAction: () -> Unit,
+    isResolving: Boolean = false,
 ) {
     val dmSans = dmSansFontFamily()
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(onDismissRequest = if (isResolving) ({}) else onDismiss) {
         Surface(
             shape = RoundedCornerShape(20.dp),
             color = Color.White,
@@ -410,7 +423,7 @@ fun SmartAlertInspectDialog(
                         tint = Color(0xFF171717),
                         modifier = Modifier
                             .size(28.dp)
-                            .clickable(onClick = onDismiss),
+                            .clickable(enabled = !isResolving, onClick = onDismiss),
                     )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -488,21 +501,29 @@ fun SmartAlertInspectDialog(
                     Surface(
                         modifier = Modifier
                             .size(width = 156.dp, height = 62.dp)
-                            .clickable(onClick = onPrimaryAction),
+                            .clickable(enabled = !isResolving, onClick = onPrimaryAction),
                         shape = RoundedCornerShape(14.dp),
-                        color = Color(0xFF111827),
+                        color = if (isResolving) Color(0xFF9CA3AF) else Color(0xFF111827),
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = content.primaryActionLabel,
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontFamily = dmSans,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 16.sp,
-                                    lineHeight = 20.sp,
-                                ),
-                                color = Color.White,
-                            )
+                            if (isResolving) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    text = content.primaryActionLabel,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontFamily = dmSans,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 16.sp,
+                                        lineHeight = 20.sp,
+                                    ),
+                                    color = Color.White,
+                                )
+                            }
                         }
                     }
                 }

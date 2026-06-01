@@ -33,4 +33,8 @@ private class EncryptedPreferenceStore(context: Context) : PreferenceStore {
         }
         editor.commit() // Changed from apply() to commit() to ensure synchronous write for session data
     }
+
+    override suspend fun clear() {
+        prefs.edit().clear().commit()
+    }
 }

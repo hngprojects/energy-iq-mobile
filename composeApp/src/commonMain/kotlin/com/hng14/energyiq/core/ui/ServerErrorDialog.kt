@@ -5,6 +5,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -16,6 +17,8 @@ fun ServerErrorDialog(
     onDismiss: () -> Unit,
     title: String = "Something went wrong",
     confirmText: String = "OK",
+    secondaryText: String? = null,
+    onSecondary: (() -> Unit)? = null,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -33,6 +36,16 @@ fun ServerErrorDialog(
                 ),
             ) {
                 Text(confirmText)
+            }
+        },
+        dismissButton = {
+            if (!secondaryText.isNullOrBlank() && onSecondary != null) {
+                OutlinedButton(
+                    onClick = onSecondary,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text(secondaryText)
+                }
             }
         },
         shape = RoundedCornerShape(16.dp),

@@ -22,13 +22,30 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.hng14.energyiq.core.theme.EnergyPalette
+import com.hng14.energyiq.features.home.data.remote.dto.InverterHistoryItem
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @Composable
-internal fun EnergyUsageChart() {
-    val generated = listOf(18f, 22f, 16f, 21f, 30f, 29f, 26f)
-    val used = listOf(24f, 20f, 23f, 18f, 19f, 17f, 16f)
-    val labels = listOf("Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun")
-    val maxValue = 35f
+internal fun EnergyUsageChart(
+    history: List<InverterHistoryItem>
+) {
+    if (history.isEmpty()) return
+
+    val generated = history.map { it.solarKwh.toFloat() }
+    val used = history.map { it.avgLoadKw.toFloat() }
+    val labels = history.map { item ->
+        runCatching {
+            val dateTime = Instant.parse(item.date).toLocalDateTime(TimeZone.currentSystemDefault())
+            val day = dateTime.dayOfWeek.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+            day
+        }.getOrDefault("...")
+    }
+
+    val maxGen = generated.maxOrNull() ?: 0f
+    val maxUsed = used.maxOrNull() ?: 0f
+    val maxValue = (maxGen.coerceAtLeast(maxUsed) * 1.2f).coerceAtLeast(10f)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -47,9 +64,10 @@ internal fun EnergyUsageChart() {
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.End,
         ) {
-            listOf(35, 28, 21, 14, 7, 0).forEach { value ->
+            val step = maxValue / 5
+            (5 downTo 0).forEach { i ->
                 Text(
-                    text = value.toString(),
+                    text = (step * i).toInt().toString(),
                     style = MaterialTheme.typography.labelSmall,
                     color = Color(0xFF9CA3AF),
                 )
@@ -74,8 +92,8 @@ internal fun EnergyUsageChart() {
                     return Offset(x, y)
                 }
 
-                listOf(0f, 7f, 14f, 21f, 28f, 35f).forEach { grid ->
-                    val y = height - ((grid / maxValue) * height)
+                (0..5).forEach { i ->
+                    val y = height - ((i * (maxValue / 5)) / maxValue * height)
                     drawLine(
                         color = Color(0xFFE5E7EB),
                         start = Offset(0f, y),
@@ -83,15 +101,6 @@ internal fun EnergyUsageChart() {
                         strokeWidth = 1.dp.toPx(),
                     )
                 }
-
-                val fridayX = stepX * 4
-                drawLine(
-                    color = Color(0xFFD1D5DB),
-                    start = Offset(fridayX, 0f),
-                    end = Offset(fridayX, height),
-                    strokeWidth = 1.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f)),
-                )
 
                 for (index in 0 until generated.lastIndex) {
                     drawLine(
@@ -111,35 +120,21 @@ internal fun EnergyUsageChart() {
                     )
                 }
 
-                val highlight = point(4, generated[4])
-                drawCircle(
-                    color = EnergyPalette.Amber,
-                    radius = 5.dp.toPx(),
-                    center = highlight,
-                )
-                drawCircle(
-                    color = Color.White,
-                    radius = 2.5.dp.toPx(),
-                    center = highlight,
-                )
-
-                val tooltipWidth = 76.dp.toPx()
-                val tooltipHeight = 44.dp.toPx()
-                val tooltipLeft = (highlight.x + 10.dp.toPx()).coerceAtMost(width - tooltipWidth)
-                val tooltipTop = (highlight.y - tooltipHeight - 6.dp.toPx()).coerceAtLeast(4.dp.toPx())
-                drawRoundRect(
-                    color = Color.White,
-                    topLeft = Offset(tooltipLeft, tooltipTop),
-                    size = Size(tooltipWidth, tooltipHeight),
-                    cornerRadius = CornerRadius(10.dp.toPx()),
-                )
-                drawRoundRect(
-                    color = Color(0xFFE5E7EB),
-                    topLeft = Offset(tooltipLeft, tooltipTop),
-                    size = Size(tooltipWidth, tooltipHeight),
-                    cornerRadius = CornerRadius(10.dp.toPx()),
-                    style = Stroke(1.dp.toPx()),
-                )
+                // Highlight last point
+                val lastIndex = generated.size - 1
+                if (lastIndex >= 0) {
+                    val highlight = point(lastIndex, generated[lastIndex])
+                    drawCircle(
+                        color = EnergyPalette.Amber,
+                        radius = 5.dp.toPx(),
+                        center = highlight,
+                    )
+                    drawCircle(
+                        color = Color.White,
+                        radius = 2.5.dp.toPx(),
+                        center = highlight,
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))

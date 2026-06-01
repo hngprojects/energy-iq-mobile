@@ -1,5 +1,6 @@
 package com.hng14.energyiq.features.auth.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -50,6 +51,8 @@ fun RegisterContent(
     onCreateAccount: () -> Unit,
     onGoogleClick: () -> Unit,
     onLoginClick: () -> Unit,
+    onPrivacyPolicyClick: () -> Unit = {},
+    onTermsAndConditionsClick: () -> Unit = {},
 ) {
     val energyColors = EnergyTheme.colors
     val dmSans = dmSansFontFamily()
@@ -295,6 +298,7 @@ fun RegisterContent(
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable(onClick = onTermsAndConditionsClick),
             )
             Text(
                 text = stringResource(Res.string.auth_and),
@@ -313,6 +317,7 @@ fun RegisterContent(
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable(onClick = onPrivacyPolicyClick),
             )
         }
     }

@@ -16,6 +16,12 @@ data class UserDto(
     val lastLoginAt: String? = null,
     val role: String,
     val emailVerified: Boolean,
+    val businessName: String? = null,
+    val businessType: String? = null,
+    val state: String? = null,
+    val city: String? = null,
+    val aiLanguage: String? = null,
+    val profileUrl: String? = null,
     val createdAt: String,
     val updatedAt: String,
 )

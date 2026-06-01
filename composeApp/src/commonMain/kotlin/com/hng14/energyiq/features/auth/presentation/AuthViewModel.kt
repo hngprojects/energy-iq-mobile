@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 
 class AuthViewModel(
@@ -29,6 +31,8 @@ class AuthViewModel(
         ),
     )
     val state: StateFlow<AuthState> = _state.asStateFlow()
+
+    private var resendOtpTimerJob: Job? = null
 
     init {
         if (initialMode == AuthMode.CHECK_MAIL && initialResetToken?.isNotBlank() == true) {
@@ -63,6 +67,11 @@ class AuthViewModel(
                 AuthState(mode = mode, resetToken = resetToken)
             }
         }
+    }
+
+    fun onShowGeneralError(message: String) {
+        println("Auth: generalError=$message")
+        _state.update { it.copy(generalError = message) }
     }
 
     fun onToggleMode() {
@@ -207,20 +216,24 @@ class AuthViewModel(
     }
 
     fun onFullNameChange(value: String) {
-        _state.update { it.copy(fullName = value, fullNameError = null, generalError = null) }
+        _state.update { it.copy(fullName = value, fullNameError = null, generalError = null, isVerificationRequired = false) }
     }
 
     fun onEmailChange(value: String) {
         if (_state.value.mode == AuthMode.CHECK_MAIL && _state.value.isResetEmailLocked) return
-        _state.update { it.copy(email = value, emailError = null, generalError = null) }
+        _state.update { it.copy(email = value, emailError = null, generalError = null, isVerificationRequired = false) }
     }
 
     fun onPasswordChange(value: String) {
-        _state.update { it.copy(password = value, passwordError = null, generalError = null) }
+        _state.update { it.copy(password = value, passwordError = null, generalError = null, isVerificationRequired = false) }
     }
 
     fun onConfirmPasswordChange(value: String) {
         _state.update { it.copy(confirmPassword = value, confirmPasswordError = null, generalError = null) }
+    }
+
+    fun onRememberMeChange(value: Boolean) {
+        _state.update { it.copy(rememberMe = value) }
     }
 
     fun onStartEmailVerification(fullName: String, email: String) {
@@ -240,9 +253,13 @@ class AuthViewModel(
                     emailVerificationState = EmailVerificationState.Typing,
                     generalError = null,
                     isLoading = false,
+                    resendOtpCooldownSeconds = 0,
+                    isResendingOtp = false,
                 )
             }
         }
+        resendOtpTimerJob?.cancel()
+        resendOtpTimerJob = null
     }
 
     fun onOtpChange(value: String) {
@@ -304,6 +321,46 @@ class AuthViewModel(
                     )
                 }
             }
+        }
+    }
+
+    fun onResendEmailOtp() {
+        val current = _state.value
+        val email = current.email.trim()
+        if (email.isBlank()) return
+        if (current.isResendingOtp) return
+        if (current.resendOtpCooldownSeconds > 0) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isResendingOtp = true, generalError = null) }
+            runCatching {
+                withTimeout(60_000) {
+                    repository.resendEmailOtp(email = email)
+                }
+            }.onSuccess { message ->
+                _state.update { it.copy(snackbarMessage = message) }
+                startResendOtpCooldown(seconds = 300)
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        generalError = error.message ?: "Unable to resend code. Please try again.",
+                    )
+                }
+            }
+            _state.update { it.copy(isResendingOtp = false) }
+        }
+    }
+
+    private fun startResendOtpCooldown(seconds: Int) {
+        resendOtpTimerJob?.cancel()
+        resendOtpTimerJob = viewModelScope.launch {
+            var remaining = seconds
+            while (remaining > 0) {
+                _state.update { it.copy(resendOtpCooldownSeconds = remaining) }
+                delay(1000)
+                remaining--
+            }
+            _state.update { it.copy(resendOtpCooldownSeconds = 0) }
         }
     }
 
@@ -391,6 +448,7 @@ class AuthViewModel(
                     AuthMode.LOGIN -> repository.login(
                         email = current.email.trim(),
                         password = current.password,
+                        isRememberMe = current.rememberMe,
                     )
 
                     AuthMode.REGISTER -> repository.register(
@@ -400,12 +458,55 @@ class AuthViewModel(
                         password = current.password,
                     )
 
-                    AuthMode.FORGOT_PASSWORD, AuthMode.EMAIL_SENT, AuthMode.CHECK_MAIL, AuthMode.RESET_SUCCESS -> Unit
+                    else -> null
                 }
-            }.onSuccess {
+            }.onSuccess { user ->
                 _state.value = AuthState(mode = current.mode)
-                onSuccess(current.mode, current.fullName, current.email.trim())
+            }.onSuccess { user ->
+                if (user is com.hng14.energyiq.features.auth.domain.model.User) {
+                    onSuccess(current.mode, user)
+                }
+                _state.value = AuthState(mode = current.mode)
             }.onFailure { error ->
+                if (error is com.hng14.energyiq.features.auth.data.UnverifiedEmailException) {
+                    println("Auth: login failed with UnverifiedEmailException -> navigating to verification screen")
+                    // Go directly to the verification flow (no dialog).
+                    onGoToVerification(onSuccess = onSuccess)
+                    _state.update { it.copy(isLoading = false) }
+                    return@onFailure
+                }
+
+                // If backend explicitly says the email is not verified, take the user directly
+                // to the verification flow (instead of making them click the recovery action).
+                if (current.mode == AuthMode.LOGIN && error is com.hng14.energyiq.features.auth.data.remote.AuthException) {
+                    val msg = error.message.orEmpty()
+                    val isNotVerified = msg.contains("not verified", ignoreCase = true) &&
+                        (error.httpStatus == 401 || error.httpStatus == 403 || (error.errorResponse?.statusCode == 401 || error.errorResponse?.statusCode == 403))
+                    if (isNotVerified) {
+                        println("Auth: login not verified -> navigating to verification screen")
+                        onGoToVerification(onSuccess = onSuccess)
+                        _state.update { it.copy(isLoading = false) }
+                        return@onFailure
+                    }
+                }
+
+                // Some backends return a generic "invalid email or password" for unverified accounts.
+                // We can't reliably disambiguate from wrong credentials, so show the verification
+                // recovery option for any login AuthException.
+                if (current.mode == AuthMode.LOGIN &&
+                    error is com.hng14.energyiq.features.auth.data.remote.AuthException
+                ) {
+                    println("Auth: login failed with AuthException -> showing verification option")
+                    _state.update {
+                        it.copy(
+                            generalError = error.message ?: "Login failed. Please try again.",
+                            isVerificationRequired = true,
+                            isLoading = false,
+                        )
+                    }
+                    return@onFailure
+                }
+
                 _state.update {
                     it.copy(
                         generalError = error.message ?: "Something went wrong. Please try again.",
@@ -416,6 +517,56 @@ class AuthViewModel(
                 it.copy(isLoading = false)
             }
         }
+    }
+
+    fun onGoogleIdToken(
+        idToken: String,
+        requestedMode: AuthMode,
+        onSuccess: OnAuthSuccess,
+    ) {
+        if (_state.value.isLoading) return
+        val token = idToken.trim()
+        if (token.isBlank()) {
+            _state.update { it.copy(generalError = "Google sign-in failed. Please try again.") }
+            return
+        }
+
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, generalError = null) }
+            runCatching {
+                repository.signInWithGoogleIdToken(
+                    idToken = token,
+                    isRememberMe = _state.value.rememberMe,
+                )
+            }.onSuccess { user ->
+                onSuccess(requestedMode, user)
+                _state.value = AuthState(mode = _state.value.mode)
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        generalError = error.message ?: "Google sign-in failed. Please try again.",
+                    )
+                }
+            }
+            _state.update { it.copy(isLoading = false) }
+        }
+    }
+
+    fun onGoToVerification(onSuccess: OnAuthSuccess) {
+        val current = _state.value
+        val effectiveName = current.fullName.ifBlank {
+            current.email.trim().substringBefore("@")
+        }
+        val dummyUser = com.hng14.energyiq.features.auth.domain.model.User(
+            id = "",
+            email = current.email.trim(),
+            name = effectiveName,
+            role = "user",
+            emailVerified = false,
+            onBoardingComplete = false,
+            inverterBrand = null
+        )
+        onSuccess(AuthMode.REGISTER, dummyUser)
     }
 
     private fun validateInputs(): Boolean {

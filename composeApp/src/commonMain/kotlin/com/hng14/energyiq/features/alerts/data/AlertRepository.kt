@@ -1,7 +1,18 @@
 package com.hng14.energyiq.features.alerts.data
 
+import com.hng14.energyiq.core.storage.PreferenceStore
 import com.hng14.energyiq.features.alerts.data.remote.AlertsApi
-import com.hng14.energyiq.features.alerts.domain.model.*
+import com.hng14.energyiq.features.alerts.domain.model.AlertCardIcon
+import com.hng14.energyiq.features.alerts.domain.model.AlertMetric
+import com.hng14.energyiq.features.alerts.domain.model.AlertSeverity
+import com.hng14.energyiq.features.alerts.domain.model.AlertType
+import com.hng14.energyiq.features.alerts.domain.model.SmartAlertDialogContent
+import com.hng14.energyiq.features.alerts.domain.model.SmartAlertItem
+import com.hng14.energyiq.features.auth.data.local.AuthPreferences
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -9,6 +20,9 @@ import kotlinx.serialization.json.JsonPrimitive
 
 class AlertRepository(
     private val api: AlertsApi,
+    private val store: PreferenceStore,
+    private val json: Json,
+    private val authPrefs: AuthPreferences
 ) {
     val smartAlertItems = listOf(
         SmartAlertItem(
@@ -71,48 +85,100 @@ class AlertRepository(
         ),
     )
 
-    fun buildSmartAlertDialogContent(alertId: String): SmartAlertDialogContent? = when (alertId) {
-        "battery-critically-low-3" -> SmartAlertDialogContent(
-            title = "Battery critically low",
-            description = "Charge level at 11%.",
-            timestamp = "Today, 6:10am",
+    fun buildSmartAlertDialogContent(alert: SmartAlertItem): SmartAlertDialogContent {
+        // For the specific mock item that has rich details
+        if (alert.id == "battery-critically-low-3") {
+            return SmartAlertDialogContent(
+                title = "Battery critically low",
+                description = "Charge level at 11%.",
+                timestamp = alert.timestamp,
+                metrics = listOf(
+                    AlertMetric("Battery\nSOC", "11%"),
+                    AlertMetric("Discharge\nrate", "1.4 KW"),
+                    AlertMetric("Time to\n0%", "2h 30m"),
+                ),
+                explanation = "Your battery reserve dropped below the 15% threshold at 5:42 am. Solar generated so far has not made up for the overnight draw. Immediate action recommended to avoid outage.",
+                primaryActionLabel = "Resolve Now",
+            )
+        }
+
+        // Generic details for other alerts
+        return SmartAlertDialogContent(
+            title = alert.title,
+            description = alert.description,
+            timestamp = alert.timestamp,
             metrics = listOf(
-                AlertMetric("Battery\nSOC", "11%"),
-                AlertMetric("Discharge\nrate", "1.4 KW"),
-                AlertMetric("Time to\n0%", "2h 30m"),
-            ),
-            explanation = "Your battery reserve dropped below the 15% threshold at 5:42 am. Solar generated so far has not made up for the overnight draw. Immediate action recommended to avoid outage.",
-            primaryActionLabel = "Resolve Now",
-        )
-        else -> SmartAlertDialogContent(
-            title = "Alert details",
-            description = smartAlertItems.firstOrNull { it.id == alertId }?.description ?: "",
-            timestamp = smartAlertItems.firstOrNull { it.id == alertId }?.timestamp ?: "",
-            metrics = listOf(
-                AlertMetric("Severity", smartAlertItems.firstOrNull { it.id == alertId }?.severity?.name ?: ""),
-                AlertMetric("Status", if (smartAlertItems.firstOrNull { it.id == alertId }?.resolved == true) "Resolved" else "Open"),
+                AlertMetric("Severity", alert.severity.name.lowercase().replaceFirstChar { it.uppercase() }),
+                AlertMetric("Status", if (alert.resolved) "Resolved" else "Open"),
                 AlertMetric("Category", "System"),
             ),
-            explanation = "This alert was raised because the system detected unusual behavior that needs review.",
-            primaryActionLabel = "Resolve Now",
+            explanation = "This alert was raised because the system detected unusual behavior that needs review. Please inspect your system components.",
+            primaryActionLabel = if (alert.resolved) "View Details" else "Resolve Now",
         )
+    }
+
+    private companion object {
+        const val ALERTS_CACHE_KEY = "alerts_list_cache"
+        const val SUMMARY_CACHE_KEY = "alerts_summary_cache"
     }
 
     suspend fun fetchAlerts(
         alertType: AlertType?,
-        pageNumber: Int,
-        pageSize: Int,
     ): List<SmartAlertItem> {
-        val response = api.fetchAlerts(
-            alertType = alertType?.apiValue,
-            pageNumber = pageNumber,
-            pageSize = pageSize,
-        )
+        return try {
+            val response = api.fetchAlerts(alertType = alertType?.apiValue)
+            // User-scoped key for the alerts list
+            val scopedKey = authPrefs.getUserScopedKey(ALERTS_CACHE_KEY)
+            store.put(
+                scopedKey,
+                json.encodeToString(
+                    com.hng14.energyiq.features.alerts.data.remote.dto.AlertsResponse.serializer(),
+                    response
+                )
+            )
 
-        val items = extractAlertItems(response.data)
-        if (items.isEmpty()) return emptyList()
+            val items = extractAlertItems(response.data)
+            items.mapIndexed { index, element -> element.toSmartAlertItem(fallbackId = "alert-$index") }
+        } catch (e: Exception) {
+            throw e
+        }
+    }
 
-        return items.mapIndexed { index, element -> element.toSmartAlertItem(fallbackId = "alert-$index") }
+    suspend fun fetchAlertSummary(): com.hng14.energyiq.features.alerts.data.remote.dto.AlertSummaryResponse {
+        return try {
+            val response = api.fetchAlertSummary()
+            // User-scoped key for the summary stats
+            val scopedKey = authPrefs.getUserScopedKey(SUMMARY_CACHE_KEY)
+            store.put(scopedKey, json.encodeToString(com.hng14.energyiq.features.alerts.data.remote.dto.AlertSummaryResponse.serializer(), response))
+            response
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    suspend fun getCachedAlerts(alertType: AlertType?): List<SmartAlertItem>? {
+        return try {
+            val scopedKey = authPrefs.getUserScopedKey(ALERTS_CACHE_KEY)
+            val cachedJson = store.get(scopedKey) ?: return null
+            val response = json.decodeFromString<com.hng14.energyiq.features.alerts.data.remote.dto.AlertsResponse>(cachedJson)
+            val items = extractAlertItems(response.data)
+            items.mapIndexed { index, element -> element.toSmartAlertItem(fallbackId = "alert-$index") }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    suspend fun getCachedAlertSummary(): com.hng14.energyiq.features.alerts.data.remote.dto.AlertSummaryResponse? {
+        return try {
+            val cachedJson = store.get(SUMMARY_CACHE_KEY) ?: return null
+            json.decodeFromString<com.hng14.energyiq.features.alerts.data.remote.dto.AlertSummaryResponse>(cachedJson)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    suspend fun resolveAlert(alertId: String) {
+        api.resolveAlert(alertId)
     }
 
     private fun extractAlertItems(data: JsonElement?): List<JsonObject> {
@@ -123,7 +189,7 @@ class AlertRepository(
                 val inner = data["alerts"] ?: data["items"] ?: data["data"]
                 when (inner) {
                     is JsonArray -> inner.mapNotNull { it as? JsonObject }
-                    else -> emptyList()
+                    else -> listOf(data) // Try treating the object itself as the item if it's not a wrapper
                 }
             }
             else -> emptyList()
@@ -135,9 +201,7 @@ class AlertRepository(
             ?: string("_id")
             ?: string("alertId")
             ?: fallbackId
-        val title = string("title")
-            ?: string("name")
-            ?: string("type")
+        val title = string("type")?.replace("_", " ")?.lowercase()?.replaceFirstChar { it.titlecase() }
             ?: "Alert"
         val description = string("message")
             ?: string("description")
@@ -153,9 +217,10 @@ class AlertRepository(
             else -> AlertSeverity.WARNING
         }
 
-        val resolved = boolean("resolved")
-            ?: boolean("isResolved")
-            ?: (string("status")?.uppercase() == "RESOLVED")
+        val resolved = (string("resolutionStatus")?.uppercase() == "RESOLVED")
+            || (boolean("resolved") == true)
+            || (boolean("isResolved") == true)
+            || (string("status")?.uppercase() == "RESOLVED")
 
         val icon = when {
             title.contains("battery", ignoreCase = true) || description.contains("battery", ignoreCase = true) -> AlertCardIcon.BATTERY
@@ -173,11 +238,43 @@ class AlertRepository(
             severity = severity,
             title = title,
             description = description,
-            timestamp = timestamp,
+            timestamp = formatAlertTimestamp(timestamp),
             actionLabel = if (resolved) "Resolved" else "Inspect",
             resolved = resolved,
             icon = icon,
         )
+    }
+
+    private fun formatAlertTimestamp(isoString: String): String {
+        if (isoString.isBlank()) return ""
+        return try {
+            val instant = kotlin.time.Instant.parse(isoString)
+            val now = kotlin.time.Clock.System.now()
+            val tz = TimeZone.currentSystemDefault()
+            val dateTime = instant.toLocalDateTime(tz)
+            val today = now.toLocalDateTime(tz).date
+            val datePart = when (val alertDate = dateTime.date) {
+                today -> "Today"
+                today.minus(1, kotlinx.datetime.DateTimeUnit.DAY) -> "Yesterday"
+                else -> "${alertDate.day} ${
+                    alertDate.month.name.lowercase().replaceFirstChar { it.uppercase() }.take(3)
+                }"
+            }
+
+            val hour = dateTime.hour
+            val minute = dateTime.minute
+            val amPm = if (hour < 12) "am" else "pm"
+            val displayHour = when {
+                hour == 0 -> 12
+                hour > 12 -> hour - 12
+                else -> hour
+            }
+            val displayMinute = minute.toString().padStart(2, '0')
+
+            "$datePart, $displayHour:$displayMinute $amPm"
+        } catch (_: Exception) {
+            isoString
+        }
     }
 
     private fun JsonObject.string(key: String): String? {

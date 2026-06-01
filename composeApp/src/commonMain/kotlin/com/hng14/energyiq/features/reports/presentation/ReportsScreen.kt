@@ -29,6 +29,7 @@ fun ReportsScreen(
     name: String,
     onViewReport: (String) -> Unit,
     onDownloadReport: (String) -> Unit,
+    onProfileClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val stats = rememberReportStats()
@@ -39,7 +40,10 @@ fun ReportsScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
-        HomeTopBar(name = name)
+        HomeTopBar(
+            name = name,
+            onProfileClick = onProfileClick
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,6 +46,9 @@ fun EmailVerificationContent(
     isError: Boolean = false,
     isVerifying: Boolean = false,
     errorMessage: String? = null,
+    resendCooldownSeconds: Int = 0,
+    isResending: Boolean = false,
+    onResendClick: () -> Unit,
     onVerifyClick: () -> Unit,
     onBackToSignUp: () -> Unit,
 ) {
@@ -82,6 +86,14 @@ fun EmailVerificationContent(
             enabled = !isVerifying,
         )
 
+        Spacer(Modifier.height(10.dp))
+        ResendRow(
+            isEnabled = !isVerifying && !isResending && resendCooldownSeconds == 0,
+            isResending = isResending,
+            cooldownSeconds = resendCooldownSeconds,
+            onResendClick = onResendClick,
+        )
+
         if (isError) {
             Spacer(Modifier.height(8.dp))
             Text(
@@ -106,8 +118,8 @@ fun EmailVerificationContent(
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),
                 contentColor = Color.White,
-                disabledContainerColor = Color(0xFF141D2F),
-                disabledContentColor = Color.White,
+                disabledContainerColor = Color(0xFFE5E7EB),
+                disabledContentColor = Color(0xFF9CA3AF),
             ),
         ) {
             if (isVerifying) {
@@ -325,5 +337,46 @@ fun VerificationHeader(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+    }
+}
+
+@Composable
+private fun ResendRow(
+    isEnabled: Boolean,
+    isResending: Boolean,
+    cooldownSeconds: Int,
+    onResendClick: () -> Unit,
+) {
+    fun fmt(seconds: Int): String {
+        val m = seconds / 60
+        val s = seconds % 60
+        return "%02d:%02d".format(m, s)
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "Didn't get a code?",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.width(8.dp))
+        TextButton(
+            onClick = onResendClick,
+            enabled = isEnabled,
+            contentPadding = PaddingValues(0.dp),
+        ) {
+            val label = when {
+                isResending -> "Resending..."
+                cooldownSeconds > 0 -> "Resend in ${fmt(cooldownSeconds)}"
+                else -> "Resend code"
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+            )
+        }
     }
 }

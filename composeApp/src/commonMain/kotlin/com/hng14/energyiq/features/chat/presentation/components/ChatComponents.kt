@@ -1,8 +1,13 @@
-package com.hng14.energyiq.features.chat.presentation.components
+﻿package com.hng14.energyiq.features.chat.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -28,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,7 +50,9 @@ import com.hng14.energyiq.features.chat.domain.model.*
 import com.hng14.energyiq.features.chat.presentation.ChatAttachmentController
 
 @Composable
-fun TodayDivider() {
+fun TodayDivider(
+    label: String = "Today",
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -57,7 +65,7 @@ fun TodayDivider() {
                 .background(Color(0xFFE5E7EB)),
         )
         Text(
-            text = "Today",
+            text = label,
             style = MaterialTheme.typography.bodySmall.copy(
                 fontFamily = dmSansFontFamily(),
                 fontWeight = FontWeight.Medium,
@@ -83,7 +91,7 @@ fun ChatTopUtilityBar() {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "≡",
+            text = "â‰¡",
             style = MaterialTheme.typography.titleMedium,
             color = Color(0xFF4B5563),
         )
@@ -125,40 +133,45 @@ fun ChatHeader(
     isConversationMenuExpanded: Boolean,
     onConversationMenuExpandedChange: (Boolean) -> Unit,
     onConversationMenuAction: (ConversationMenuAction) -> Unit,
+    showBack: Boolean = true,
 ) {
     val dmSans = dmSansFontFamily()
 
     Row(verticalAlignment = Alignment.Top) {
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier
-                .size(28.dp)
-                .padding(top = 2.dp),
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Back",
-                tint = Color(0xFF4B5563),
-            )
+        if (showBack) {
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier
+                    .size(28.dp)
+                    .padding(top = 2.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color(0xFF4B5563),
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
         }
-        Spacer(modifier = Modifier.width(8.dp))
         Box {
             Column(
                 modifier = Modifier.clickable { onConversationMenuExpandedChange(true) },
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontFamily = dmSans,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                        lineHeight = 24.sp,
-                        letterSpacing = (-0.2).sp,
-                    ),
-                    color = Color(0xFF141414),
-                )
+                if (title.isNotBlank()) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontFamily = dmSans,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            lineHeight = 24.sp,
+                            letterSpacing = (-0.2).sp,
+                        ),
+                        color = Color(0xFF141414),
+                    )
+                }
                 if (subtitle.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    if (title.isNotBlank()) Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall.copy(
@@ -445,20 +458,7 @@ fun ChatHero() {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(
-            modifier = Modifier
-                .size(58.dp)
-                .clip(CircleShape)
-                .border(2.dp, EnergyPalette.Amber, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "⚡",
-                color = EnergyPalette.Amber,
-                style = MaterialTheme.typography.headlineSmall,
-            )
-        }
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Ask EnergyIQ anything about\nyour power system",
             style = MaterialTheme.typography.headlineSmall.copy(
@@ -656,84 +656,7 @@ fun ChatComposer(
                         .padding(start = 24.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Box {
-                        Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = "Add attachment",
-                            tint = Color(0xFF141414),
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clickable { isAttachmentMenuExpanded = true },
-                        )
-                        DropdownMenu(
-                            expanded = isAttachmentMenuExpanded,
-                            onDismissRequest = { isAttachmentMenuExpanded = false },
-                            modifier = Modifier
-                                .width(151.dp)
-                                .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(8.dp)),
-                            shape = RoundedCornerShape(8.dp),
-                            containerColor = Color.White,
-                            shadowElevation = 18.dp,
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "Add Photo or files",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontFamily = dmSans,
-                                            fontWeight = FontWeight.Normal,
-                                            fontSize = 14.sp,
-                                            lineHeight = 14.sp,
-                                        ),
-                                        color = Color(0xFF141414),
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.AttachFile,
-                                        contentDescription = null,
-                                        tint = Color(0xFF222222),
-                                        modifier = Modifier.size(20.dp),
-                                    )
-                                },
-                                onClick = {
-                                    isAttachmentMenuExpanded = false
-                                    attachmentController.pickPhotoOrFiles()
-                                },
-                            )
-                            HorizontalDivider(
-                                color = Color(0xFFE5E7EB),
-                                thickness = 1.dp,
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "Take a screenshot",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontFamily = dmSans,
-                                            fontWeight = FontWeight.Normal,
-                                            fontSize = 14.sp,
-                                            lineHeight = 14.sp,
-                                        ),
-                                        color = Color(0xFF141414),
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.PhotoCamera,
-                                        contentDescription = null,
-                                        tint = Color(0xFF222222),
-                                        modifier = Modifier.size(20.dp),
-                                    )
-                                },
-                                onClick = {
-                                    isAttachmentMenuExpanded = false
-                                    attachmentController.takeScreenshot()
-                                },
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(20.dp))
+                    // Add attachment + voice input disabled for now (keep UI minimal).
                     BasicTextField(
                         value = value,
                         onValueChange = onValueChange,
@@ -762,20 +685,15 @@ fun ChatComposer(
                         },
                     )
                     Spacer(modifier = Modifier.width(18.dp))
-                    Icon(
-                        imageVector = Icons.Outlined.MicNone,
-                        contentDescription = "Voice input",
-                        tint = Color(0xFF141414),
-                        modifier = Modifier.size(30.dp),
-                    )
-                    Spacer(modifier = Modifier.width(18.dp))
+                    val canSend = value.isNotBlank() || attachments.isNotEmpty()
+                    val sendBg = if (canSend) Color(0xFF121212) else Color(0xFF9CA3AF)
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF121212))
+                            .background(sendBg)
                             .padding(12.dp)
-                            .clickable(onClick = onSend),
+                            .clickable(enabled = canSend, onClick = onSend),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -797,6 +715,8 @@ fun ChatComposer(
 @Composable
 fun ConversationThread(
     messages: List<ChatMessage>,
+    isAgentTyping: Boolean = false,
+    userInitials: String = "",
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -804,14 +724,90 @@ fun ConversationThread(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         messages.forEach { message ->
-            ChatMessageBubble(message = message)
+            ChatMessageBubble(message = message, userInitials = userInitials)
+        }
+        if (isAgentTyping) {
+            TypingIndicatorBubble()
         }
     }
 }
 
 @Composable
+private fun TypingIndicatorBubble() {
+    val dmSans = dmSansFontFamily()
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
+        Surface(
+            shape = RoundedCornerShape(
+                topStart = 18.dp,
+                topEnd = 18.dp,
+                bottomStart = 4.dp,
+                bottomEnd = 18.dp,
+            ),
+            color = Color(0xFFF3F4F6),
+            modifier = Modifier.widthIn(max = 220.dp),
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Typing",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = dmSans,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                    ),
+                    color = Color(0xFF6B7280),
+                )
+                TypingDot(index = 0)
+                TypingDot(index = 1)
+                TypingDot(index = 2)
+            }
+        }
+    }
+}
+
+@Composable
+private fun TypingDot(
+    index: Int,
+) {
+    val transition = rememberInfiniteTransition(label = "typing")
+    val phase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "phase",
+    )
+
+    // Stagger dots by shifting the phase.
+    val shifted = (phase + index * 0.18f) % 1f
+    val alpha = when {
+        shifted < 0.5f -> 0.35f + (shifted / 0.5f) * 0.65f
+        else -> 1f - ((shifted - 0.5f) / 0.5f) * 0.65f
+    }
+    val scale = 0.85f + (alpha - 0.35f) * 0.20f
+
+    Box(
+        modifier = Modifier
+            .size(7.dp)
+            .graphicsLayer {
+                this.alpha = alpha
+                scaleX = scale
+                scaleY = scale
+            }
+            .background(Color(0xFF6B7280), CircleShape),
+    )
+}
+
+@Composable
 fun ChatMessageBubble(
     message: ChatMessage,
+    userInitials: String = "ME",
 ) {
     val dmSans = dmSansFontFamily()
     val alignment = if (message.isUser) Alignment.End else Alignment.Start
@@ -855,20 +851,82 @@ fun ChatMessageBubble(
                         )
                     }
                 }
-                SpeakerBadge(label = "AA")
+                SpeakerBadge(label = userInitials.ifBlank { "ME" })
             }
         } else {
             Row(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                SpeakerBadge(label = "AI")
                 when (message.kind) {
                     ChatMessageKind.ALERT_SUMMARY -> AlertSummaryCard(message = message)
                     ChatMessageKind.FOLLOW_UP -> FollowUpCard(message = message)
+                    ChatMessageKind.CARDS -> CardsBlock(message = message)
                     ChatMessageKind.PLAIN -> StandardBotCard(message = message)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CardsBlock(message: ChatMessage) {
+    Column(
+        modifier = Modifier.widthIn(max = 320.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        message.cards.forEach { card ->
+            InsightCard(card = card)
+        }
+    }
+}
+
+@Composable
+private fun InsightCard(card: ChatCard) {
+    val dmSans = dmSansFontFamily()
+
+    val (bg, border, titleColor) = when (card.type) {
+        ChatCardType.SUMMARY -> Triple(Color(0xFFEFF6FF), Color(0xFF93C5FD), Color(0xFF1D4ED8))
+        ChatCardType.INSIGHTS -> Triple(Color(0xFFF5F3FF), Color(0xFFC4B5FD), Color(0xFF6D28D9))
+        ChatCardType.RECOMMENDATION -> Triple(Color(0xFFECFDF5), Color(0xFF6EE7B7), Color(0xFF047857))
+        ChatCardType.ANOMALY -> {
+            val sev = card.severity ?: ChatCardSeverity.HIGH
+            when (sev) {
+                ChatCardSeverity.CRITICAL -> Triple(Color(0xFFFFF1F2), Color(0xFFFDA4AF), Color(0xFF9F1239))
+                ChatCardSeverity.HIGH -> Triple(Color(0xFFFFF7ED), Color(0xFFFDBA74), Color(0xFF9A3412))
+                ChatCardSeverity.MEDIUM -> Triple(Color(0xFFFFFBEB), Color(0xFFFDE68A), Color(0xFF92400E))
+                ChatCardSeverity.LOW -> Triple(Color(0xFFF0FDF4), Color(0xFF86EFAC), Color(0xFF166534))
+            }
+        }
+    }
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = bg,
+        border = androidx.compose.foundation.BorderStroke(1.dp, border),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Text(
+                text = card.title,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = dmSans,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                ),
+                color = titleColor,
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = card.content,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = dmSans,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                ),
+                color = Color(0xFF111827),
+            )
         }
     }
 }
@@ -905,7 +963,7 @@ fun AlertSummaryCard(message: ChatMessage) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "I’ve pulled the alert details:",
+                text = "I've pulled the alert details:",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Medium,
@@ -922,7 +980,7 @@ fun AlertSummaryCard(message: ChatMessage) {
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
                     Text(
-                        text = "⚠  Critical - Battery at 3%",
+                        text = "Critical - Battery at 3%",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontFamily = dmSans,
                             fontWeight = FontWeight.SemiBold,
@@ -1064,35 +1122,49 @@ fun AttachmentChip(
 }
 
 @Composable
-fun ChatListTopBar() {
+fun ChatListTopBar(
+    name: String?,
+    onNotificationClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
+) {
+    val initials = name
+        ?.trim()
+        ?.split(Regex("\\s+"))
+        ?.filter { it.isNotBlank() }
+        ?.take(2)
+        ?.joinToString("") { it.first().uppercase() }
+        ?.ifBlank { "U" }
+        ?: "U"
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = "≡",
-            style = MaterialTheme.typography.titleMedium,
-            color = Color(0xFF4B5563),
+        com.hng14.energyiq.core.ui.EnergyIqBrandMark(
+            horizontalArrangement = Arrangement.Start,
         )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Outlined.NotificationsNone,
-                contentDescription = null,
+                contentDescription = "Notifications",
                 tint = Color(0xFF4B5563),
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier
+                    .size(18.dp)
+                    .clickable { onNotificationClick() },
             )
+            Spacer(modifier = Modifier.width(12.dp))
             Surface(
-                modifier = Modifier.size(26.dp),
+                modifier = Modifier
+                    .size(26.dp)
+                    .clickable { onProfileClick() },
                 shape = CircleShape,
                 color = Color(0xFFF6D6A5),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
-                        text = "AJ",
+                        text = initials,
                         style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFF1F2937),
                         fontWeight = FontWeight.Bold,
@@ -1131,6 +1203,41 @@ fun CategoryPill(
                     lineHeight = 20.sp,
                 ),
                 color = Color(0xFF5D5C5D),
+            )
+        }
+    }
+}
+
+@Composable
+fun CategoryChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dmSans = dmSansFontFamily()
+    val selectedBorder = Color(0xFFF59E0B)
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(10.dp),
+        color = if (selected) Color.White else Color(0xFFF3F4F6),
+        border = if (selected) androidx.compose.foundation.BorderStroke(1.dp, selectedBorder) else null,
+    ) {
+        Box(
+            modifier = Modifier
+                .clickable(onClick = onClick)
+                .padding(horizontal = 14.dp, vertical = 9.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = dmSans,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                ),
+                color = if (selected) selectedBorder else Color(0xFF6B7280),
             )
         }
     }
@@ -1266,41 +1373,28 @@ fun ConversationCard(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Medium,
-                        fontSize = 20.sp,
-                        lineHeight = 24.sp,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
                         letterSpacing = (-0.2).sp,
                     ),
                     color = Color(0xFF171717),
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = conversation.subtitle,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = dmSans,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 12.sp,
-                        lineHeight = 18.sp,
-                    ),
-                    color = Color(0xFF666666),
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    shape = RoundedCornerShape(999.dp),
-                    color = conversation.tagColor.copy(alpha = 0.12f),
-                ) {
+                if (conversation.subtitle.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = conversation.tag,
-                        style = MaterialTheme.typography.bodyMedium.copy(
+                        text = conversation.subtitle,
+                        style = MaterialTheme.typography.bodySmall.copy(
                             fontFamily = dmSans,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            lineHeight = 14.sp,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp,
+                            lineHeight = 18.sp,
                         ),
-                        color = conversation.tagColor,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = Color(0xFF666666),
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier,
                     verticalAlignment = Alignment.CenterVertically,
@@ -1316,20 +1410,21 @@ fun ConversationCard(
                         color = Color(0xFF999999),
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Box {
-                        Icon(
-                            imageVector = Icons.Outlined.MoreVert,
-                            contentDescription = null,
-                            tint = Color(0xFF8A9099),
-                            modifier = Modifier
-                                .size(16.dp)
-                                .clickable { onMenuExpandedChange(true) },
-                        )
-                        ConversationCardMenu(
-                            expanded = isMenuExpanded,
-                            onDismiss = { onMenuExpandedChange(false) },
-                        )
-                    }
+                    // Menu disabled for now.
+//                    Box {
+//                        Icon(
+//                            imageVector = Icons.Outlined.MoreVert,
+//                            contentDescription = null,
+//                            tint = Color(0xFF8A9099),
+//                            modifier = Modifier
+//                                .size(16.dp)
+//                                .clickable { onMenuExpandedChange(true) },
+//                        )
+//                        ConversationCardMenu(
+//                            expanded = isMenuExpanded,
+//                            onDismiss = { onMenuExpandedChange(false) },
+//                        )
+//                    }
                 }
             }
         }

@@ -33,13 +33,14 @@ class OnboardingApi(
             if (response.status.value in 200..299) {
                 parseSupportedBrands(response.bodyAsText())
             } else {
-                val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message.toErrorMessage())
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${response.status.value})")
             }
         } catch (e: ClientRequestException) {
-            val errorResponse = e.response.body<ApiErrorResponse>()
-            print(errorResponse)
-            throw Exception(errorResponse.message.toErrorMessage())
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
@@ -48,20 +49,21 @@ class OnboardingApi(
 
     suspend fun connectInverter(request: ConnectInverterRequest): ConnectInverterResponse {
         return try {
-            val response = httpClient.post("${NetworkConfig.BASE_URL}/inverters/connect") {
+            val response = httpClient.post("${NetworkConfig.BASE_URL}/users/onboard") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }
             if (response.status.value in 200..299) {
                 response.body<ConnectInverterResponse>()
             } else {
-                val errorResponse = response.body<ApiErrorResponse>()
-                throw Exception(errorResponse.message.toErrorMessage())
+                val body = response.bodyAsText()
+                val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${response.status.value})")
             }
         } catch (e: ClientRequestException) {
-            val errorResponse = e.response.body<ApiErrorResponse>()
-            print(errorResponse)
-            throw Exception(errorResponse.message.toErrorMessage())
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching { json.decodeFromString<ApiErrorResponse>(body) }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
         } catch (e: Exception) {
             print(e)
             throw e.toFriendlyNetworkException()
