@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
@@ -46,21 +47,26 @@ import org.jetbrains.compose.resources.stringResource
 fun LoginContent(
     email: String,
     password: String,
+    rememberMe: Boolean,
     emailError: String?,
     passwordError: String?,
     generalError: String?,
+    isVerificationRequired: Boolean = false,
     isLoading: Boolean,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onRememberMeChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
+    onGoToVerification: () -> Unit,
     onToggleMode: () -> Unit,
     onForgotPasswordClick: () -> Unit,
     onGoogleClick: () -> Unit,
+    onPrivacyPolicyClick: () -> Unit = {},
+    onTermsAndConditionsClick: () -> Unit = {},
 ) {
     val energyColors = EnergyTheme.colors
     val dmSans = dmSansFontFamily()
     val adaptiveSpec = LocalAdaptiveScreenSpec.current
-    val rememberPassword = remember { mutableStateOf(false) }
     val emailLooksValid = email.isNotBlank() && email.contains('@') && emailError == null
     val passwordLooksValid = password.length >= 8 && password.any { !it.isLetterOrDigit() } && passwordError == null
 
@@ -111,6 +117,22 @@ fun LoginContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
+        if (isVerificationRequired) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Verify account",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = dmSans,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = Color(0xFFF3A847),
+                ),
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .clickable { onGoToVerification() }
+            )
+        }
+
         Spacer(modifier = Modifier.height(18.dp))
 
         PasswordTextField(
@@ -134,17 +156,17 @@ fun LoginContent(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
-                modifier = Modifier.clickable { rememberPassword.value = !rememberPassword.value },
+                modifier = Modifier.clickable { onRememberMeChange(!rememberMe) },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Surface(
                     modifier = Modifier.size(14.dp),
                     shape = RoundedCornerShape(4.dp),
-                    color = if (rememberPassword.value) Color(0xFFF3A847) else Color.Transparent,
+                    color = if (rememberMe) Color(0xFFF3A847) else Color.Transparent,
                     border = BorderStroke(1.dp, Color(0xFFF3A847)),
                 ) {
-                    if (rememberPassword.value) {
+                    if (rememberMe) {
                         Row(
                             modifier = Modifier.fillMaxWidth().height(14.dp),
                             horizontalArrangement = Arrangement.Center,
@@ -326,6 +348,8 @@ fun LoginContent(
                 ),
                 color = Color(0xFF2A2F3C),
                 textAlign = TextAlign.Center,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable(onClick = onTermsAndConditionsClick),
             )
             Text(
                 text = stringResource(Res.string.auth_and),
@@ -349,6 +373,8 @@ fun LoginContent(
                 ),
                 color = Color(0xFF2A2F3C),
                 textAlign = TextAlign.Center,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable(onClick = onPrivacyPolicyClick),
             )
         }
     }

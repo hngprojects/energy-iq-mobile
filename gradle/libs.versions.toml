@@ -9,7 +9,6 @@ lifecycle = "2.10.0"
 
 # Networking
 ktor = "3.4.2"
-retrostash = "0.0.7"
 
 # Database / Storage
 room = "3.0.0-alpha03"
@@ -20,6 +19,8 @@ koin = "4.1.0"
 
 # Kotlinx
 coroutines = "1.10.2"
+play-services-auth = "21.3.0"
+socketio = "2.1.0"
 
 [libraries]
 # Compose Multiplatform — explicit module coordinates (compose.* accessors deprecated)
@@ -51,10 +52,6 @@ ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version
 ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
-# RetroStash
-retrostash-core = { group = "dev.logickoder", name = "retrostash-core", version.ref = "retrostash" }
-retrostash-ktor = { group = "dev.logickoder", name = "retrostash-ktor", version.ref = "retrostash" }
-
 # Room 3.x KMP
 room-runtime = { group = "androidx.room3", name = "room3-runtime", version.ref = "room" }
 room-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room" }
@@ -83,6 +80,8 @@ kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime",
 core = "androidx.core:core-ktx:1.18.0"
 security-crypto = { group = "androidx.security", name = "security-crypto", version = "1.1.0-alpha06" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version = "2.0.17" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "play-services-auth" }
+socketio-client = { group = "io.socket", name = "socket.io-client", version.ref = "socketio" }
 
 # Testing
 junit = { group = "junit", name = "junit", version = "4.13.2" }

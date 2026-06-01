@@ -28,4 +28,8 @@ private class DataStorePreferenceStore(private val dataStore: DataStore<Preferen
             else prefs.remove(stringPreferencesKey(key))
         }
     }
+
+    override suspend fun clear() {
+        dataStore.edit { it.clear() }
+    }
 }

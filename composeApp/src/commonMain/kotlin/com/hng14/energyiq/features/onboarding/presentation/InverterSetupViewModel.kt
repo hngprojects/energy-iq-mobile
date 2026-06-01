@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 class InverterSetupViewModel(
     private val repository: OnboardingRepository,
@@ -50,22 +51,35 @@ class InverterSetupViewModel(
         }
     }
 
-    fun connectVictron(
-        victronAccessToken: String,
+    fun connectInverter(
+        brand: String,
+        values: Map<String, String>,
         onSuccess: () -> Unit,
     ) {
         if (_state.value.isConnecting) return
-        val token = victronAccessToken.trim()
-        if (token.isBlank()) {
-            _state.update { it.copy(connectError = "Victron access token is required.") }
-            return
-        }
-
+        
         viewModelScope.launch {
             _state.update { it.copy(isConnecting = true, connectError = null) }
 
             runCatching {
-                repository.connectVictron(victronAccessToken = token)
+                repository.connectInverter(
+                    brand = brand.uppercase(),
+                    victronAccessToken = values["vrm_api_token"],
+                    growattApiToken = values["growatt_api_token"],
+                    solarmanEmail = values["solarman_email"],
+                    solarmanPassword = values["solarman_password"],
+                    sandboxAccessToken = values["sandbox_access_token"],
+                )
+                // Double check that the ID is actually saved
+                var savedId: String? = null
+                var retries = 0
+                while (savedId == null && retries < 5) {
+                    savedId = repository.getSavedInverterId()
+                    if (savedId == null) delay(500)
+                    retries++
+                }
+                if (savedId == null) throw Exception("System error: Failed to save inverter configuration.")
+                repository.markOnboardingComplete()
             }.onSuccess {
                 _state.update { it.copy(isConnecting = false, connectError = null) }
                 onSuccess()
@@ -76,38 +90,6 @@ class InverterSetupViewModel(
                         connectError = error.message ?: "Unable to connect inverter.",
                     )
                 }
-            }
-        }
-    }
-
-    fun connectSandbox(
-        sandboxAccessToken: String,
-        onSuccess: () -> Unit,
-    ) {
-        if (_state.value.isConnecting) return
-        val token = sandboxAccessToken.trim()
-        if (token.isBlank()) {
-            _state.update { it.copy(connectError = "Sandbox access token is required.") }
-            return
-        }
-
-        viewModelScope.launch {
-            _state.update { it.copy(isConnecting = true, connectError = null) }
-
-            runCatching {
-                repository.connectSandbox(sandboxAccessToken = token)
-            }.onSuccess {
-                _state.update { it.copy(isConnecting = false, connectError = null) }
-                onSuccess()
-            }.onFailure {
-                // Temporarily allow user to pass through even on failure
-                _state.update {
-                    it.copy(
-                        isConnecting = false,
-                        connectError = null, // Clear error to hide dialog
-                    )
-                }
-                onSuccess() // Still navigate to next screen
             }
         }
     }

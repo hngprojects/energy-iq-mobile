@@ -9,5 +9,7 @@ class FakePreferenceStore : PreferenceStore {
         if (value == null) map.remove(key) else map[key] = value
     }
 
-    fun clear() = map.clear()
+    override suspend fun clear() {
+        map.clear()
+    }
 }

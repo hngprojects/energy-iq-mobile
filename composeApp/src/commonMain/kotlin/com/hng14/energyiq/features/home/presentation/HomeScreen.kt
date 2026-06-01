@@ -1,27 +1,41 @@
 package com.hng14.energyiq.features.home.presentation
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,23 +44,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.theme.EnergyPalette
+import com.hng14.energyiq.core.ui.ComingSoonDialog
 import com.hng14.energyiq.core.ui.DangerVectorIcon
+import com.hng14.energyiq.core.ui.EmptyStateCard
 import com.hng14.energyiq.core.ui.TransactionHistoryIcon
 import com.hng14.energyiq.features.alerts.presentation.SmartAlertsScreen
-import com.hng14.energyiq.features.profile.presentation.ProfileScreen
-import com.hng14.energyiq.features.reports.presentation.ReportsScreen
+import com.hng14.energyiq.features.home.data.remote.dto.InverterDashboardData
 import com.hng14.energyiq.features.home.presentation.components.BatteryCard
 import com.hng14.energyiq.features.home.presentation.components.DraggableFab
 import com.hng14.energyiq.features.home.presentation.components.EnergyUsageCard
-import org.koin.compose.viewmodel.koinViewModel
 import com.hng14.energyiq.features.home.presentation.components.HomeTopBar
 import com.hng14.energyiq.features.home.presentation.components.MetricCard
-import com.hng14.energyiq.features.home.presentation.components.PowerUsageCard
 import com.hng14.energyiq.features.home.presentation.components.SavingsOverviewCard
 import com.hng14.energyiq.features.home.presentation.components.WarningBanner
+import com.hng14.energyiq.features.profile.presentation.ProfileScreen
+import com.hng14.energyiq.features.reports.presentation.ReportsScreen
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import org.koin.compose.viewmodel.koinViewModel
 
 private enum class HomeTab(val title: String, val icon: ImageVector?) {
     Dashboard("Dashboard", Icons.Outlined.GridView),
@@ -55,14 +75,19 @@ private enum class HomeTab(val title: String, val icon: ImageVector?) {
     Profile("Profile", Icons.Outlined.Person),
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    startOnProfile: Boolean = false,
     onOpenChat: () -> Unit,
     onLogout: () -> Unit,
+    onOpenInverterSetup: () -> Unit,
 ) {
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
-    var selectedTab by remember { mutableStateOf(HomeTab.Dashboard) }
+    var selectedTab by remember { mutableStateOf(if (startOnProfile) HomeTab.Profile else HomeTab.Dashboard) }
+    var showReportsComingSoon by remember { mutableStateOf(false) }
+    var showNotificationsComingSoon by remember { mutableStateOf(false) }
 
     val name = state.user?.name ?: ""
     val fullName = name.trim()
@@ -70,15 +95,41 @@ fun HomeScreen(
     val displayName = firstName.ifBlank { "User" }
     val scrollState = rememberScrollState()
 
+    // Ensure the dashboard fetch runs when the Home screen becomes visible.
+    // In some navigation/backstack flows the ViewModel instance can be retained
+    // across auth transitions; relying only on init{} can skip the first fetch
+    // after login.
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
+
     Scaffold(
         containerColor = Color.White,
         bottomBar = {
             HomeBottomNavigation(
                 selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
+                onTabSelected = { tab ->
+                    if (tab == HomeTab.Reports) {
+                        showReportsComingSoon = true
+                    } else {
+                        selectedTab = tab
+                    }
+                }
             )
         }
     ) { paddingValues ->
+        if (showReportsComingSoon) {
+            ComingSoonDialog(
+                featureName = "Reports",
+                onDismiss = { showReportsComingSoon = false }
+            )
+        }
+        if (showNotificationsComingSoon) {
+            ComingSoonDialog(
+                featureName = "Notifications",
+                onDismiss = { showNotificationsComingSoon = false }
+            )
+        }
         Box(modifier = Modifier.fillMaxSize()) {
             when (selectedTab) {
                 HomeTab.Dashboard -> Column(
@@ -86,29 +137,66 @@ fun HomeScreen(
                         .fillMaxSize()
                         .padding(paddingValues),
                 ) {
-                    HomeTopBar(name = name)
-                    if (state.isLoading) {
+                    HomeTopBar(
+                        name = name,
+                        onNotificationClick = { showNotificationsComingSoon = true },
+                        onProfileClick = { selectedTab = HomeTab.Profile }
+                    )
+                    if (state.isLoading && (state.dashboardData == null || state.dashboardData?.currentReadings == null) && !state.isInitialSync) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(color = EnergyPalette.Amber)
                         }
+                    } else if (state.isInitialSync && state.dashboardData == null) {
+                        Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+                            InitialSyncCard(
+                                message = state.errorMessage ?: "Connecting to your inverter. This usually takes a few moments...",
+                                onRetry = viewModel::refresh
+                            )
+                        }
+                    } else if (state.errorMessage != null && state.dashboardData == null) {
+                        Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+                            EmptyStateCard(
+                                title = "Connection Error",
+                                description = state.errorMessage!!,
+                                onRetry = viewModel::refresh
+                            )
+                        }
                     } else {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(scrollState)
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                        PullToRefreshBox(
+                            isRefreshing = state.isLoading,
+                            onRefresh = viewModel::refresh,
+                            modifier = Modifier.fillMaxSize()
                         ) {
-                            DashboardContent(displayName = displayName)
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .verticalScroll(scrollState)
+                                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                            ) {
+                                DashboardContent(
+                                    displayName = displayName,
+                                    data = state.dashboardData,
+                                    showHealthBanner = state.dashboardData?.health?.status != "GREEN" && !state.isHealthBannerDismissed,
+                                    onDismissHealth = viewModel::onDismissHealthBanner
+                                )
+                            }
                         }
                     }
                 }
 
                 HomeTab.Alert -> Box(modifier = Modifier.padding(paddingValues)) {
-                    SmartAlertsScreen(name = name, onInspectAlert = {})
+                    SmartAlertsScreen(
+                        name = name, 
+                        onInspectAlert = {},
+                        onProfileClick = { selectedTab = HomeTab.Profile }
+                    )
                 }
 
                 HomeTab.Profile -> Box(modifier = Modifier.padding(paddingValues)) {
-                    ProfileScreen(onLogout = onLogout)
+                    ProfileScreen(
+                        onLogout = onLogout,
+                        onOpenInverterSetup = onOpenInverterSetup,
+                    )
                 }
 
                 HomeTab.Reports -> Box(modifier = Modifier.padding(paddingValues)) {
@@ -116,25 +204,10 @@ fun HomeScreen(
                         name = name,
                         onViewReport = {},
                         onDownloadReport = {},
+                        onProfileClick = { selectedTab = HomeTab.Profile }
                     )
                 }
 
-                else -> Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                ) {
-                    HomeTopBar(name = name)
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "${selectedTab.title} Screen",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                }
             }
 
             if (selectedTab == HomeTab.Dashboard) {
@@ -142,7 +215,8 @@ fun HomeScreen(
                     onClick = onOpenChat,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(end = 20.dp, bottom = 104.dp), // Increased padding to clear navbar
+                        // Keep the FAB comfortably above the bottom nav bar (which also applies navigationBarsPadding).
+                        .padding(end = 20.dp, bottom = 140.dp),
                 )
             }
         }
@@ -150,10 +224,83 @@ fun HomeScreen(
 }
 
 @Composable
-private fun DashboardContent(displayName: String) {
+private fun InitialSyncCard(
+    message: String,
+    onRetry: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFFECEEF1))
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier.size(64.dp).background(Color(0xFFF9FAFB), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(32.dp),
+                    color = Color(0xFF141D2F),
+                    strokeWidth = 3.dp
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Text(
+                text = "Setting up your Dashboard",
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = Color(0xFF111827),
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF6B7280),
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            Button(
+                onClick = onRetry,
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF141D2F)),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Retry Connection", color = Color.White)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DashboardContent(
+    displayName: String,
+    data: InverterDashboardData?,
+    showHealthBanner: Boolean,
+    onDismissHealth: () -> Unit
+) {
+    val greeting = run {
+        val hour = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
+        when (hour) {
+            in 5..11 -> "Good morning"
+            in 12..16 -> "Good afternoon"
+            else -> "Good evening"
+        }
+    }
+
     Column {
         Text(
-            text = "Good afternoon, $displayName",
+            text = "$greeting, $displayName",
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 24.sp,
@@ -163,7 +310,7 @@ private fun DashboardContent(displayName: String) {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "Your system has been running\non solar for 6 hrs today.",
+            text = if (data?.systemOffline == true) "Your system is currently offline." else "Your system is running normally.",
             style = MaterialTheme.typography.bodySmall.copy(
                 lineHeight = 16.sp,
             ),
@@ -172,33 +319,53 @@ private fun DashboardContent(displayName: String) {
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-        WarningBanner()
-        Spacer(modifier = Modifier.height(20.dp))
+        if (showHealthBanner && data?.health != null) {
+            WarningBanner(
+                reason = data.health.reason,
+                onDismiss = onDismissHealth
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+        
         MetricCard(
             title = "Solar Input",
-            value = "4.2 kW",
-            subtitle = "Peak was 5.8 kW at 03:30 pm",
+            value = "${data?.currentReadings?.solarKw ?: 0.0} kW",
+            subtitle = "Live solar generation",
             showSunIcon = true,
-            badgeText = "Panel working well",
-            badgeColor = Color(0xFFDDF7E6),
-            badgeContentColor = EnergyPalette.BatteryGreen,
+            badgeText = data?.health?.status ?: "Healthy",
+            badgeColor = when(data?.health?.status) {
+                "RED" -> Color(0xFFFDEAEA)
+                "AMBER" -> Color(0xFFFFF7ED)
+                else -> Color(0xFFDDF7E6)
+            },
+            badgeContentColor = when(data?.health?.status) {
+                "RED" -> EnergyPalette.Danger
+                "AMBER" -> EnergyPalette.Amber
+                else -> EnergyPalette.BatteryGreen
+            },
         )
         Spacer(modifier = Modifier.height(30.dp))
-        BatteryCard()
+        BatteryCard(
+            soc = data?.currentReadings?.batterySocPercent ?: 0.0,
+            subtitle = data?.health?.reason ?: "System healthy"
+        )
         Spacer(modifier = Modifier.height(30.dp))
         MetricCard(
             title = "Running now",
-            value = "2.8 kW",
-            subtitle = "Steady load",
+            value = "${data?.currentReadings?.loadKw ?: 0.0} kW",
+            subtitle = "Active power load",
             showRunningLowIcon = true,
             wrapSubtitleInContainer = true,
         )
         Spacer(modifier = Modifier.height(30.dp))
-        PowerUsageCard()
+        // PowerUsageCard() // Temporarily commented out as API does not provide breakdown data yet
+        // Spacer(modifier = Modifier.height(30.dp))
+        SavingsOverviewCard(
+            savedToday = data?.nairaSavedToday ?: 0.0,
+            savedMonth = data?.nairaSavedThisMonth ?: 0.0
+        )
         Spacer(modifier = Modifier.height(30.dp))
-        SavingsOverviewCard()
-        Spacer(modifier = Modifier.height(30.dp))
-        EnergyUsageCard()
+        EnergyUsageCard(history = data?.sevenDayHistory ?: emptyList())
         Spacer(modifier = Modifier.height(18.dp))
     }
 }
@@ -211,7 +378,8 @@ private fun HomeBottomNavigation(
     NavigationBar(
         containerColor = Color.White,
         tonalElevation = 0.dp,
-        modifier = Modifier.height(92.dp).padding(top = 12.dp)
+        modifier = Modifier.navigationBarsPadding(),
+        windowInsets = NavigationBarDefaults.windowInsets
     ) {
         HomeTab.entries.forEach { tab ->
             val isSelected = selectedTab == tab

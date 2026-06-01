@@ -9,6 +9,7 @@ class AuthPreferences(private val store: PreferenceStore) {
         const val UserIdKey = "user_id"
         const val PendingResetEmailKey = "pending_reset_email"
         const val PendingGoogleAuthModeKey = "pending_google_auth_mode"
+        const val IsPersistentSessionKey = "is_persistent_session"
     }
 
     suspend fun getToken(): String? = store.get(AuthTokenKey)
@@ -16,11 +17,13 @@ class AuthPreferences(private val store: PreferenceStore) {
     suspend fun getUserId(): String? = store.get(UserIdKey)
     suspend fun getPendingResetEmail(): String? = store.get(PendingResetEmailKey)
     suspend fun getPendingGoogleAuthMode(): String? = store.get(PendingGoogleAuthModeKey)
+    suspend fun isPersistentSession(): Boolean = store.get(IsPersistentSessionKey) == "true"
 
-    suspend fun saveSession(token: String, refreshToken: String?, userId: String) {
+    suspend fun saveSession(token: String, refreshToken: String?, userId: String, isPersistent: Boolean = true) {
         store.put(AuthTokenKey, token)
         store.put(RefreshTokenKey, refreshToken)
         store.put(UserIdKey, userId)
+        store.put(IsPersistentSessionKey, if (isPersistent) "true" else "false")
     }
 
     suspend fun saveTokens(token: String, refreshToken: String?) {
@@ -28,13 +31,10 @@ class AuthPreferences(private val store: PreferenceStore) {
         store.put(RefreshTokenKey, refreshToken)
     }
 
-
-    /// temporary work around login endpoint is not working so we cant get token
-    /// this will save session in room db and can be reused for login locally
-    ///  TODO: remove this when login endpoint is working
     suspend fun saveUserId(userId: String) {
         store.put(UserIdKey, userId)
     }
+
 
     suspend fun savePendingResetEmail(email: String) {
         store.put(PendingResetEmailKey, email)
@@ -52,11 +52,29 @@ class AuthPreferences(private val store: PreferenceStore) {
         store.put(PendingGoogleAuthModeKey, null)
     }
 
+    suspend fun clearAuthData() {
+        store.put(AuthTokenKey, null)
+        store.put(RefreshTokenKey, null)
+        // Note: We keep UserIdKey so we can still use it for scoped keys like onboarding status
+        clearPendingResetEmail()
+        clearPendingGoogleAuthMode()
+    }
+
     suspend fun clearSession() {
         store.put(AuthTokenKey, null)
         store.put(RefreshTokenKey, null)
         store.put(UserIdKey, null)
+        store.put(IsPersistentSessionKey, null)
         clearPendingResetEmail()
         clearPendingGoogleAuthMode()
+    }
+
+    suspend fun clearAll() {
+        store.clear()
+    }
+
+    suspend fun getUserScopedKey (key: String): String{
+        val userId = getUserId() ?: "anonymous"
+        return "$userId:$key"
     }
 }

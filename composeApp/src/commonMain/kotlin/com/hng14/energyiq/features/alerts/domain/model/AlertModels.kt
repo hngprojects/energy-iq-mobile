@@ -12,15 +12,15 @@ enum class AlertType(
     val apiValue: String,
     val label: String,
 ) {
-    BATTERY_PERCENTAGE("battery_percentage", "Battery %"),
-    LOW_BATTERY("low_battery", "Low Battery"),
-    BATTERY_TEMPERATURE("battery_temperature", "Battery Temp"),
-    ENERGY("energy", "Energy"),
-    OTHER("other", "Other"),
-    POWER("power", "Power"),
-    SOLAR_GEN("solar_gen", "Solar Gen"),
-    INVERTER_FAULT("inverter_fault", "Inverter Fault"),
-    INVERTER_TEMPERATURE("inverter_temperature", "Inverter Temp"),
+    BATTERY_PERCENTAGE("BATTERY_PERCENTAGE", "Battery %"),
+    LOW_BATTERY("LOW_BATTERY", "Low Battery"),
+    BATTERY_TEMPERATURE("BATTERY_TEMPERATURE", "Battery Temp"),
+    ENERGY("ENERGY", "Energy"),
+    OTHER("OTHER", "Other"),
+    POWER("POWER", "Power"),
+    SOLAR_GEN("SOLAR_GEN", "Solar Gen"),
+    INVERTER_FAULT("INVERTER_FAULT", "Inverter Fault"),
+    INVERTER_TEMPERATURE("INVERTER_TEMPERATURE", "Inverter Temp"),
 }
 
 enum class AlertCardIcon {

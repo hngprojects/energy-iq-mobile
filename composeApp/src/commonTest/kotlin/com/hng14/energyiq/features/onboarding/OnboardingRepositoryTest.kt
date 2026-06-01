@@ -14,12 +14,14 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import com.hng14.energyiq.features.auth.data.local.AuthPreferences
 
 class OnboardingRepositoryTest {
 
     private val store = FakePreferenceStore()
+    private val authPrefs = AuthPreferences(store)
     private val repo = OnboardingRepository(
-        prefs = OnboardingPreferences(store),
+        prefs = OnboardingPreferences(store,authPrefs),
         api = createOnboardingApi(),
     )
 
@@ -38,7 +40,7 @@ class OnboardingRepositoryTest {
     fun completionStateDoesNotResetAcrossInstances() = runTest {
         repo.markOnboardingComplete()
         val repo2 = OnboardingRepository(
-            prefs = OnboardingPreferences(store),
+            prefs = OnboardingPreferences(store, authPrefs),
             api = createOnboardingApi(),
         )
         assertTrue(repo2.hasCompletedOnboarding())

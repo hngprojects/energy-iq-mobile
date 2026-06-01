@@ -82,7 +82,16 @@ internal fun MetricCard(
 }
 
 @Composable
-internal fun BatteryCard() {
+internal fun BatteryCard(
+    soc: Double,
+    subtitle: String = "Usage remaining",
+) {
+    val socClamped = soc.coerceIn(0.0, 100.0)
+    // Display the value as-provided (no rounding); just trim trailing zeros like "12.0" -> "12".
+    val socRaw = socClamped.toString()
+    val socPretty = if (socRaw.contains('.')) socRaw.trimEnd('0').trimEnd('.') else socRaw
+    val socText = "${socPretty}%"
+
     DashboardCard(
         horizontalPadding = 24.dp,
         verticalPadding = 24.dp,
@@ -93,7 +102,7 @@ internal fun BatteryCard() {
         )
         Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = "74%",
+            text = socText,
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
@@ -101,12 +110,15 @@ internal fun BatteryCard() {
             color = Color(0xFF111827),
         )
         Spacer(modifier = Modifier.height(20.dp))
-        ProgressBar(progress = 0.74f, color = Color(0xFF0E9F6E))
+        ProgressBar(
+            progress = (socClamped / 100).toFloat(),
+            color = if (socClamped > 20) Color(0xFF0E9F6E) else EnergyPalette.Danger
+        )
         Spacer(modifier = Modifier.height(30.dp))
         Badge(
-            text = "6hrs of usage left",
-            containerColor = Color(0xFFDDF7E6),
-            contentColor = EnergyPalette.BatteryGreen,
+            text = subtitle,
+            containerColor = if (socClamped > 20) Color(0xFFDDF7E6) else Color(0xFFFDEAEA),
+            contentColor = if (socClamped > 20) EnergyPalette.BatteryGreen else EnergyPalette.Danger,
         )
     }
 }
@@ -209,7 +221,10 @@ internal fun PowerUsageCard() {
 }
 
 @Composable
-internal fun SavingsOverviewCard() {
+internal fun SavingsOverviewCard(
+    savedToday: Double,
+    savedMonth: Double,
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
@@ -230,7 +245,7 @@ internal fun SavingsOverviewCard() {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "NGN 8,430",
+                    text = "NGN ${savedToday.toInt()}",
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 40.sp,
@@ -239,17 +254,11 @@ internal fun SavingsOverviewCard() {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "That's NGN 2,100 less diesel you\ndidn't need to run today",
+                    text = "Savings generated from solar\nand battery usage today",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         lineHeight = 28.sp,
                     ),
                     color = Color(0xFF6B7280),
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Badge(
-                    text = "+12% more than yesterday",
-                    containerColor = Color(0xFFDDF7E6),
-                    contentColor = EnergyPalette.BatteryGreen,
                 )
             }
 
@@ -279,7 +288,7 @@ internal fun SavingsOverviewCard() {
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "NGN 41,200",
+                            text = "NGN ${savedMonth.toInt()}",
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 32.sp,
@@ -294,22 +303,15 @@ internal fun SavingsOverviewCard() {
                         modifier = Modifier.size(20.dp),
                     )
                 }
-
-                Spacer(modifier = Modifier.height(18.dp))
-                Badge(
-                    text = "+20% vs last month",
-                    containerColor = Color(0xFFFDEAEA),
-                    contentColor = EnergyPalette.Danger,
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                MonthAxis()
             }
         }
     }
 }
 
 @Composable
-internal fun EnergyUsageCard() {
+internal fun EnergyUsageCard(
+    history: List<com.hng14.energyiq.features.home.data.remote.dto.InverterHistoryItem>
+) {
     DashboardCard {
         Text(
             text = "Energy usage",
@@ -323,6 +325,6 @@ internal fun EnergyUsageCard() {
             color = Color(0xFF9CA3AF),
         )
         Spacer(modifier = Modifier.height(14.dp))
-        EnergyUsageChart()
+        EnergyUsageChart(history = history)
     }
 }
