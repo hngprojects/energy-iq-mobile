@@ -23,7 +23,7 @@ class ConnectInverterApiTest {
     fun connectVictronHitsExpectedEndpointAndSendsToken() = runTest {
         val client = HttpClient(
             MockEngine { request ->
-                assertTrue(request.url.encodedPath.endsWith("/inverters/connect"))
+                assertTrue(request.url.encodedPath.endsWith("/users/onboard"))
                 assertEquals("POST", request.method.value)
 
                 val body = request.body
@@ -32,7 +32,7 @@ class ConnectInverterApiTest {
                 assertTrue(bodyText.contains("\"victronAccessToken\":\"victron-token\""))
 
                 respond(
-                    content = """{"success":true,"message":"connected","data":null,"meta":{"timestamp":"2026-05-20T00:00:00.000Z"}}""",
+                    content = """{"success":true,"message":"connected","data":{"id":"inv-123","brand":"VICTRON"},"meta":{"timestamp":"2026-05-20T00:00:00.000Z"}}""",
                     status = HttpStatusCode.OK,
                     headers = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString())),
                 )

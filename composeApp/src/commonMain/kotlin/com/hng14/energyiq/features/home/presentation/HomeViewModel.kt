@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hng14.energyiq.features.auth.data.AuthRepository
 import com.hng14.energyiq.features.home.OnLogout
+import com.hng14.energyiq.features.home.data.HealthLogRepository
 import com.hng14.energyiq.features.home.data.HomeRepository
 import com.hng14.energyiq.features.home.data.remote.dto.InverterDashboardData
 import kotlinx.coroutines.Job
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val repository: AuthRepository,
     private val homeRepository: HomeRepository,
+    private val healthLogRepository: HealthLogRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -35,69 +37,87 @@ class HomeViewModel(
     private fun loadData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
-            
-            val userJob = launch {
-                runCatching {
-                    repository.getMe()
-                }.onSuccess { user ->
-                    _state.update { it.copy(user = user) }
-                }.onFailure {
-                    val user = repository.getCurrentUser()
-                    _state.update { it.copy(user = user) }
+
+            // User profile is already cached on login/app-start
+            val cachedUser = repository.getCurrentUser()
+            if (cachedUser != null) {
+                _state.update { it.copy(user = cachedUser) }
+            }
+
+            // Load from manual dashboard cache instantly
+            runCatching {
+                homeRepository.getCachedInverterDashboard()
+            }.onSuccess { cached ->
+                if (cached?.data?.currentReadings != null) {
+                    _state.update { it.copy(dashboardData = cached.data) }
                 }
             }
 
-            val dashboardJob = launch {
-                // Step 1: Load from manual cache instantly
+            // Fetch from network with extended retry for first-time recovery
+            var attempt = 0
+            val maxAttempts = 5
+            var success = false
+            var lastError: Throwable? = null
+
+            while (attempt < maxAttempts && !success) {
                 runCatching {
-                    homeRepository.getCachedInverterDashboard()
-                }.onSuccess { cached ->
-                    if (cached?.data?.currentReadings != null) {
-                        _state.update { it.copy(dashboardData = cached.data) }
+                    homeRepository.getInverterDashboard()
+                }.onSuccess { response ->
+                    val data = response?.response?.data
+                    if (data?.currentReadings != null) {
+                        _state.update { it.copy(dashboardData = data, errorMessage = null) }
+                        if (response != null) {
+                            healthLogRepository.recordFromDashboard(
+                                userId = response.userId,
+                                inverterId = response.inverterId,
+                                data = data,
+                            )
+                        }
+                        success = true
+                    } else if (_state.value.dashboardData != null) {
+                        success = true
                     }
+                }.onFailure { e ->
+                    lastError = e
                 }
 
-                // Step 2: Fetch from network with extended retry for first-time setup
-                var attempt = 0
-                val maxAttempts = 5
-                var success = false
-                
-                while (attempt < maxAttempts && !success) {
-                    runCatching {
-                        homeRepository.getInverterDashboard()
-                    }.onSuccess { response ->
-                        // We only consider it a 'success' if we got actual measurements
-                        // OR if we already have some data to show from cache
-                        val data = response?.data
-                        if (data?.currentReadings != null) {
-                            _state.update { it.copy(dashboardData = data, errorMessage = null) }
-                            success = true
-                        } else if (_state.value.dashboardData != null) {
-                            // If we have cache but network returned empty, just stop retrying
-                            success = true
-                        }
-                    }
-                    
-                    if (!success) {
-                        delay(3000) // Wait 3 seconds before next retry
-                    }
-                    attempt++
+                if (!success) {
+                    delay(3000) // Wait 3 seconds before next retry
                 }
-                
-                // If after all retries we still have nothing, check if we at least have an empty dashboard object
-                if (_state.value.dashboardData == null) {
-                    runCatching { homeRepository.getInverterDashboard() }.onSuccess { response ->
-                        if (response?.data != null) {
-                            _state.update { it.copy(dashboardData = response.data, errorMessage = null) }
-                        } else {
-                            _state.update { it.copy(errorMessage = "Connecting to inverter... Pull to refresh in a moment.") }
+                attempt++
+            }
+
+            // Final fallback check
+            if (_state.value.dashboardData == null) {
+                runCatching { homeRepository.getInverterDashboard() }.onSuccess { response ->
+                    val data = response?.response?.data
+                    if (data != null) {
+                        _state.update { it.copy(dashboardData = data, errorMessage = null) }
+                        if (response != null) {
+                            healthLogRepository.recordFromDashboard(
+                                userId = response.userId,
+                                inverterId = response.inverterId,
+                                data = data,
+                            )
                         }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                errorMessage = lastError?.message
+                                    ?: "Connecting to inverter... Pull to refresh in a moment.",
+                            )
+                        }
+                    }
+                }.onFailure { e ->
+                    _state.update {
+                        it.copy(
+                            errorMessage = e.message
+                                ?: "Unable to load dashboard. Pull to refresh and try again.",
+                        )
                     }
                 }
             }
 
-            userJob.join()
-            dashboardJob.join()
             _state.update { it.copy(isLoading = false) }
         }
     }
@@ -106,6 +126,11 @@ class HomeViewModel(
         pollingJob?.cancel()
         pollingJob = viewModelScope.launch {
             while (true) {
+                // Extra safety: Stop polling if we are logging out or lost session
+                if (_state.value.isLoggingOut || repository.getCurrentUser() == null) {
+                    break
+                }
+
                 // If we don't have dashboard data yet, try immediately
                 // Otherwise, wait 30 seconds
                 if (_state.value.dashboardData != null) {
@@ -115,9 +140,16 @@ class HomeViewModel(
                 runCatching {
                     homeRepository.getInverterDashboard()
                 }.onSuccess { response ->
-                    val newData = response?.data
+                    val newData = response?.response?.data
                     if (newData != null && newData != _state.value.dashboardData) {
                         _state.update { it.copy(dashboardData = newData, errorMessage = null) }
+                        if (response != null) {
+                            healthLogRepository.recordFromDashboard(
+                                userId = response.userId,
+                                inverterId = response.inverterId,
+                                data = newData,
+                            )
+                        }
                     }
                 }
                 
@@ -131,6 +163,11 @@ class HomeViewModel(
 
     fun onLogout(onLogout: OnLogout) {
         if (_state.value.isLoggingOut) return
+        
+        // Stop polling immediately
+        pollingJob?.cancel()
+        pollingJob = null
+
         viewModelScope.launch {
             _state.update { it.copy(isLoggingOut = true, errorMessage = null) }
             runCatching {

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hng14.energyiq.features.alerts.data.AlertRepository
 import com.hng14.energyiq.features.alerts.domain.model.*
+import com.hng14.energyiq.features.auth.data.AuthRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +24,8 @@ data class AlertState(
 )
 
 class AlertViewModel(
-    private val repository: AlertRepository
+    private val repository: AlertRepository,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AlertState())
@@ -107,6 +109,11 @@ class AlertViewModel(
         pollingJob?.cancel()
         pollingJob = viewModelScope.launch {
             while (true) {
+                // Safety: Stop polling if user logged out
+                if (authRepository.getCurrentUser() == null) {
+                    break
+                }
+
                 kotlinx.coroutines.delay(45_000) // Poll every 45 seconds for alerts
                 val currentType = _state.value.selectedType ?: AlertType.BATTERY_PERCENTAGE
                 

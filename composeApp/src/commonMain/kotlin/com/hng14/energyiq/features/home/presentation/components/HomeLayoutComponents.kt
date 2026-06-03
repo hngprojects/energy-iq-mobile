@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -96,6 +98,79 @@ internal fun HomeTopBar(
         com.hng14.energyiq.core.ui.EnergyIqBrandMark(
             horizontalArrangement = Arrangement.Start
         )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            BellIcon(
+                contentDescription = "Notifications",
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onNotificationClick() },
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Surface(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onProfileClick() },
+                shape = CircleShape,
+                color = Color(0xFFFFD3A5),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = initials,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color(0xFF2A2F3C),
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun BackHomeTopBar(
+    title: String,
+    name: String?,
+    onBack: () -> Unit,
+    onNotificationClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
+) {
+    val dmSans = dmSansFontFamily()
+    val initials = name
+        ?.trim()
+        ?.split(Regex("\\s+"))
+        ?.filter { it.isNotBlank() }
+        ?.take(2)
+        ?.joinToString("") { it.first().uppercase() }
+        ?.ifBlank { "U" }
+        ?: "U"
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color(0xFF111827),
+                )
+            }
+            Spacer(modifier = Modifier.size(4.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = dmSans,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                ),
+                color = Color(0xFF111827),
+            )
+        }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             BellIcon(

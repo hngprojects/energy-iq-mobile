@@ -9,6 +9,9 @@ val localProperties = Properties().apply {
 }
 
 val baseUrl = localProperties.getProperty("BASE_URL") ?: "https://api.staging.energy-iq.hng14.com/api/v1/"
+// Used by Android Google Sign-In to request an ID token.
+// Put `GOOGLE_WEB_CLIENT_ID=...` in `local.properties`.
+val googleWebClientId = localProperties.getProperty("GOOGLE_WEB_CLIENT_ID") ?: ""
 
 val generateLocalConfig by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/source/localConfig/commonMain/kotlin")
@@ -21,6 +24,7 @@ val generateLocalConfig by tasks.registering {
     }
 
     inputs.property("baseUrl", baseUrl)
+    inputs.property("googleWebClientId", googleWebClientId)
     outputs.dir(outputDir)
 
     doLast {
@@ -32,9 +36,19 @@ val generateLocalConfig by tasks.registering {
 
             object LocalConfig {
                 const val baseUrl = "$baseUrl"
+                const val googleWebClientId = "$googleWebClientId"
             }
             """.trimIndent()
         )
+    }
+}
+
+// Ensure the generated LocalConfig.kt is always up-to-date before compilation.
+// Without this, Gradle may reuse a previously generated file that doesn't contain
+// newly added fields (e.g. googleWebClientId), leading to "unresolved reference".
+tasks.configureEach {
+    if (name.startsWith("compileKotlin")) {
+        dependsOn(generateLocalConfig)
     }
 }
 
@@ -134,6 +148,8 @@ kotlin {
             implementation(libs.core)
             implementation(libs.security.crypto)
             implementation(libs.room.sqlite)
+            implementation(libs.play.services.auth)
+            implementation(libs.socketio.client)
         }
 
         iosMain.dependencies {

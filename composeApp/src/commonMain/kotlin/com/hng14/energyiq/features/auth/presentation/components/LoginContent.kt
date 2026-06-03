@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
@@ -50,14 +51,18 @@ fun LoginContent(
     emailError: String?,
     passwordError: String?,
     generalError: String?,
+    isVerificationRequired: Boolean = false,
     isLoading: Boolean,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onRememberMeChange: (Boolean) -> Unit,
     onSubmit: () -> Unit,
+    onGoToVerification: () -> Unit,
     onToggleMode: () -> Unit,
     onForgotPasswordClick: () -> Unit,
     onGoogleClick: () -> Unit,
+    onPrivacyPolicyClick: () -> Unit = {},
+    onTermsAndConditionsClick: () -> Unit = {},
 ) {
     val energyColors = EnergyTheme.colors
     val dmSans = dmSansFontFamily()
@@ -111,6 +116,22 @@ fun LoginContent(
             imeAction = ImeAction.Next,
             modifier = Modifier.fillMaxWidth(),
         )
+
+        if (isVerificationRequired) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Verify account",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = dmSans,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = Color(0xFFF3A847),
+                ),
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .clickable { onGoToVerification() }
+            )
+        }
 
         Spacer(modifier = Modifier.height(18.dp))
 
@@ -327,6 +348,8 @@ fun LoginContent(
                 ),
                 color = Color(0xFF2A2F3C),
                 textAlign = TextAlign.Center,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable(onClick = onTermsAndConditionsClick),
             )
             Text(
                 text = stringResource(Res.string.auth_and),
@@ -350,6 +373,8 @@ fun LoginContent(
                 ),
                 color = Color(0xFF2A2F3C),
                 textAlign = TextAlign.Center,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable(onClick = onPrivacyPolicyClick),
             )
         }
     }

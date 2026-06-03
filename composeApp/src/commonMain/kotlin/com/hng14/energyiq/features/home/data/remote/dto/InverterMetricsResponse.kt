@@ -23,12 +23,13 @@ data class InverterDashboardData(
 
 @Serializable
 data class InverterReadings(
-    val solarKw: Double = 0.0,
-    val batterySocPercent: Double = 0.0,
-    val loadKw: Double = 0.0,
-    val gridVoltageV: Double = 0.0,
-    val batteryVoltageV: Double = 0.0,
-    val recordedAt: String = "",
+    // Backend can emit nulls when sensors are unavailable/transitioning.
+    val solarKw: Double? = null,
+    val batterySocPercent: Double? = null,
+    val loadKw: Double? = null,
+    val gridVoltageV: Double? = null,
+    val batteryVoltageV: Double? = null,
+    val recordedAt: String? = null,
 )
 
 @Serializable

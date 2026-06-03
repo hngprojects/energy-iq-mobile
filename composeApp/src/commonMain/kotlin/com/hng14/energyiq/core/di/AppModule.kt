@@ -16,5 +16,8 @@ fun appDeclaration(context: Any? = null): KoinAppDeclaration = {
         homeModule(),
         alertsModule(),
         chatModule(),
+        *platformModules().toTypedArray(),
     )
 }
+
+expect fun platformModules(): List<org.koin.core.module.Module>

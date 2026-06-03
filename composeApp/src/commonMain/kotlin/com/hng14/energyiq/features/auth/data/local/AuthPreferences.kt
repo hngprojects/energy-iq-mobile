@@ -31,6 +31,10 @@ class AuthPreferences(private val store: PreferenceStore) {
         store.put(RefreshTokenKey, refreshToken)
     }
 
+    suspend fun saveUserId(userId: String) {
+        store.put(UserIdKey, userId)
+    }
+
 
     suspend fun savePendingResetEmail(email: String) {
         store.put(PendingResetEmailKey, email)
@@ -48,10 +52,19 @@ class AuthPreferences(private val store: PreferenceStore) {
         store.put(PendingGoogleAuthModeKey, null)
     }
 
+    suspend fun clearAuthData() {
+        store.put(AuthTokenKey, null)
+        store.put(RefreshTokenKey, null)
+        // Note: We keep UserIdKey so we can still use it for scoped keys like onboarding status
+        clearPendingResetEmail()
+        clearPendingGoogleAuthMode()
+    }
+
     suspend fun clearSession() {
         store.put(AuthTokenKey, null)
         store.put(RefreshTokenKey, null)
         store.put(UserIdKey, null)
+        store.put(IsPersistentSessionKey, null)
         clearPendingResetEmail()
         clearPendingGoogleAuthMode()
     }

@@ -49,7 +49,7 @@ class OnboardingApi(
 
     suspend fun connectInverter(request: ConnectInverterRequest): ConnectInverterResponse {
         return try {
-            val response = httpClient.post("${NetworkConfig.BASE_URL}/inverters/connect") {
+            val response = httpClient.post("${NetworkConfig.BASE_URL}/users/onboard") {
                 contentType(ContentType.Application.Json)
                 setBody(request)
             }

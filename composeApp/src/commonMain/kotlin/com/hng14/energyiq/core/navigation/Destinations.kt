@@ -22,7 +22,13 @@ sealed class AppDestination {
     data object Home : AppDestination()
 
     @Serializable
+    data object HomeProfile : AppDestination()
+
+    @Serializable
     data object SmartAlerts : AppDestination()
+
+    @Serializable
+    data object ChatEntry : AppDestination()
 
     @Serializable
     data object Chat : AppDestination()
@@ -39,5 +45,11 @@ sealed class AppDestination {
     data class EmailVerification(
         val fullName: String,
         val email: String,
+    ) : AppDestination()
+
+    @Serializable
+    data class WebPage(
+        val title: String,
+        val url: String,
     ) : AppDestination()
 }

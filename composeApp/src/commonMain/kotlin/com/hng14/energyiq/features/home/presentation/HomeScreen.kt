@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -25,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
@@ -33,6 +35,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,6 +63,9 @@ import com.hng14.energyiq.features.home.presentation.components.SavingsOverviewC
 import com.hng14.energyiq.features.home.presentation.components.WarningBanner
 import com.hng14.energyiq.features.profile.presentation.ProfileScreen
 import com.hng14.energyiq.features.reports.presentation.ReportsScreen
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 import org.koin.compose.viewmodel.koinViewModel
 
 private enum class HomeTab(val title: String, val icon: ImageVector?) {
@@ -72,14 +78,15 @@ private enum class HomeTab(val title: String, val icon: ImageVector?) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    startOnProfile: Boolean = false,
     onOpenChat: () -> Unit,
     onLogout: () -> Unit,
+    onOpenInverterSetup: () -> Unit,
 ) {
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
-    var selectedTab by remember { mutableStateOf(HomeTab.Dashboard) }
+    var selectedTab by remember { mutableStateOf(if (startOnProfile) HomeTab.Profile else HomeTab.Dashboard) }
     var showReportsComingSoon by remember { mutableStateOf(false) }
-    var showChatComingSoon by remember { mutableStateOf(false) }
     var showNotificationsComingSoon by remember { mutableStateOf(false) }
 
     val name = state.user?.name ?: ""
@@ -87,6 +94,14 @@ fun HomeScreen(
     val firstName = fullName.substringBefore(" ", fullName)
     val displayName = firstName.ifBlank { "User" }
     val scrollState = rememberScrollState()
+
+    // Ensure the dashboard fetch runs when the Home screen becomes visible.
+    // In some navigation/backstack flows the ViewModel instance can be retained
+    // across auth transitions; relying only on init{} can skip the first fetch
+    // after login.
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
 
     Scaffold(
         containerColor = Color.White,
@@ -107,12 +122,6 @@ fun HomeScreen(
             ComingSoonDialog(
                 featureName = "Reports",
                 onDismiss = { showReportsComingSoon = false }
-            )
-        }
-        if (showChatComingSoon) {
-            ComingSoonDialog(
-                featureName = "Chat",
-                onDismiss = { showChatComingSoon = false }
             )
         }
         if (showNotificationsComingSoon) {
@@ -184,7 +193,10 @@ fun HomeScreen(
                 }
 
                 HomeTab.Profile -> Box(modifier = Modifier.padding(paddingValues)) {
-                    ProfileScreen(onLogout = onLogout)
+                    ProfileScreen(
+                        onLogout = onLogout,
+                        onOpenInverterSetup = onOpenInverterSetup,
+                    )
                 }
 
                 HomeTab.Reports -> Box(modifier = Modifier.padding(paddingValues)) {
@@ -196,34 +208,15 @@ fun HomeScreen(
                     )
                 }
 
-                else -> Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                ) {
-                    HomeTopBar(
-                        name = name,
-                        onNotificationClick = { showNotificationsComingSoon = true },
-                        onProfileClick = { selectedTab = HomeTab.Profile }
-                    )
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "${selectedTab.title} Screen",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                }
             }
 
             if (selectedTab == HomeTab.Dashboard) {
                 DraggableFab(
-                    onClick = { showChatComingSoon = true },
+                    onClick = onOpenChat,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(end = 20.dp, bottom = 104.dp), // Increased padding to clear navbar
+                        // Keep the FAB comfortably above the bottom nav bar (which also applies navigationBarsPadding).
+                        .padding(end = 20.dp, bottom = 140.dp),
                 )
             }
         }
@@ -296,9 +289,18 @@ private fun DashboardContent(
     showHealthBanner: Boolean,
     onDismissHealth: () -> Unit
 ) {
+    val greeting = run {
+        val hour = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
+        when (hour) {
+            in 5..11 -> "Good morning"
+            in 12..16 -> "Good afternoon"
+            else -> "Good evening"
+        }
+    }
+
     Column {
         Text(
-            text = "Good afternoon, $displayName",
+            text = "$greeting, $displayName",
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 24.sp,
@@ -376,7 +378,8 @@ private fun HomeBottomNavigation(
     NavigationBar(
         containerColor = Color.White,
         tonalElevation = 0.dp,
-        modifier = Modifier.height(92.dp).padding(top = 12.dp)
+        modifier = Modifier.navigationBarsPadding(),
+        windowInsets = NavigationBarDefaults.windowInsets
     ) {
         HomeTab.entries.forEach { tab ->
             val isSelected = selectedTab == tab

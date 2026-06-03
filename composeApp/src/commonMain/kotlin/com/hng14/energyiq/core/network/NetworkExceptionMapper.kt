@@ -30,6 +30,15 @@ internal fun Throwable.toFriendlyNetworkException(): Exception {
         is IOException -> Exception(
             "A network error occurred. Please check your connection and try again.",
         )
+        is io.ktor.client.plugins.ResponseException -> {
+            if (this.response.status.value == 504) {
+                Exception("The server is taking too long to respond. Please try again later.")
+            } else if (this.response.status.value == 500) {
+                Exception("Server error. Please try again later.")
+            } else {
+                Exception(message ?: "Something went wrong. Please try again.")
+            }
+        }
         else -> Exception(
             message ?: "Something went wrong. Please try again.",
         )

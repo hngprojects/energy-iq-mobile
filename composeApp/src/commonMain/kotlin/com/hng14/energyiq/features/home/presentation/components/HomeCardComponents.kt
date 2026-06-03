@@ -86,6 +86,12 @@ internal fun BatteryCard(
     soc: Double,
     subtitle: String = "Usage remaining",
 ) {
+    val socClamped = soc.coerceIn(0.0, 100.0)
+    // Display the value as-provided (no rounding); just trim trailing zeros like "12.0" -> "12".
+    val socRaw = socClamped.toString()
+    val socPretty = if (socRaw.contains('.')) socRaw.trimEnd('0').trimEnd('.') else socRaw
+    val socText = "${socPretty}%"
+
     DashboardCard(
         horizontalPadding = 24.dp,
         verticalPadding = 24.dp,
@@ -96,7 +102,7 @@ internal fun BatteryCard(
         )
         Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = "${soc.toInt()}%",
+            text = socText,
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
@@ -104,12 +110,15 @@ internal fun BatteryCard(
             color = Color(0xFF111827),
         )
         Spacer(modifier = Modifier.height(20.dp))
-        ProgressBar(progress = (soc / 100).toFloat(), color = if (soc > 20) Color(0xFF0E9F6E) else EnergyPalette.Danger)
+        ProgressBar(
+            progress = (socClamped / 100).toFloat(),
+            color = if (socClamped > 20) Color(0xFF0E9F6E) else EnergyPalette.Danger
+        )
         Spacer(modifier = Modifier.height(30.dp))
         Badge(
             text = subtitle,
-            containerColor = if (soc > 20) Color(0xFFDDF7E6) else Color(0xFFFDEAEA),
-            contentColor = if (soc > 20) EnergyPalette.BatteryGreen else EnergyPalette.Danger,
+            containerColor = if (socClamped > 20) Color(0xFFDDF7E6) else Color(0xFFFDEAEA),
+            contentColor = if (socClamped > 20) EnergyPalette.BatteryGreen else EnergyPalette.Danger,
         )
     }
 }

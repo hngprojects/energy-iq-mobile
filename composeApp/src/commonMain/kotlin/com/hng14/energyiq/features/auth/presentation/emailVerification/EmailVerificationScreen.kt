@@ -48,6 +48,9 @@ fun EmailVerificationScreen(
         isError = state.emailVerificationState == EmailVerificationState.Error,
         isVerifying = state.emailVerificationState == EmailVerificationState.Verifying,
         errorMessage = if (state.emailVerificationState == EmailVerificationState.Error) state.generalError else null,
+        resendCooldownSeconds = state.resendOtpCooldownSeconds,
+        isResending = state.isResendingOtp,
+        onResendClick = viewModel::onResendEmailOtp,
         onVerifyClick = if (state.emailVerificationState == EmailVerificationState.Verifying) {
             {}
         } else {

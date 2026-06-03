@@ -202,33 +202,18 @@ private fun inverterOptionFor(title: String): InverterOption? {
         subtitle = "API key",
         connection = ConnectionContent(
             title = "Growatt Inverter\nConnection",
-            subtitle = "Enter specific details of your inverter type",
+            subtitle = "Enter your Growatt API details",
             fields = listOf(
                 ConnectionField(
-                    id = "shine_phone_email",
-                    label = "Enter ShinePhone Email",
-                    placeholder = "you@email.com",
-                    type = ConnectionFieldType.EMAIL,
-                ),
-                ConnectionField(
-                    id = "shine_phone_password",
-                    label = "Enter ShinePhone Password",
-                    placeholder = "************",
+                    id = "growatt_api_token",
+                    label = "Enter Growatt API Token",
+                    placeholder = "zi2o82...",
                     type = ConnectionFieldType.PASSWORD,
-                ),
-                ConnectionField(
-                    id = "plant_id",
-                    label = "Enter Plant ID (Optional)",
-                    placeholder = "e.g 123456",
-                    optional = true,
-                    type = ConnectionFieldType.NUMBER,
                 ),
             ),
             primaryButtonText = "Save Inverter",
             helperLines = listOf(
-                "ShinePhone Email: use the email you sign in with on the Growatt Shine app",
-                "ShinePhone Password: use your Growatt Shine account password",
-                "Plant ID: enter the numeric plant identifier, e.g. 123456",
+                "API Token: use the API key provided in your Growatt Open API account settings",
             ),
         ),
         )
@@ -452,7 +437,7 @@ fun InverterSetupScreen(
             onRetry = viewModel::loadSupportedBrands,
             onContinue = {
                 selectedOption?.let { option ->
-                    if (option.title != "Sandbox") {
+                    if (option.title != "Sandbox" && option.title != "Growatt") {
                         showComingSoonFor = option.title
                         return@InverterSelectionContent
                     }
@@ -491,20 +476,11 @@ fun InverterSetupScreen(
                     },
                     onBack = { step = InverterSetupStep.SELECT },
                     onSubmit = {
-                        if (option.title == "Victron") {
-                            val token = connectionValues["vrm_api_token"].orEmpty()
-                            viewModel.connectVictron(victronAccessToken = token) {
-                                step = InverterSetupStep.SUCCESS
-                            }
-                        } else if (option.title == "Sandbox") {
-                            val token = connectionValues["sandbox_access_token"].orEmpty()
-                            viewModel.connectSandbox(sandboxAccessToken = token) {
-                                step = InverterSetupStep.SUCCESS
-                            }
-                        } else {
-                            // TODO: connect other brands when endpoints are ready.
-                            step = InverterSetupStep.SUCCESS
-                        }
+                        viewModel.connectInverter(
+                            brand = option.title,
+                            values = connectionValues,
+                            onSuccess = { step = InverterSetupStep.SUCCESS }
+                        )
                     },
                 )
             }
