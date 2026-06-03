@@ -48,6 +48,9 @@ sealed class AppDestination {
     ) : AppDestination()
 
     @Serializable
+    data object CostAndSavings : AppDestination()
+
+    @Serializable
     data class WebPage(
         val title: String,
         val url: String,

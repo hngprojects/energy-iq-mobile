@@ -15,6 +15,7 @@ import com.hng14.energyiq.features.auth.presentation.emailVerification.EmailVeri
 import com.hng14.energyiq.features.alerts.presentation.SmartAlertsScreen
 import com.hng14.energyiq.features.chat.presentation.ChatListScreen
 import com.hng14.energyiq.features.chat.presentation.ChatScreen
+import com.hng14.energyiq.features.costAndSavings.presentation.CostAndSavingsScreen
 import com.hng14.energyiq.features.home.presentation.HomeScreen
 import com.hng14.energyiq.features.onboarding.presentation.InverterSetupScreen
 import com.hng14.energyiq.features.onboarding.presentation.OnboardingScreen
@@ -113,6 +114,9 @@ fun AppNavigation(startDestination: AppDestination) {
                     onOpenInverterSetup = {
                         backStack.add(AppDestination.InverterSetup)
                     },
+                    onOpenCostAndSavings = {
+                        backStack.add(AppDestination.CostAndSavings)
+                    }
                 )
             }
             entry<AppDestination.HomeProfile> {
@@ -128,7 +132,13 @@ fun AppNavigation(startDestination: AppDestination) {
                     onOpenInverterSetup = {
                         backStack.add(AppDestination.InverterSetup)
                     },
+                    onOpenCostAndSavings = {
+                        backStack.add(AppDestination.CostAndSavings)
+                    }
                 )
+            }
+            entry<AppDestination.CostAndSavings> {
+                CostAndSavingsScreen(onBack = { backStack.removeLastOrNull() })
             }
             entry<AppDestination.SmartAlerts> {
                 val auth = koinInject<AuthRepository>()

@@ -20,10 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.theme.dmSansFontFamily
-import com.hng14.energyiq.core.ui.ComingSoonDialog
-import com.hng14.energyiq.core.ui.InsightOutlinedCard
-import com.hng14.energyiq.core.ui.ServerErrorDialog
-import com.hng14.energyiq.core.ui.SuccessDialog
+import com.hng14.energyiq.core.ui.*
 import com.hng14.energyiq.features.home.presentation.components.HomeTopBar
 import com.hng14.energyiq.features.home.data.HomeRepository
 import kotlinx.coroutines.launch
@@ -41,6 +38,7 @@ private enum class ProfileRoute {
 fun ProfileScreen(
     onLogout: () -> Unit,
     onOpenInverterSetup: () -> Unit,
+    onOpenCostAndSavings: () -> Unit,
 ) {
     val viewModel = koinViewModel<ProfileViewModel>()
     val state by viewModel.state.collectAsState()
@@ -282,7 +280,7 @@ fun ProfileScreen(
 
                 // Large Category Cards
                 SettingsCategoryCard(
-                    icon = Icons.Outlined.Person,
+                    icon = { Icon(Icons.Outlined.Person, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
                     title = "Account & Profile",
                     description = "Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.",
                     onClick = { route = ProfileRoute.AccountProfile }
@@ -291,7 +289,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SettingsCategoryCard(
-                    icon = Icons.Outlined.Build,
+                    icon = { Icon(Icons.Outlined.Build, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
                     title = "System & Device",
                     description = "Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.",
                     onClick = { route = ProfileRoute.SystemDevice }
@@ -300,7 +298,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SettingsCategoryCard(
-                    icon = Icons.Outlined.Person,
+                    icon = { Icon(Icons.Outlined.Person, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
                     title = "Team & Access",
                     description = "Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.",
                     onClick = { showComingSoonFeature = "Team & Access" }
@@ -309,10 +307,17 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SettingsCategoryCard(
-                    icon = Icons.Outlined.Notifications,
+                    icon = { Icon(Icons.Outlined.Notifications, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
                     title = "Notifications",
                     description = "Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.",
                     onClick = { showComingSoonFeature = "Notifications" }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                SettingsCategoryCard(
+                    icon = { CasIcon(modifier = Modifier.size(22.dp), tint = Color(0xFF111827)) },
+                    title = "Cost And Savings",
+                    description = "Track your energy ROI, avoided generator costs, and calculate future solar savings.",
+                    onClick = onOpenCostAndSavings
                 )
 
                 Spacer(modifier = Modifier.height(36.dp))
@@ -342,7 +347,7 @@ fun ProfileScreen(
 
 @Composable
 private fun SettingsCategoryCard(
-    icon: ImageVector,
+    icon: @Composable () -> Unit,
     title: String,
     description: String,
     onClick: () -> Unit
@@ -361,12 +366,7 @@ private fun SettingsCategoryCard(
                 color = Color(0xFFF3F4F6)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = Color(0xFF111827),
-                        modifier = Modifier.size(22.dp)
-                    )
+                    icon()
                 }
             }
             Spacer(modifier = Modifier.height(18.dp))

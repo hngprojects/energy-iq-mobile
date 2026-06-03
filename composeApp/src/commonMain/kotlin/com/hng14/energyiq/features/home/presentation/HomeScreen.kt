@@ -82,6 +82,7 @@ fun HomeScreen(
     onOpenChat: () -> Unit,
     onLogout: () -> Unit,
     onOpenInverterSetup: () -> Unit,
+    onOpenCostAndSavings: () -> Unit,
 ) {
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
@@ -196,6 +197,7 @@ fun HomeScreen(
                     ProfileScreen(
                         onLogout = onLogout,
                         onOpenInverterSetup = onOpenInverterSetup,
+                        onOpenCostAndSavings = onOpenCostAndSavings,
                     )
                 }
 

@@ -57,7 +57,7 @@ internal fun MetricCard(
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
             ),
-            color = Color(0xFF111827),
+            color = Color(0xFF111827)
         )
         if (wrapSubtitleInContainer) {
             Spacer(modifier = Modifier.height(24.dp))
