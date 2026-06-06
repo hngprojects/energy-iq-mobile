@@ -299,7 +299,10 @@ fun CostAndSavingsScreen(
                         }
 
                         tabs[3] -> {
-                            CumulativeTrackerTab(dmSans = dmSans)
+                            CumulativeTrackerTab(
+                                uiState = uiState,
+                                dmSans = dmSans
+                            )
                         }
                     }
 

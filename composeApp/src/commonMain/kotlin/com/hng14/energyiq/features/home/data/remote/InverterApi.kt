@@ -7,6 +7,7 @@ import com.hng14.energyiq.features.auth.data.local.AuthPreferences
 import com.hng14.energyiq.features.auth.data.remote.dto.ApiErrorResponse
 import com.hng14.energyiq.features.home.data.remote.dto.InverterMetricsResponse
 import com.hng14.energyiq.features.home.data.remote.dto.InverterSavingsResponse
+import com.hng14.energyiq.features.home.data.remote.dto.CumulativeSavingsResponse
 import com.hng14.energyiq.features.home.data.remote.dto.UserInvertersResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -54,6 +55,37 @@ class InverterApi(
             }
             if (response.status.value in 200..299) {
                 response.body<InverterSavingsResponse>()
+            } else {
+                val body = response.bodyAsText()
+                val errorResponse = runCatching {
+                    Json { ignoreUnknownKeys = true }.decodeFromString<ApiErrorResponse>(body)
+                }.getOrNull()
+                throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${response.status.value})")
+            }
+        } catch (e: ClientRequestException) {
+            val body = e.response.bodyAsText()
+            val errorResponse = runCatching {
+                Json { ignoreUnknownKeys = true }.decodeFromString<ApiErrorResponse>(body)
+            }.getOrNull()
+            throw Exception(errorResponse?.message?.toErrorMessage() ?: "Request failed (${e.response.status.value})")
+        } catch (e: Exception) {
+            throw e.toFriendlyNetworkException()
+        }
+    }
+
+    suspend fun fetchCumulativeSavings(
+        inverterId: String
+    ): CumulativeSavingsResponse {
+        val token = authPreferences.getToken()
+        return try {
+            val url = "${NetworkConfig.BASE_URL}/inverter-metrics/$inverterId/savings/cumulative"
+            val response = httpClient.get(url) {
+                if (!token.isNullOrBlank()) {
+                    header(HttpHeaders.Authorization, "Bearer $token")
+                }
+            }
+            if (response.status.value in 200..299) {
+                response.body<CumulativeSavingsResponse>()
             } else {
                 val body = response.bodyAsText()
                 val errorResponse = runCatching {

@@ -52,6 +52,24 @@
     <string name="cas_tab_results">Results</string>
     <string name="cas_tab_cumulative">Cumulative tracker</string>
 
+    <!-- Cumulative Tracker Tab -->
+    <string name="cas_cumulative_title">Cumulative Tracker</string>
+    <string name="cas_cumulative_subtitle">Real-time tracker of your solar investment impact.</string>
+    <string name="cas_lifetime_savings">LIFETIME SAVINGS</string>
+    <string name="cas_co2_avoided">CO2 AVOIDED</string>
+    <string name="cas_gen_hours_avoided">GEN HOURS AVOIDED</string>
+    <string name="cas_fuel_saved">FUEL SAVED</string>
+    <string name="cas_savings_growth_title">Cumulative Savings Growth</string>
+    <string name="cas_savings_growth_subtitle">Historical performance vs. grid projection</string>
+    <string name="cas_actual_savings">Actual savings</string>
+    <string name="cas_grid_projection">Grid projection</string>
+    <string name="cas_trends_analytics_title">Savings Trends &amp; Analytics</string>
+    <string name="cas_trends_analytics_subtitle">Visualizing performance delta and fiscal efficiency</string>
+    <string name="cas_total_savings_to_date">TOTAL SAVINGS TO DATE</string>
+    <string name="cas_avg_monthly_savings">AVG. MONTHLY SAVINGS</string>
+    <string name="cas_vs_previous_period">vs. previous period</string>
+    <string name="cas_stable_efficiency">Stable efficiency trend</string>
+
     <!-- Summary Tab -->
     <string name="cas_total_saved">Total Saved</string>
     <string name="cas_energy_consumed">Energy consumed</string>

@@ -2,6 +2,7 @@ package com.hng14.energyiq.features.costAndSavings.data
 
 import com.hng14.energyiq.features.home.data.remote.InverterApi
 import com.hng14.energyiq.features.home.data.remote.dto.InverterSavingsResponse
+import com.hng14.energyiq.features.home.data.remote.dto.CumulativeSavingsResponse
 import com.hng14.energyiq.features.home.data.HomeRepository
 
 class CostAndSavingsRepository(
@@ -25,5 +26,13 @@ class CostAndSavingsRepository(
             startDate = startDate,
             endDate = endDate
         )
+    }
+
+    suspend fun getCumulativeSavings(): CumulativeSavingsResponse {
+        val inverterId = homeRepository.getSelectedInverterId()
+            ?: homeRepository.getInverterDashboard()?.inverterId
+            ?: throw Exception("No active inverter found")
+
+        return inverterApi.fetchCumulativeSavings(inverterId)
     }
 }
