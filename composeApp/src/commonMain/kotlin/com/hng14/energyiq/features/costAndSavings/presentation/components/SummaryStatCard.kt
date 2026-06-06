@@ -1,12 +1,19 @@
 package com.hng14.energyiq.features.costAndSavings.presentation.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,12 +32,13 @@ fun SummaryStatCard(
     value: String,
     trend: String,
     icon: @Composable () -> Unit,
+    iconContainerColor: Color,
     modifier: Modifier = Modifier
 ) {
     val dmSans = dmSansFontFamily()
     InsightOutlinedCard(
         modifier = modifier.fillMaxWidth(),
-        shapeSize = 12.dp,
+        shapeSize = 18.dp,
         paddingValues = PaddingValues(24.dp)
     ) {
         Column {
@@ -41,39 +49,59 @@ fun SummaryStatCard(
             ) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.bodySmall.copy(
+                    style = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Medium,
-                        fontSize = 10.sp,
-                        lineHeight = 18.sp,
+                        fontSize = 14.sp,
                     ),
-                    color = Color(0xFF666666)
+                    color = Color(0xFF9CA3AF)
                 )
-                icon()
+                
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(iconContainerColor, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    icon()
+                }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleLarge.copy(
+                style = MaterialTheme.typography.headlineLarge.copy(
                     fontFamily = dmSans,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
-                    lineHeight = 33.6.sp,
-                    letterSpacing = (-0.28).sp,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 40.sp,
+                    letterSpacing = (-0.5).sp
                 ),
-                color = Color(0xFF080C13)
+                color = Color(0xFF111827)
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = trend,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = dmSans,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 10.sp,
-                    lineHeight = 21.sp,
-                    color = if (trend.contains("+") || trend.contains("%")) Color(0xFF22C55E) else Color(0xFFDC2626)
-                )
-            )
+            
+            if (trend.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                        contentDescription = null,
+                        tint = Color(0xFF16A34A),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.size(4.dp))
+                    Text(
+                        text = trend,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = dmSans,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp,
+                            color = Color(0xFF16A34A)
+                        )
+                    )
+                }
+            }
         }
     }
 }

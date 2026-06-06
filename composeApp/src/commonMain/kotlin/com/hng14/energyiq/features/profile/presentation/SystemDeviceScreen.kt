@@ -47,6 +47,8 @@ import com.hng14.energyiq.core.ui.BellIcon
 import com.hng14.energyiq.features.auth.domain.model.User
 import com.hng14.energyiq.features.home.data.HomeRepository
 import com.hng14.energyiq.features.home.data.remote.dto.InverterDto
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -93,7 +95,7 @@ internal fun SystemDeviceScreen(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
             Text(
-                text = "System & Device Management",
+                text = stringResource(Res.string.system_device_mgmt),
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Bold,
@@ -103,7 +105,7 @@ internal fun SystemDeviceScreen(
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Overview of your connected systems, inverter configurations, and diagnostic alerts.",
+                text = stringResource(Res.string.system_overview_desc),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontSize = 13.sp,
@@ -126,7 +128,7 @@ internal fun SystemDeviceScreen(
                 ),
             ) {
                 Text(
-                    text = "+  Connect New Inverter",
+                    text = "+  " + stringResource(Res.string.system_connect_new),
                     style = MaterialTheme.typography.labelLarge.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.SemiBold,
@@ -150,7 +152,7 @@ internal fun SystemDeviceScreen(
 
                 InverterCard(
                     inverterBrand = inv.brand,
-                    inverterModel = inv.model ?: "Hybrid Inverter",
+                    inverterModel = inv.model ?: stringResource(Res.string.system_hybrid_inverter),
                     isActive = inv.isActive && (inv.isOffline != true),
                     isReadingNow = selectedInverterId != null && inv.id == selectedInverterId,
                     serialNumber = inv.serialNumber ?: inv.id,
@@ -196,14 +198,14 @@ private fun TopBar(
         IconButton(onClick = onBack) {
             Icon(
                 imageVector = Icons.Outlined.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(Res.string.common_back),
                 tint = Color(0xFF111827),
             )
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             BellIcon(
-                contentDescription = "Notifications",
+                contentDescription = stringResource(Res.string.common_notifications),
                 modifier = Modifier
                     .size(24.dp)
                     .clickable { onNotifications() },
@@ -302,7 +304,7 @@ private fun InverterCard(
                         .height(28.dp),
                 ) {
                     Text(
-                        text = if (isActive) "Active" else "Offline",
+                        text = if (isActive) stringResource(Res.string.system_active) else stringResource(Res.string.system_offline),
                         modifier = Modifier
                             .padding(horizontal = 12.dp, vertical = 6.dp)
                             .defaultMinSize(minWidth = 64.dp),
@@ -317,11 +319,11 @@ private fun InverterCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            DetailRow(label = "Serial Number", value = serialNumber)
+            DetailRow(label = stringResource(Res.string.system_serial_number), value = serialNumber)
             Spacer(modifier = Modifier.height(10.dp))
-            DetailRow(label = "Connection Date", value = connectionDate)
+            DetailRow(label = stringResource(Res.string.system_connection_date), value = connectionDate)
             Spacer(modifier = Modifier.height(10.dp))
-            DetailRow(label = "Last Sync", value = lastSync)
+            DetailRow(label = stringResource(Res.string.system_last_sync), value = lastSync)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -341,7 +343,7 @@ private fun InverterCard(
                     border = BorderStroke(1.dp, Color(0xFFECEEF1)),
                 ) {
                     Text(
-                        text = if (isReadingNow) "Reading" else "Reconnect",
+                        text = if (isReadingNow) stringResource(Res.string.system_reading) else stringResource(Res.string.system_reconnect),
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontFamily = dmSans,
                             fontWeight = FontWeight.SemiBold,

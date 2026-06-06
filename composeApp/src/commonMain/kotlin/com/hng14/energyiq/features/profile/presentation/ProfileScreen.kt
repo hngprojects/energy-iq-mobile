@@ -27,6 +27,9 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
+
 private enum class ProfileRoute {
     Overview,
     AccountProfile,
@@ -127,7 +130,7 @@ fun ProfileScreen(
                     .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
                 Text(
-                    text = "Settings Overview",
+                    text = stringResource(Res.string.profile_settings_overview),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Bold,
@@ -137,7 +140,7 @@ fun ProfileScreen(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Manage your EnergyIQ environment, team permissions and system health",
+                    text = stringResource(Res.string.profile_overview_desc),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = dmSans,
                         fontSize = 14.sp,
@@ -168,7 +171,7 @@ fun ProfileScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "All systems is working fine",
+                                text = stringResource(Res.string.profile_all_systems_fine),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontFamily = dmSans,
                                     fontWeight = FontWeight.Medium,
@@ -179,7 +182,7 @@ fun ProfileScreen(
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "2 min ago",
+                                text = stringResource(Res.string.profile_2_min_ago),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontFamily = dmSans,
                                     color = Color(0xFF9CA3AF),
@@ -189,7 +192,7 @@ fun ProfileScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Icon(
                                 imageVector = Icons.Outlined.Refresh,
-                                contentDescription = "Refresh",
+                                contentDescription = stringResource(Res.string.common_refresh),
                                 tint = Color(0xFF9CA3AF),
                                 modifier = Modifier.size(16.dp)
                             )
@@ -222,7 +225,7 @@ fun ProfileScreen(
                             }
                             Spacer(modifier = Modifier.width(14.dp))
                             Text(
-                                text = "Security Audit",
+                                text = stringResource(Res.string.profile_security_audit),
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontFamily = dmSans,
                                     fontWeight = FontWeight.Bold,
@@ -233,7 +236,7 @@ fun ProfileScreen(
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = "Last audit completed 2 hours ago. No anomalies detected.",
+                            text = stringResource(Res.string.profile_security_audit_desc),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontFamily = dmSans,
                                 fontSize = 14.sp,
@@ -264,7 +267,7 @@ fun ProfileScreen(
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    text = "Review Logs",
+                                    text = stringResource(Res.string.profile_review_logs),
                                     style = MaterialTheme.typography.labelLarge.copy(
                                         fontFamily = dmSans,
                                         fontWeight = FontWeight.SemiBold,
@@ -281,8 +284,8 @@ fun ProfileScreen(
                 // Large Category Cards
                 SettingsCategoryCard(
                     icon = { Icon(Icons.Outlined.Person, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
-                    title = "Account & Profile",
-                    description = "Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.",
+                    title = stringResource(Res.string.profile_account_profile),
+                    description = stringResource(Res.string.profile_account_desc),
                     onClick = { route = ProfileRoute.AccountProfile }
                 )
 
@@ -290,8 +293,8 @@ fun ProfileScreen(
 
                 SettingsCategoryCard(
                     icon = { Icon(Icons.Outlined.Build, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
-                    title = "System & Device",
-                    description = "Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.",
+                    title = stringResource(Res.string.profile_system_device),
+                    description = stringResource(Res.string.profile_system_device_desc),
                     onClick = { route = ProfileRoute.SystemDevice }
                 )
 
@@ -299,8 +302,8 @@ fun ProfileScreen(
 
                 SettingsCategoryCard(
                     icon = { Icon(Icons.Outlined.Person, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
-                    title = "Team & Access",
-                    description = "Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.",
+                    title = stringResource(Res.string.profile_team_access),
+                    description = stringResource(Res.string.profile_team_desc),
                     onClick = { showComingSoonFeature = "Team & Access" }
                 )
 
@@ -308,15 +311,15 @@ fun ProfileScreen(
 
                 SettingsCategoryCard(
                     icon = { Icon(Icons.Outlined.Notifications, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
-                    title = "Notifications",
-                    description = "Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.",
+                    title = stringResource(Res.string.common_notifications),
+                    description = stringResource(Res.string.profile_notifications_desc),
                     onClick = { showComingSoonFeature = "Notifications" }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 SettingsCategoryCard(
                     icon = { CasIcon(modifier = Modifier.size(22.dp), tint = Color(0xFF111827)) },
-                    title = "Cost And Savings",
-                    description = "Track your energy ROI, avoided generator costs, and calculate future solar savings.",
+                    title = stringResource(Res.string.profile_cost_savings),
+                    description = stringResource(Res.string.profile_cost_savings_desc),
                     onClick = onOpenCostAndSavings
                 )
 
@@ -329,7 +332,7 @@ fun ProfileScreen(
                     enabled = !state.isLoggingOut
                 ) {
                     Text(
-                        text = "Sign Out",
+                        text = stringResource(Res.string.common_sign_out),
                         color = Color(0xFFDC2626),
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontFamily = dmSans,

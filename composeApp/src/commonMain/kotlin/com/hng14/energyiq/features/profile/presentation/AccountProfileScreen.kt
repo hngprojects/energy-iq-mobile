@@ -51,6 +51,9 @@ import com.hng14.energyiq.features.auth.domain.model.User
 import com.hng14.energyiq.features.profile.presentation.components.CustomDropdown
 import com.hng14.energyiq.features.profile.presentation.data.local.businessTypeOptions
 
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AccountProfileScreen(
@@ -116,13 +119,13 @@ internal fun AccountProfileScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(Res.string.common_back),
                         tint = Color(0xFF111827),
                     )
                 }
                 Spacer(modifier = Modifier.size(4.dp))
                 Text(
-                    text = "Profile Settings",
+                    text = stringResource(Res.string.account_profile_settings),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Bold,
@@ -141,7 +144,7 @@ internal fun AccountProfileScreen(
                 .padding(horizontal = 16.dp, vertical = 10.dp),
         ) {
             Text(
-                text = "Manage your personal and business information.",
+                text = stringResource(Res.string.account_manage_info),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = dmSans,
                     fontSize = 13.sp,
@@ -164,7 +167,7 @@ internal fun AccountProfileScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Profile Photo",
+                        text = stringResource(Res.string.account_profile_photo),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontFamily = dmSans,
                             fontWeight = FontWeight.Bold,
@@ -173,7 +176,7 @@ internal fun AccountProfileScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "PNG or JPG, up to 2MB.",
+                        text = stringResource(Res.string.account_photo_hint),
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontFamily = dmSans,
                             fontSize = 12.sp,
@@ -223,7 +226,7 @@ internal fun AccountProfileScreen(
                             )
                             Spacer(modifier = Modifier.size(8.dp))
                             Text(
-                                text = "Upload photo",
+                                text = stringResource(Res.string.common_upload_photo),
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontFamily = dmSans,
                                     fontWeight = FontWeight.SemiBold,
@@ -253,7 +256,7 @@ internal fun AccountProfileScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Personal Business and Information.",
+                        text = stringResource(Res.string.account_personal_business_info),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontFamily = dmSans,
                             fontWeight = FontWeight.Bold,
@@ -262,7 +265,7 @@ internal fun AccountProfileScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "This information is used across your EnergyIQ account.",
+                        text = stringResource(Res.string.account_info_desc),
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontFamily = dmSans,
                             fontSize = 12.sp,
@@ -299,7 +302,7 @@ internal fun AccountProfileScreen(
                             )
                             Spacer(modifier = Modifier.size(8.dp))
                             Text(
-                                text = "Edit",
+                                text = stringResource(Res.string.common_edit),
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontFamily = dmSans,
                                     fontWeight = FontWeight.SemiBold,
@@ -332,7 +335,7 @@ internal fun AccountProfileScreen(
                                 contentPadding = PaddingValues(vertical = 14.dp),
                             ) {
                                 Text(
-                                    text = "Cancel",
+                                    text = stringResource(Res.string.common_cancel),
                                     style = MaterialTheme.typography.labelLarge.copy(
                                         fontFamily = dmSans,
                                         fontWeight = FontWeight.SemiBold,
@@ -368,7 +371,7 @@ internal fun AccountProfileScreen(
                                 )
                                 Spacer(modifier = Modifier.size(8.dp))
                                 Text(
-                                    text = if (isSaving) "Saving..." else "Save\nChanges",
+                                    text = if (isSaving) stringResource(Res.string.common_saving) else stringResource(Res.string.common_save_changes),
                                     style = MaterialTheme.typography.labelLarge.copy(
                                         fontFamily = dmSans,
                                         fontWeight = FontWeight.SemiBold,
@@ -381,21 +384,21 @@ internal fun AccountProfileScreen(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     ProfileField(
-                        label = "Full name",
+                        label = stringResource(Res.string.account_full_name),
                         value = fullName,
                         enabled = isEditing,
                         onValueChange = { fullName = it },
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     ProfileField(
-                        label = "Email",
+                        label = stringResource(Res.string.account_email),
                         value = email,
                         enabled = false, // Usually immutable; requires email verification flows.
                         onValueChange = { email = it },
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     ProfileField(
-                        label = "Business name",
+                        label = stringResource(Res.string.account_business_name),
                         value = businessName,
                         enabled = isEditing,
                         onValueChange = { businessName = it },
@@ -409,14 +412,14 @@ internal fun AccountProfileScreen(
                         options = businessTypeOptions,
                         enabled = isEditing,
                         onSelected = { businessType = it },
-                        placeHolder = "Select business type",
-                        label = "Business Type",
+                        placeHolder = stringResource(Res.string.account_select_business_type),
+                        label = stringResource(Res.string.account_business_type),
                         onValueChange = {businessType = it}
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     CustomDropdown(
-                        label = "State",
-                        placeHolder = "Select state",
+                        label = stringResource(Res.string.account_state),
+                        placeHolder = stringResource(Res.string.account_select_state),
                         value = state,
                         enabled = isEditing,
                         options = stateOptions,
@@ -435,8 +438,8 @@ internal fun AccountProfileScreen(
                         else NigeriaStateCities.citiesFor(state).ifEmpty { listOf("Other") }
                     }
                     CustomDropdown(
-                        label = "City",
-                        placeHolder = if (state.isBlank()) "Select state first" else "Select city",
+                        label = stringResource(Res.string.account_city),
+                        placeHolder = if (state.isBlank()) stringResource(Res.string.account_select_state_first) else stringResource(Res.string.account_select_city),
                         value = city,
                         enabled = isEditing && state.isNotBlank(),
                         options = cityOptions,
@@ -446,8 +449,8 @@ internal fun AccountProfileScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
                     CustomDropdown(
-                        label = "AI Language",
-                        placeHolder = "Select language",
+                        label = stringResource(Res.string.account_ai_language),
+                        placeHolder = stringResource(Res.string.account_select_language),
                         value = aiLanguage,
                         enabled = isEditing,
                         options = aiLanguageOptions,
@@ -484,7 +487,7 @@ private fun SystemStatusPill() {
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = "All systems is working fine",
+                    text = stringResource(Res.string.profile_all_systems_fine),
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.SemiBold,
@@ -494,7 +497,7 @@ private fun SystemStatusPill() {
                 )
             }
             Text(
-                text = "2 min ago",
+                text = stringResource(Res.string.profile_2_min_ago),
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontFamily = dmSans,
                     fontSize = 12.sp,

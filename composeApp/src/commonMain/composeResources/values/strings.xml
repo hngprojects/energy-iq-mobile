@@ -43,4 +43,119 @@
     <string name="auth_back_to_login_title">Back to Login</string>
     <string name="auth_reset_success_title">You're All Set</string>
     <string name="auth_reset_success_subtitle">Your password has been updated\nsuccessfully. Sign in.</string>
+
+    <!-- Cost and Savings Strings -->
+    <string name="cas_title">Cost and Savings</string>
+    <string name="cas_greeting_subtitle">Here's your energy summary today</string>
+    <string name="cas_tab_summary">Summary</string>
+    <string name="cas_tab_calculator">Calculator</string>
+    <string name="cas_tab_results">Results</string>
+    <string name="cas_tab_cumulative">Cumulative tracker</string>
+
+    <!-- Summary Tab -->
+    <string name="cas_total_saved">Total Saved</string>
+    <string name="cas_energy_consumed">Energy consumed</string>
+    <string name="cas_generation_today">Generation Today</string>
+    <string name="cas_savings_trend">Savings Trend</string>
+    <string name="cas_savings_trend_subtitle">Daily total savings compared to generator</string>
+    <string name="cas_check_calculator">Check Calculator</string>
+
+    <!-- Calculator Tab -->
+    <string name="cas_calculator_title">Calculator Savings</string>
+    <string name="cas_step_format">Step %1$d of 3</string>
+    <string name="cas_select_period">Select Calculation Period</string>
+    <string name="cas_select_period_desc">Choose the time period you want to calculate your savings for.</string>
+    <string name="cas_period_this_week">This Week</string>
+    <string name="cas_period_this_month">This Month</string>
+    <string name="cas_period_last_month">Last Month</string>
+    <string name="cas_period_custom">Custom Range</string>
+    <string name="cas_period_custom_desc">Pick a start and end date</string>
+    <string name="cas_why_period">Why does the period matter?</string>
+    <string name="cas_why_period_desc">Your savings are calculated based on your energy usage, fuel price, and tariff for the selected period</string>
+    <string name="cas_continue">Continue</string>
+    <string name="cas_back">Back</string>
+    <string name="cas_pms_price">PMS Pump Price Per Litre</string>
+    <string name="cas_fuel_rate">Generator fuel consumption rate</string>
+    <string name="cas_hours_used">Hours used per day</string>
+    <string name="cas_tariff_band">NERC Tariff Band (A/B/C)</string>
+
+    <!-- General -->
+    <string name="common_confirm">Confirm</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_coming_soon">Coming soon</string>
+    <string name="common_back">Back</string>
+    <string name="common_refresh">Refresh</string>
+    <string name="common_save_changes">Save\nChanges</string>
+    <string name="common_saving">Saving...</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_upload_photo">Upload photo</string>
+    <string name="common_sign_out">Sign Out</string>
+    <string name="common_notifications">Notifications</string>
+    <string name="common_other">Other</string>
+    <string name="common_date">Date</string>
+
+    <!-- Profile Overview -->
+    <string name="profile_settings_overview">Settings Overview</string>
+    <string name="profile_overview_desc">Manage your EnergyIQ environment, team permissions and system health</string>
+    <string name="profile_all_systems_fine">All systems is working fine</string>
+    <string name="profile_2_min_ago">2 min ago</string>
+    <string name="profile_security_audit">Security Audit</string>
+    <string name="profile_security_audit_desc">Last audit completed 2 hours ago. No anomalies detected.</string>
+    <string name="profile_review_logs">Review Logs</string>
+    <string name="profile_account_profile">Account &amp; Profile</string>
+    <string name="profile_account_desc">Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.</string>
+    <string name="profile_system_device">System &amp; Device</string>
+    <string name="profile_system_device_desc">Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.</string>
+    <string name="profile_team_access">Team &amp; Access</string>
+    <string name="profile_team_desc">Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.</string>
+    <string name="profile_notifications_desc">Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.</string>
+    <string name="profile_cost_savings">Cost And Savings</string>
+    <string name="profile_cost_savings_desc">Track your energy ROI, avoided generator costs, and calculate future solar savings.</string>
+
+    <!-- Account Profile -->
+    <string name="account_profile_settings">Profile Settings</string>
+    <string name="account_manage_info">Manage your personal and business information.</string>
+    <string name="account_profile_photo">Profile Photo</string>
+    <string name="account_photo_hint">PNG or JPG, up to 2MB.</string>
+    <string name="account_personal_business_info">Personal Business and Information.</string>
+    <string name="account_info_desc">This information is used across your EnergyIQ account.</string>
+    <string name="account_full_name">Full name</string>
+    <string name="account_email">Email</string>
+    <string name="account_business_name">Business name</string>
+    <string name="account_business_type">Business Type</string>
+    <string name="account_state">State</string>
+    <string name="account_city">City</string>
+    <string name="account_ai_language">AI Language</string>
+    <string name="account_select_business_type">Select business type</string>
+    <string name="account_select_state">Select state</string>
+    <string name="account_select_city">Select city</string>
+    <string name="account_select_state_first">Select state first</string>
+    <string name="account_select_language">Select language</string>
+
+    <!-- Review Logs -->
+    <string name="logs_battery_health">Battery Health Logs</string>
+    <string name="logs_inverter">Inverter</string>
+    <string name="logs_select_inverter">Select inverter</string>
+    <string name="logs_all_dates">All dates</string>
+    <string name="logs_from_placeholder">From (HH:mm)</string>
+    <string name="logs_to_placeholder">To (HH:mm)</string>
+    <string name="logs_time_tip">Tip: Time uses 24-hour format like 09:30.</string>
+    <string name="logs_no_logs">No Logs</string>
+    <string name="logs_select_inverter_view">Select an inverter to view logs.</string>
+    <string name="logs_no_logs_yet">No logs yet for this inverter. Keep the dashboard open for a minute.</string>
+    <string name="logs_no_match">No logs match your filters.</string>
+
+    <!-- System & Device -->
+    <string name="system_device_mgmt">System &amp; Device Management</string>
+    <string name="system_overview_desc">Overview of your connected systems, inverter configurations, and diagnostic alerts.</string>
+    <string name="system_connect_new">Connect New Inverter</string>
+    <string name="system_hybrid_inverter">Hybrid Inverter</string>
+    <string name="system_active">Active</string>
+    <string name="system_offline">Offline</string>
+    <string name="system_serial_number">Serial Number</string>
+    <string name="system_connection_date">Connection Date</string>
+    <string name="system_last_sync">Last Sync</string>
+    <string name="system_reading">Reading</string>
+    <string name="system_reconnect">Reconnect</string>
 </resources>
+

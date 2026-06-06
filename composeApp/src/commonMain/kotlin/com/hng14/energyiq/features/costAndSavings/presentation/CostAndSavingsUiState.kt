@@ -2,15 +2,19 @@ package com.hng14.energyiq.features.costAndSavings.presentation
 
 data class CostAndSavingsUiState(
     val userName: String? = null,
-    val selectedTimeframe: String = "Weekly",
-    val totalSaved: String = "₦28,400",
-    val totalSavedTrend: String = "+₦4,200 vs last week",
-    val generatorCostAvoided: String = "₦52,400",
-    val generatorTrend: String = "12% vs last week",
-    val energyConsumed: String = "38.7 kwh",
-    val energyTrend: String = "8% vs last week",
-    val generationToday: String = "78%",
-    val generationRemaining: String = "3h 45m remaining",
+    val isLoading: Boolean = false,
+    val selectedTimeframe: String = "Daily",
+    val totalSaved: String = "₦ 0",
+    val totalSavedTrend: String = "",
+    val generatorCostAvoided: String = "₦ 0",
+    val generatorTrend: String = "",
+    val energyConsumed: String = "0 kWh",
+    val energyTrend: String = "",
+    val generationToday: String = "0 kWh",
+    val generationRemaining: String = "",
+    // Chart Data
+    val chartData: List<Float> = listOf(15000f, 15000f, 10000f, 20000f, 22000f, 15000f, 27000f),
+    val chartLabels: List<String> = listOf("Mon 12", "Tue 13", "Wed 14", "Thu 15", "Fri 16", "Sat 17", "Sun 18"),
     // Calculator Inputs
     val pmsPrice: Double = 0.0,
     val fuelRate: Double = 0.0,

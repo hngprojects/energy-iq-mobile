@@ -45,6 +45,8 @@ import com.hng14.energyiq.features.home.data.HealthLogRepository
 import com.hng14.energyiq.features.home.data.HomeRepository
 import com.hng14.energyiq.features.home.data.remote.dto.InverterDto
 import com.hng14.energyiq.features.profile.presentation.components.CustomDropdown
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -135,13 +137,13 @@ internal fun ReviewLogsScreen(
             IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.Outlined.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(Res.string.common_back),
                     tint = Color(0xFF111827),
                 )
             }
             Spacer(modifier = Modifier.size(4.dp))
             Text(
-                text = "Battery Health Logs",
+                text = stringResource(Res.string.logs_battery_health),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Bold,
@@ -160,8 +162,8 @@ internal fun ReviewLogsScreen(
                 inverters.map { inverterDisplay(it) } + listOf("Other")
             }
             CustomDropdown(
-                label = "Inverter",
-                placeHolder = "Select inverter",
+                label = stringResource(Res.string.logs_inverter),
+                placeHolder = stringResource(Res.string.logs_select_inverter),
                 value = selectedInverterDisplay,
                 enabled = !userId.isNullOrBlank() && inverters.isNotEmpty(),
                 options = inverterOptions,
@@ -179,8 +181,8 @@ internal fun ReviewLogsScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
             CustomDropdown(
-                label = "Date",
-                placeHolder = "All dates",
+                label = stringResource(Res.string.common_date),
+                placeHolder = stringResource(Res.string.logs_all_dates),
                 value = selectedDateText,
                 enabled = true,
                 options = availableDates + listOf("Other"),
@@ -197,7 +199,7 @@ internal fun ReviewLogsScreen(
                     onValueChange = { fromTimeText = it },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
-                    placeholder = { Text("From (HH:mm)") },
+                    placeholder = { Text(stringResource(Res.string.logs_from_placeholder)) },
                     shape = RoundedCornerShape(10.dp),
                 )
                 OutlinedTextField(
@@ -205,13 +207,13 @@ internal fun ReviewLogsScreen(
                     onValueChange = { toTimeText = it },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
-                    placeholder = { Text("To (HH:mm)") },
+                    placeholder = { Text(stringResource(Res.string.logs_to_placeholder)) },
                     shape = RoundedCornerShape(10.dp),
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Tip: Time uses 24-hour format like 09:30.",
+                text = stringResource(Res.string.logs_time_tip),
                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = dmSans),
                 color = Color(0xFF6B7280),
             )
@@ -221,11 +223,11 @@ internal fun ReviewLogsScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 NoLogsCard(
                     message = if (userId.isNullOrBlank() || selectedInverterId.isNullOrBlank()) {
-                        "Select an inverter to view logs."
+                        stringResource(Res.string.logs_select_inverter_view)
                     } else if (logs.isEmpty()) {
-                        "No logs yet for this inverter. Keep the dashboard open for a minute."
+                        stringResource(Res.string.logs_no_logs_yet)
                     } else {
-                        "No logs match your filters."
+                        stringResource(Res.string.logs_no_match)
                     }
                 )
             }
@@ -333,7 +335,7 @@ private fun NoLogsCard(message: String) {
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = "No Logs",
+                text = stringResource(Res.string.logs_no_logs),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontFamily = dmSans,
                     fontWeight = FontWeight.Bold,
