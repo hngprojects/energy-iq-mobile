@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.ui.InsightOutlinedCard
 import com.hng14.energyiq.features.costAndSavings.presentation.CostAndSavingsUiState
 import com.hng14.energyiq.features.costAndSavings.presentation.components.SavingsInsightBanner
-import com.hng14.energyiq.features.costAndSavings.presentation.components.SavingsTrendChart
 import com.hng14.energyiq.features.costAndSavings.presentation.components.SummaryStatCard
 import com.hng14.energyiq.*
 import org.jetbrains.compose.resources.stringResource
@@ -69,70 +67,34 @@ fun SummaryTab(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Savings Trend Card
-        InsightOutlinedCard(
-            modifier = Modifier.fillMaxWidth(),
-            shapeSize = 18.dp,
-            paddingValues = PaddingValues(24.dp)
-        ) {
-            Column {
-                Text(
-                    text = stringResource(Res.string.cas_savings_trend),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontFamily = dmSans,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = Color(0xFF111827)
-                )
-                Text(
-                    text = stringResource(Res.string.cas_savings_trend_subtitle),
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = dmSans,
-                        color = Color(0xFF6B7280)
+        // Check Calculator Button
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .clickable { onCheckCalculator() },
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFF111827),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = stringResource(Res.string.cas_check_calculator),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = dmSans,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp,
+                        ),
+                        color = Color.White,
                     )
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // Line Chart
-                SavingsTrendChart(
-                    dataPoints = uiState.chartData,
-                    labels = uiState.chartLabels,
-                    fontFamily = dmSans
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Check Calculator Button inside Card
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp)
-                            .clickable { onCheckCalculator() },
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color(0xFF111827),
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = stringResource(Res.string.cas_check_calculator),
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontFamily = dmSans,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 16.sp,
-                                ),
-                                color = Color.White,
-                            )
-                        }
-                    }
                 }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                SavingsInsightBanner(text = "Your savings increased due to high solar output")
             }
         }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        SavingsInsightBanner(text = "Your savings are calculated based on your energy usage and fuel price")
     }
 }

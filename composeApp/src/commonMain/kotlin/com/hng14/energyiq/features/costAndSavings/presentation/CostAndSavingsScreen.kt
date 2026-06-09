@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DropdownMenu
@@ -35,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDateRangePickerState
@@ -74,6 +76,7 @@ import com.hng14.energyiq.cas_tab_summary
 import com.hng14.energyiq.cas_title
 import com.hng14.energyiq.common_cancel
 import com.hng14.energyiq.common_confirm
+import com.hng14.energyiq.core.theme.EnergyPalette
 import org.jetbrains.compose.resources.stringResource
 
 private fun formatMillis(millis: Long?): String {
@@ -82,6 +85,12 @@ private fun formatMillis(millis: Long?): String {
     val date = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
     val monthName = date.month.name.lowercase().replaceFirstChar { it.uppercase() }.take(3)
     return "$monthName ${date.dayOfMonth}, ${date.year}"
+}
+
+private fun formatMillisToIso(millis: Long?): String {
+    if (millis == null) return ""
+    val instant = Instant.fromEpochMilliseconds(millis)
+    return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -113,7 +122,6 @@ fun CostAndSavingsScreen(
 
     // Custom Date Range Picker State
     val defaultCustomDesc = stringResource(Res.string.cas_period_custom_desc)
-    var customRangeDescription by remember(defaultCustomDesc) { mutableStateOf(defaultCustomDesc) }
     var showDateRangePicker by remember { mutableStateOf(false) }
 
     val dateRangePickerState = rememberDateRangePickerState()
@@ -127,23 +135,44 @@ fun CostAndSavingsScreen(
                         val start = dateRangePickerState.selectedStartDateMillis
                         val end = dateRangePickerState.selectedEndDateMillis
                         if (start != null && end != null) {
-                            customRangeDescription = "${formatMillis(start)} - ${formatMillis(end)}"
+                            val label = "${formatMillis(start)} - ${formatMillis(end)}"
+                            viewModel.onCalculatorCustomDateRangeSelected(
+                                startDate = formatMillisToIso(start),
+                                endDate = formatMillisToIso(end),
+                                label = label
+                            )
                         }
                         showDateRangePicker = false
                     }
                 ) {
-                    Text(stringResource(Res.string.common_confirm), color = Color(0xFFF59E0B))
+                    Text(stringResource(Res.string.common_confirm), color = EnergyPalette.Amber)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDateRangePicker = false }) {
-                    Text(stringResource(Res.string.common_cancel))
+                    Text(stringResource(Res.string.common_cancel), color = Color(0xFF6B7280))
                 }
-            }
+            },
+            colors = DatePickerDefaults.colors(
+                containerColor = Color.White,
+            )
         ) {
             DateRangePicker(
                 state = dateRangePickerState,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = EnergyPalette.Amber,
+                    selectedDayContentColor = Color.White,
+                    dayInSelectionRangeContainerColor = EnergyPalette.Amber.copy(alpha = 0.1f),
+                    todayDateBorderColor = EnergyPalette.Amber,
+                    todayContentColor = EnergyPalette.Amber,
+                    containerColor = Color.White,
+                    titleContentColor = Color(0xFF111827),
+                    headlineContentColor = Color(0xFF111827),
+                    weekdayContentColor = Color(0xFF6B7280),
+                    subheadContentColor = Color(0xFF6B7280),
+                    navigationContentColor = Color(0xFF111827)
+                )
             )
         }
     }
@@ -161,11 +190,16 @@ fun CostAndSavingsScreen(
             )
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = { viewModel.refreshData() },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
             ) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
                     GreetingHeader(
@@ -288,14 +322,28 @@ fun CostAndSavingsScreen(
 
                         tabs[1] -> {
                             CalculatorTab(
+                                uiState = uiState,
                                 dmSans = dmSans,
                                 onDateRangePickRequest = { showDateRangePicker = true },
-                                customRangeDescription = customRangeDescription
+                                customRangeDescription = uiState.calculatorCustomRangeLabel ?: defaultCustomDesc,
+                                onStepChanged = { viewModel.onCalculatorStepChanged(it) },
+                                onPeriodSelected = { viewModel.onCalculatorPeriodSelected(it) },
+                                onPriceChanged = { viewModel.onPmsPriceChanged(it) },
+                                onPriceStringChanged = { viewModel.onPmsPriceStringChanged(it) },
+                                onGeneratorTypeChanged = { viewModel.onGeneratorTypeChanged(it) },
+                                onToggleEditing = { viewModel.onToggleStep3Editing() },
+                                onContinue = { viewModel.onCalculatorContinue() },
+                                onCalculate = { onSuccess -> viewModel.onCalculate(onSuccess) },
+                                onNavigateToResults = { selectedTab = tabs[2] }
                             )
                         }
 
                         tabs[2] -> {
-                            ResultsTab(dmSans = dmSans)
+                            ResultsTab(
+                                uiState = uiState,
+                                dmSans = dmSans,
+                                onViewCumulativeTracker = { selectedTab = tabs[3] }
+                            )
                         }
 
                         tabs[3] -> {
@@ -307,19 +355,6 @@ fun CostAndSavingsScreen(
                     }
 
                     Spacer(modifier = Modifier.height(40.dp))
-                }
-            }
-
-            if (uiState.isLoading) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.White.copy(alpha = 0.7f)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        androidx.compose.material3.CircularProgressIndicator(
-                            color = Color(0xFFF59E0B)
-                        )
-                    }
                 }
             }
         }

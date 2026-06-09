@@ -12,9 +12,6 @@ data class CostAndSavingsUiState(
     val energyTrend: String = "",
     val generationToday: String = "0 kWh",
     val generationRemaining: String = "",
-    // Chart Data
-    val chartData: List<Float> = listOf(15000f, 15000f, 10000f, 20000f, 22000f, 15000f, 27000f),
-    val chartLabels: List<String> = listOf("Mon 12", "Tue 13", "Wed 14", "Thu 15", "Fri 16", "Sat 17", "Sun 18"),
     
     // Cumulative Tracker Data
     val lifetimeSavings: String = "₦ 0",
@@ -22,9 +19,6 @@ data class CostAndSavingsUiState(
     val co2Avoided: String = "0 Tons",
     val genHoursAvoided: String = "0 hrs",
     val fuelSaved: String = "0 Litres",
-    val cumulativeActualSavings: List<Float> = emptyList(),
-    val cumulativeGridProjection: List<Float> = emptyList(),
-    val cumulativeChartLabels: List<String> = emptyList(),
     val totalSavingsToDate: String = "₦ 0",
     val totalSavingsTrend: String = "",
     val avgMonthlySavings: String = "₦ 0",
@@ -32,8 +26,35 @@ data class CostAndSavingsUiState(
     val efficiencyTrendLabel: String = "Stable efficiency trend",
 
     // Calculator Inputs
-    val pmsPrice: Double = 0.0,
+    val calculatorStep: Int = 1,
+    val calculatorSelectedPeriod: String = "This Week",
+    val calculatorCustomStartDate: String? = null,
+    val calculatorCustomEndDate: String? = null,
+    val calculatorCustomRangeLabel: String? = null,
+    val isCalculatorStep3Editing: Boolean = false,
+    val generatorType: String = "PMS",
+    val pmsPrice: Double = 870.0,
+    val pmsPriceString: String = "870",
     val fuelRate: Double = 0.0,
     val hoursUsed: Int = 0,
-    val tariffBand: String = ""
+    val tariffBand: String = "",
+
+    // Results Tab Specific Data
+    val resultsMetaDescription: String = "",
+    val resultsDailySavings: String = "₦ 0",
+    val resultsWeeklySavings: String = "₦ 0",
+    val resultsMonthlySavings: String = "₦ 0",
+    val resultsGeneratorCostAvoided: String = "₦ 0",
+    val resultsSavingsPercentage: String = "—",
+    val resultsCo2Avoided: String = "0kg",
+    val resultsTotalActiveHours: String = "0 hrs",
+    val resultsEquivalentPower: String = "0 kWh",
+    val resultsBreakdown: List<ResultsBreakdownRow> = emptyList(),
+    val resultsFuelPriceImpact: String = "₦ 0"
+)
+
+data class ResultsBreakdownRow(
+    val label: String,
+    val before: String,
+    val after: String
 )

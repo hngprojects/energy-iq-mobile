@@ -12,19 +12,20 @@ data class CumulativeSavingsResponse(
 
 @Serializable
 data class CumulativeSavingsData(
-    val lifetimeSavingsNgn: Double,
-    val lifetimeEnergyKwh: Double,
-    val lifetimeFuelSavedLitres: Double,
-    val co2AvoidedKg: Double,
-    val generatorHoursAvoided: Double,
-    val totalSavingsToDateNgn: Double,
-    val averageMonthlySavingsNgn: Double,
-    val chart: List<CumulativeChartItem>,
-    val meta: SavingsMeta
+    val lifetimeSavingsNgn: Double? = null,
+    val lifetimeEnergyConsumedKwh: Double? = null,
+    val lifetimeEnergyGeneratedKwh: Double? = null,
+    val lifetimeFuelSavedLitres: Double? = null,
+    val co2AvoidedKg: Double? = null,
+    val generatorHoursAvoided: Double? = null,
+    val totalSavingsToDateNgn: Double? = null,
+    val averageMonthlySavingsNgn: Double? = null,
+    val chart: List<CumulativeChartItem> = emptyList(),
+    val meta: SavingsMeta? = null
 )
 
 @Serializable
 data class CumulativeChartItem(
     val month: String,
-    val savingsNgn: Double
+    val savingsNgn: Double? = null
 )

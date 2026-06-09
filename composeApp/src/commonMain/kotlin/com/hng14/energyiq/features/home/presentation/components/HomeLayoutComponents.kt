@@ -1,11 +1,14 @@
 package com.hng14.energyiq.features.home.presentation.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -50,10 +53,12 @@ internal fun DraggableFab(
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
+    val dmSans = dmSansFontFamily()
 
-    FloatingActionButton(
+    Surface(
         onClick = onClick,
         modifier = modifier
+            .size(72.dp)
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
@@ -62,14 +67,32 @@ internal fun DraggableFab(
                     offsetY += dragAmount.y
                 }
             },
-        containerColor = Color(0xFF111827),
-        contentColor = Color.White,
         shape = CircleShape,
+        color = Color(0xFF916231),
+        border = BorderStroke(4.dp, Color(0xFFE9E5E2))
     ) {
-        ChatBotVectorIcon(
-            modifier = Modifier.size(24.dp),
-            contentDescription = "Chatbot",
-        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "\u26A1",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 24.sp
+                ),
+                color = Color.White
+            )
+            Text(
+                text = "AI Chat",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontFamily = dmSans,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp
+                ),
+                color = Color.White
+            )
+        }
     }
 }
 

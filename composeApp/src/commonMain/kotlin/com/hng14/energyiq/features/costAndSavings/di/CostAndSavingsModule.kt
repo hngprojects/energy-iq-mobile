@@ -7,5 +7,5 @@ import org.koin.dsl.module
 
 fun costAndSavingsModule() = module {
     single { CostAndSavingsRepository(get(), get()) }
-    viewModel { CostAndSavingsViewModel(get()) }
+    viewModel { CostAndSavingsViewModel(get(), get(), get()) }
 }

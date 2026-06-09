@@ -1,18 +1,13 @@
 package com.hng14.energyiq.features.costAndSavings.presentation.tabs
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Eco
 import androidx.compose.material.icons.outlined.EvStation
@@ -21,7 +16,6 @@ import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -29,10 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.*
-import com.hng14.energyiq.core.ui.InsightOutlinedCard
 import com.hng14.energyiq.features.costAndSavings.presentation.CostAndSavingsUiState
 import com.hng14.energyiq.features.costAndSavings.presentation.components.CumulativeMetricCard
-import com.hng14.energyiq.features.costAndSavings.presentation.components.CumulativeSavingsChart
 import com.hng14.energyiq.features.costAndSavings.presentation.components.TrendMetricCard
 import org.jetbrains.compose.resources.stringResource
 
@@ -108,61 +100,6 @@ fun CumulativeTrackerTab(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Cumulative Savings Growth Chart Section
-        InsightOutlinedCard(
-            modifier = Modifier.fillMaxWidth(),
-            shapeSize = 16.dp,
-            paddingValues = PaddingValues(16.dp)
-        ) {
-            Column {
-                Text(
-                    text = stringResource(Res.string.cas_savings_growth_title),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontFamily = dmSans,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    ),
-                    color = Color(0xFF111827)
-                )
-                Text(
-                    text = stringResource(Res.string.cas_savings_growth_subtitle),
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = dmSans,
-                        color = Color(0xFF9CA3AF)
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    LegendItem(
-                        label = stringResource(Res.string.cas_actual_savings),
-                        color = Color(0xFFF59E0B),
-                        fontFamily = dmSans
-                    )
-                    LegendItem(
-                        label = stringResource(Res.string.cas_grid_projection),
-                        color = Color(0xFFD1D5DB),
-                        fontFamily = dmSans
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                CumulativeSavingsChart(
-                    actualSavings = uiState.cumulativeActualSavings.ifEmpty { listOf(0f) },
-                    gridProjection = uiState.cumulativeGridProjection.ifEmpty { listOf(0f) },
-                    labels = uiState.cumulativeChartLabels.ifEmpty { listOf("-") },
-                    fontFamily = dmSans
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
         // Savings Trends & Analytics Section
         Text(
             text = stringResource(Res.string.cas_trends_analytics_title),
@@ -200,28 +137,5 @@ fun CumulativeTrackerTab(
                 fontFamily = dmSans
             )
         }
-    }
-}
-
-@Composable
-private fun LegendItem(
-    label: String,
-    color: Color,
-    fontFamily: FontFamily
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier
-                .size(10.dp)
-                .background(color, CircleShape)
-        )
-        Spacer(modifier = Modifier.size(8.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = fontFamily,
-                color = Color(0xFF9CA3AF)
-            )
-        )
     }
 }

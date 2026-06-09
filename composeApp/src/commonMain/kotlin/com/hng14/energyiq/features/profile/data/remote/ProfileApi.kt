@@ -13,11 +13,12 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 
 class ProfileApi(
     private val httpClient: HttpClient,
 ) {
-    suspend fun updatePersonalSettings(body: Map<String, String>) {
+    suspend fun updatePersonalSettings(body: Map<String, JsonElement>) {
         try {
             val url = "${NetworkConfig.BASE_URL}/users/settings/personal"
             val response = httpClient.patch(url) {
@@ -26,7 +27,6 @@ class ProfileApi(
             }
 
             if (response.status.value in 200..299) {
-                // Some endpoints return no useful body; treat 2xx as success.
                 runCatching { response.body<Unit>() }
                 return
             }

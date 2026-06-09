@@ -5,6 +5,9 @@ import com.hng14.energyiq.features.auth.domain.model.User
 import com.hng14.energyiq.core.network.CloudinaryConfig
 import com.hng14.energyiq.features.profile.data.remote.CloudinaryApi
 import com.hng14.energyiq.features.profile.data.remote.ProfileApi
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class ProfileRepository(
     private val api: ProfileApi,
@@ -26,6 +29,10 @@ class ProfileRepository(
         return res.secureUrl.ifBlank { res.url }
     }
 
+    suspend fun updatePersonalSettingsRaw(body: Map<String, JsonElement>) {
+        api.updatePersonalSettings(body)
+    }
+
     suspend fun updatePersonalSettings(
         firstName: String,
         lastName: String,
@@ -36,7 +43,7 @@ class ProfileRepository(
         city: String,
         aiLanguage: String,
     ): User {
-        val body = buildMap<String, String> {
+        val body = buildJsonObject {
             put("firstName", firstName)
             if (lastName.isNotBlank()) put("lastName", lastName)
             if (!profileUrl.isNullOrBlank()) put("profileUrl", profileUrl)
@@ -51,7 +58,6 @@ class ProfileRepository(
 
         val currentUser = authRepository.getCurrentUser() ?: throw Exception("User not found")
 
-        // Manually update local cache instead of relying on getMe() which may have issues.
         return authRepository.updateLocalUser(
             id = currentUser.id,
             firstName = firstName,

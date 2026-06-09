@@ -26,43 +26,47 @@ data class InverterSavingsData(
 
 @Serializable
 data class SavingsResults(
-    val totalCostSavedNgn: Double,
-    val generatorCostAvoidedNgn: Double,
-    val fuelSavedLitres: Double,
-    val co2AvoidedKg: Double,
+    val totalCostSavedNgn: Double? = null,
+    val generatorCostAvoidedNgn: Double? = null,
+    val fuelSavedLitres: Double? = null,
+    val co2AvoidedKg: Double? = null,
     val breakdown: List<SavingsBreakdownItem>
 )
 
 @Serializable
 data class SavingsBreakdownItem(
     val bucket: String,
-    val activeHours: Double,
-    val energyKwh: Double,
-    val generatorCostSavedNgn: Double,
-    val fuelSavedLitres: Double
+    val activeHours: Double? = null,
+    val energyKwh: Double? = null,
+    val solarKwh: Double? = null,
+    val generatorCostSavedNgn: Double? = null,
+    val fuelSavedLitres: Double? = null
 )
 
 @Serializable
 data class SavingsSummary(
+    val totalCostSavedNgn: Double? = null,
     val averageCostSavedNgn: Double? = null,
     val averageCostSavedPerBucketNgn: Double? = null,
-    val totalEnergyConsumedKwh: Double,
-    val totalActiveHours: Double
+    val totalEnergyConsumedKwh: Double? = null,
+    val totalEnergyGeneratedKwh: Double? = null,
+    val solarCoveragePercent: Double? = null,
+    val totalActiveHours: Double? = null
 )
 
 @Serializable
 data class SavingsChartItem(
     val label: String,
-    val savingsNgn: Double
+    val savingsNgn: Double? = null
 )
 
 @Serializable
 data class SavingsMeta(
-    val fuelType: String,
-    val fuelPricePerLitreNgn: Double,
-    val fuelPriceLastUpdated: String,
-    val assumedGeneratorRatedPowerKw: Double,
-    val assumedConsumptionRateLPerHr: Double
+    val fuelType: String? = null,
+    val fuelPricePerLitreNgn: Double? = null,
+    val fuelPriceLastUpdated: String? = null,
+    val assumedGeneratorRatedPowerKw: Double? = null,
+    val assumedConsumptionRateLPerHr: Double? = null
 )
 
 @Serializable

@@ -15,8 +15,8 @@ data class InverterDashboardData(
     val dataAgeSeconds: Int? = null,
     val systemOffline: Boolean = false,
     val emptyData: Boolean = true,
-    val nairaSavedToday: Double = 0.0,
-    val nairaSavedThisMonth: Double = 0.0,
+    val nairaSavedToday: Double? = null,
+    val nairaSavedThisMonth: Double? = null,
     val health: InverterHealth? = null,
     val sevenDayHistory: List<InverterHistoryItem> = emptyList(),
 )
@@ -41,7 +41,7 @@ data class InverterHealth(
 @Serializable
 data class InverterHistoryItem(
     val date: String = "",
-    val solarKwh: Double = 0.0,
-    val avgBatterySocPercent: Double = 0.0,
-    val avgLoadKw: Double = 0.0,
+    val solarKwh: Double? = null,
+    val avgBatterySocPercent: Double? = null,
+    val avgLoadKw: Double? = null,
 )

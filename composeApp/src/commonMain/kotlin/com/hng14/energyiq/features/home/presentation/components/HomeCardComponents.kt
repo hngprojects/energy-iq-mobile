@@ -83,10 +83,11 @@ internal fun MetricCard(
 
 @Composable
 internal fun BatteryCard(
-    soc: Double,
+    soc: Double?,
     subtitle: String = "Usage remaining",
 ) {
-    val socClamped = soc.coerceIn(0.0, 100.0)
+    val socSafe = soc ?: 0.0
+    val socClamped = socSafe.coerceIn(0.0, 100.0)
     // Display the value as-provided (no rounding); just trim trailing zeros like "12.0" -> "12".
     val socRaw = socClamped.toString()
     val socPretty = if (socRaw.contains('.')) socRaw.trimEnd('0').trimEnd('.') else socRaw
@@ -222,9 +223,11 @@ internal fun PowerUsageCard() {
 
 @Composable
 internal fun SavingsOverviewCard(
-    savedToday: Double,
-    savedMonth: Double,
+    savedToday: Double?,
+    savedMonth: Double?,
 ) {
+    val savedTodaySafe = savedToday ?: 0.0
+    val savedMonthSafe = savedMonth ?: 0.0
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
@@ -245,7 +248,7 @@ internal fun SavingsOverviewCard(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "NGN ${savedToday.toInt()}",
+                    text = "NGN ${savedTodaySafe.toInt()}",
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 40.sp,
@@ -288,7 +291,7 @@ internal fun SavingsOverviewCard(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "NGN ${savedMonth.toInt()}",
+                            text = "NGN ${savedMonthSafe.toInt()}",
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 32.sp,
