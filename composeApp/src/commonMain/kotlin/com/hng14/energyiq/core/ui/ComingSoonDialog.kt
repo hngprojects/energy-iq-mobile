@@ -40,7 +40,7 @@ fun ComingSoonDialog(
                             imageVector = Icons.Outlined.Timer,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = Color(0xFFF97316)
+                            tint = Color(0xFFEA580C)
                         )
                     }
                 }

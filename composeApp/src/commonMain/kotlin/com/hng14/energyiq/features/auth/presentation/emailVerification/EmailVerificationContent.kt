@@ -40,6 +40,7 @@ import com.hng14.energyiq.features.auth.presentation.components.AuthBrandHeader
 import com.hng14.energyiq.features.auth.presentation.components.AuthPageLayout
 import com.hng14.energyiq.features.auth.presentation.components.OtpTextField
 import com.hng14.energyiq.*
+import com.hng14.energyiq.core.util.isReduceMotionEnabled
 import org.jetbrains.compose.resources.stringResource
 
 private val SuccessRipple = Color(0xFFBFEFCA)
@@ -255,56 +256,71 @@ fun EmailVerificationSuccessContent(
 
 @Composable
 private fun RippleSuccessIllustration() {
-    val transition = rememberInfiniteTransition(label = "verification_success_ripple")
-    val outerScale = transition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.42f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2100),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "outer_scale",
-    )
-    val outerAlpha = transition.animateFloat(
-        initialValue = 0.42f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2100),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "outer_alpha",
-    )
-    val innerScale = transition.animateFloat(
-        initialValue = 0.94f,
-        targetValue = 1.22f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2100, delayMillis = 280),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "inner_scale",
-    )
-    val innerAlpha = transition.animateFloat(
-        initialValue = 0.34f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2100, delayMillis = 280),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "inner_alpha",
-    )
+    val reduceMotion = isReduceMotionEnabled()
+    if (reduceMotion){
+        Box(
+            modifier = Modifier.size(176.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            RippleCircle(scale = 1.0f, alpha = 0.35f, size = 176.dp)
+            RippleCircle(scale = 1.0f, alpha = 0.2f, size = 148.dp)
+            VerificationSuccessIcon(modifier = Modifier.size(82.dp))
+        }
+    }else{
 
-    Box(
-        modifier = Modifier.size(176.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        RippleCircle(scale = outerScale.value, alpha = outerAlpha.value, size = 176.dp)
-        RippleCircle(scale = innerScale.value, alpha = innerAlpha.value, size = 148.dp)
-
-        VerificationSuccessIcon(
-            modifier = Modifier.size(82.dp),
-            contentDescription = stringResource(Res.string.auth_verification_success),
+        val transition = rememberInfiniteTransition(label = "verification_success_ripple")
+        val outerScale = transition.animateFloat(
+            initialValue = 1f,
+            targetValue = 1.42f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 2100),
+                repeatMode = RepeatMode.Restart,
+            ),
+            label = "outer_scale",
         )
+        val outerAlpha = transition.animateFloat(
+            initialValue = 0.42f,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 2100),
+                repeatMode = RepeatMode.Restart,
+            ),
+            label = "outer_alpha",
+        )
+        val innerScale = transition.animateFloat(
+            initialValue = 0.94f,
+            targetValue = 1.22f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 2100, delayMillis = 280),
+                repeatMode = RepeatMode.Restart,
+            ),
+            label = "inner_scale",
+        )
+        val innerAlpha = transition.animateFloat(
+            initialValue = 0.34f,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 2100, delayMillis = 280),
+                repeatMode = RepeatMode.Restart,
+            ),
+            label = "inner_alpha",
+        )
+
+        Box(
+            modifier = Modifier.size(176.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            RippleCircle(scale = outerScale.value, alpha = outerAlpha.value, size = 176.dp)
+            RippleCircle(scale = innerScale.value, alpha = innerAlpha.value, size = 148.dp)
+
+            VerificationSuccessIcon(
+                modifier = Modifier.size(82.dp),
+                contentDescription = stringResource(Res.string.auth_verification_success),
+            )
+        }
+
     }
+
 }
 
 @Composable

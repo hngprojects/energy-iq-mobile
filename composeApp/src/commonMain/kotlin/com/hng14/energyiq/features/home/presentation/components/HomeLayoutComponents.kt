@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -44,6 +45,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -63,10 +65,14 @@ internal fun DraggableFab(
     var offsetY by remember { mutableFloatStateOf(0f) }
     val dmSans = dmSansFontFamily()
 
+    val fontScale = LocalDensity.current.fontScale.coerceAtMost(1.8f)
+    val fabSize = (72 * fontScale).dp
+
+
     Surface(
         onClick = onClick,
         modifier = modifier
-            .size(72.dp)
+            .size(fabSize)
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
             .semantics {
                 role = Role.Button
@@ -84,7 +90,8 @@ internal fun DraggableFab(
         border = BorderStroke(4.dp, Color(0xFFE9E5E2))
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -102,7 +109,8 @@ internal fun DraggableFab(
                     fontWeight = FontWeight.Bold,
                     fontSize = 10.sp
                 ),
-                color = Color.White
+                color = Color.White,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -149,7 +157,7 @@ internal fun HomeTopBar(
             Spacer(modifier = Modifier.width(12.dp))
             Surface(
                 modifier = Modifier
-                    .size(48.dp)
+                    .minimumInteractiveComponentSize()
                     .semantics {
                         role = Role.Button
                         contentDescription = "Profile settings"
@@ -217,16 +225,27 @@ internal fun BackHomeTopBar(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            BellIcon(
-                contentDescription = "Notifications",
+            Box(
                 modifier = Modifier
-                    .size(24.dp)
-                    .semantics { role = Role.Button }
+                    .minimumInteractiveComponentSize()
+                    .semantics{
+                        role = Role.Button
+                        contentDescription = "Notifications"
+                    }
                     .clickable { onNotificationClick() },
-            )
+                contentAlignment = Alignment.Center
+            ) {
+                BellIcon(
+                    contentDescription = "Notifications",
+                    modifier = Modifier
+                        .size(24.dp)
+
+                )
+            }
             Spacer(modifier = Modifier.width(12.dp))
             Surface(
                 modifier = Modifier
+                    .minimumInteractiveComponentSize()
                     .size(32.dp)
                     .semantics {
                         role = Role.Button
@@ -293,7 +312,7 @@ internal fun WarningBanner(
                 contentDescription = "Dismiss warning",
                 tint = Color(0xFFC61C15),
                 modifier = Modifier
-                    .size(24.dp)
+                    .minimumInteractiveComponentSize()
                     .semantics { role = Role.Button }
                     .clickable { onDismiss() },
             )

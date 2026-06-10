@@ -37,6 +37,7 @@ import androidx.compose.ui.semantics.semantics
 import com.hng14.energyiq.*
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.layout.defaultMinSize
 
 @Composable
 fun AuthTextField(
@@ -66,7 +67,6 @@ fun AuthTextField(
         fontFamily = dmSans,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
-        lineHeight = 14.sp,
         letterSpacing = 0.sp,
         textAlign = TextAlign.Start,
         color = Color(0xFF2A2F3C),
@@ -75,7 +75,6 @@ fun AuthTextField(
         fontFamily = dmSans,
         fontWeight = FontWeight.Light,
         fontSize = 14.sp,
-        lineHeight = 14.sp,
         letterSpacing = 0.sp,
         textAlign = TextAlign.Start,
         color = Color(0xFF9CA3AF),
@@ -123,7 +122,7 @@ fun AuthTextField(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
+                        .defaultMinSize(minHeight = 48.dp)
                         .background(
                             color = Color(0xFFFCFCFC),
                             shape = fieldShape,
