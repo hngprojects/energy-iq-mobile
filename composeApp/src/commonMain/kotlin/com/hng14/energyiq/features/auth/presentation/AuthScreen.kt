@@ -139,7 +139,6 @@ fun AuthScreen(
                     rememberMe = state.rememberMe,
                     emailError = state.emailError,
                     passwordError = state.passwordError,
-                    generalError = state.generalError,
                     isVerificationRequired = state.isVerificationRequired,
                     isLoading = state.isLoading,
                     onEmailChange = viewModel::onEmailChange,

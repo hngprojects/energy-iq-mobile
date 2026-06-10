@@ -3,12 +3,15 @@ package com.hng14.energyiq.features.auth.presentation.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,9 +26,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +38,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.core.theme.dmSansFontFamily
@@ -50,7 +57,6 @@ fun LoginContent(
     rememberMe: Boolean,
     emailError: String?,
     passwordError: String?,
-    generalError: String?,
     isVerificationRequired: Boolean = false,
     isLoading: Boolean,
     onEmailChange: (String) -> Unit,
@@ -69,6 +75,11 @@ fun LoginContent(
     val adaptiveSpec = LocalAdaptiveScreenSpec.current
     val emailLooksValid = email.isNotBlank() && email.contains('@') && emailError == null
     val passwordLooksValid = password.length >= 8 && password.any { !it.isLetterOrDigit() } && passwordError == null
+    val loggingInLabel = stringResource(Res.string.auth_logging_in)
+    val signInLabel = stringResource(Res.string.auth_sign_in)
+    val googleLogoLabel = stringResource(Res.string.auth_google_logo)
+    val rememberPasswordLabel = stringResource(Res.string.auth_remember_password)
+    val rememberPasswordEnabledLabel = stringResource(Res.string.auth_remember_password_enabled)
 
     AuthPageLayout(
         backgroundColor = energyColors.appBackground,
@@ -119,18 +130,24 @@ fun LoginContent(
 
         if (isVerificationRequired) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Verify account",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = dmSans,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
-                    color = Color(0xFFF3A847),
-                ),
+            Box(
                 modifier = Modifier
                     .align(Alignment.End)
-                    .clickable { onGoToVerification() }
-            )
+                    .minimumInteractiveComponentSize()
+                    .semantics { role = Role.Button }
+                    .clickable { onGoToVerification() },
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Text(
+                    text = stringResource(Res.string.auth_verify_account),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = dmSans,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                        color = Color(0xFFF3A847),
+                    )
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(18.dp))
@@ -156,27 +173,33 @@ fun LoginContent(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
-                modifier = Modifier.clickable { onRememberMeChange(!rememberMe) },
+                modifier = Modifier
+                    .heightIn(min = 48.dp)
+                    .semantics {
+                        role = Role.Checkbox
+                        stateDescription = if (rememberMe) "Checked" else "Unchecked"
+                        contentDescription = rememberPasswordLabel
+                    }
+                    .clickable { onRememberMeChange(!rememberMe) },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Surface(
-                    modifier = Modifier.size(14.dp),
+                    modifier = Modifier.size(24.dp),
                     shape = RoundedCornerShape(4.dp),
                     color = if (rememberMe) Color(0xFFF3A847) else Color.Transparent,
-                    border = BorderStroke(1.dp, Color(0xFFF3A847)),
+                    border = BorderStroke(1.5.dp, Color(0xFFF3A847)),
                 ) {
                     if (rememberMe) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().height(14.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Check,
-                                contentDescription = "Remember password enabled",
+                                contentDescription = rememberPasswordEnabledLabel,
                                 tint = Color.White,
-                                modifier = Modifier.size(10.dp),
+                                modifier = Modifier.size(16.dp),
                             )
                         }
                     }
@@ -197,7 +220,8 @@ fun LoginContent(
 
             TextButton(
                 onClick = onForgotPasswordClick,
-                contentPadding = PaddingValues(0.dp),
+                modifier = Modifier.heightIn(min = 48.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp),
             ) {
                 Text(
                     text = stringResource(Res.string.auth_forgot_password),
@@ -218,7 +242,12 @@ fun LoginContent(
         Button(
             onClick = onSubmit,
             enabled = !isLoading,
-            modifier = Modifier.fillMaxWidth().height(adaptiveSpec.buttonHeight),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(adaptiveSpec.buttonHeight)
+                .semantics {
+                    contentDescription = if (isLoading) loggingInLabel else signInLabel
+                },
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),
@@ -264,7 +293,7 @@ fun LoginContent(
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.social_icon),
-                    contentDescription = null,
+                    contentDescription = googleLogoLabel,
                     modifier = Modifier.size(18.dp),
                     tint = Color.Unspecified,
                 )
@@ -303,7 +332,10 @@ fun LoginContent(
             Spacer(modifier = Modifier.width(6.dp))
             TextButton(
                 onClick = onToggleMode,
-                contentPadding = PaddingValues(0.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .semantics { role = Role.Button }
             ) {
                 Text(
                     text = stringResource(Res.string.auth_create_one),
@@ -349,7 +381,10 @@ fun LoginContent(
                 color = Color(0xFF2A2F3C),
                 textAlign = TextAlign.Center,
                 textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable(onClick = onTermsAndConditionsClick),
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .semantics { role = Role.Button }
+                    .clickable(onClick = onTermsAndConditionsClick),
             )
             Text(
                 text = stringResource(Res.string.auth_and),
@@ -361,6 +396,7 @@ fun LoginContent(
                     letterSpacing = 0.sp,
                 ),
                 color = Color(0xFF6B7280),
+                modifier = Modifier.align(Alignment.CenterVertically)
             )
             Text(
                 text = stringResource(Res.string.auth_privacy_policy),
@@ -374,7 +410,10 @@ fun LoginContent(
                 color = Color(0xFF2A2F3C),
                 textAlign = TextAlign.Center,
                 textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable(onClick = onPrivacyPolicyClick),
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .semantics { role = Role.Button }
+                    .clickable(onClick = onPrivacyPolicyClick),
             )
         }
     }

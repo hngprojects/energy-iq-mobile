@@ -20,6 +20,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.core.theme.dmSansFontFamily
@@ -45,18 +47,20 @@ fun ForgotPasswordContent(
     val forgotPasswordEmailError = when {
         email.isEmpty() -> emailError
         forgotPasswordEmailValid -> null
-        else -> "Enter a valid email address"
+        else -> stringResource(Res.string.auth_error_invalid_email)
     }
     val forgotPasswordEmailSupportingText = when {
         email.isEmpty() -> null
-        forgotPasswordEmailValid -> "Email address is valid"
-        else -> "Enter a valid email address"
+        forgotPasswordEmailValid -> stringResource(Res.string.auth_email_valid)
+        else -> stringResource(Res.string.auth_error_invalid_email)
     }
     val forgotPasswordEmailSupportingColor = when {
         email.isEmpty() -> null
         forgotPasswordEmailValid -> Color(0xFF4CD964)
         else -> Color(0xFFD92D20)
     }
+    val sendingLinkLabel = stringResource(Res.string.auth_sending_link)
+    val sendLinkLabel = stringResource(Res.string.auth_send_link)
 
     AuthPageLayout(
         backgroundColor = Color(0xFFFAFAF8),
@@ -113,7 +117,12 @@ fun ForgotPasswordContent(
         Button(
             onClick = onResendLink,
             enabled = !isLoading,
-            modifier = Modifier.fillMaxWidth().height(adaptiveSpec.buttonHeight),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(adaptiveSpec.buttonHeight)
+                .semantics {
+                    contentDescription = if (isLoading) sendingLinkLabel else sendLinkLabel
+                },
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),

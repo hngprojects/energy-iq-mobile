@@ -19,6 +19,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.*
@@ -43,6 +45,8 @@ fun CheckMailContent(
 ) {
     val dmSans = dmSansFontFamily()
     val adaptiveSpec = LocalAdaptiveScreenSpec.current
+    val resettingPasswordLabel = stringResource(Res.string.auth_resetting_password)
+    val resetPasswordLabel = stringResource(Res.string.auth_reset_password)
     val passwordRuleText = stringResource(Res.string.auth_password_rule)
     val passwordValid = password.isNotEmpty() &&
         password.length >= 8 &&
@@ -158,7 +162,16 @@ fun CheckMailContent(
         Button(
             onClick = onResetPassword,
             enabled = !isLoading,
-            modifier = Modifier.fillMaxWidth().height(adaptiveSpec.buttonHeight),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(adaptiveSpec.buttonHeight)
+                .semantics {
+                    contentDescription = if (isLoading) {
+                        resettingPasswordLabel
+                    } else {
+                        resetPasswordLabel
+                    }
+                },
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),

@@ -20,12 +20,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -35,6 +37,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
@@ -60,6 +68,10 @@ internal fun DraggableFab(
         modifier = modifier
             .size(72.dp)
             .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+            .semantics {
+                role = Role.Button
+                contentDescription = "Open AI Chat"
+            }
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
@@ -123,16 +135,25 @@ internal fun HomeTopBar(
         )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            BellIcon(
-                contentDescription = "Notifications",
+            Box(
                 modifier = Modifier
-                    .size(24.dp)
+                    .minimumInteractiveComponentSize()
                     .clickable { onNotificationClick() },
-            )
+                contentAlignment = Alignment.Center
+            ) {
+                BellIcon(
+                    contentDescription = "Notifications",
+                    modifier = Modifier.size(24.dp),
+                )
+            }
             Spacer(modifier = Modifier.width(12.dp))
             Surface(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(48.dp)
+                    .semantics {
+                        role = Role.Button
+                        contentDescription = "Profile settings"
+                    }
                     .clickable { onProfileClick() },
                 shape = CircleShape,
                 color = Color(0xFFFFD3A5),
@@ -200,12 +221,17 @@ internal fun BackHomeTopBar(
                 contentDescription = "Notifications",
                 modifier = Modifier
                     .size(24.dp)
+                    .semantics { role = Role.Button }
                     .clickable { onNotificationClick() },
             )
             Spacer(modifier = Modifier.width(12.dp))
             Surface(
                 modifier = Modifier
                     .size(32.dp)
+                    .semantics {
+                        role = Role.Button
+                        contentDescription = "Profile settings"
+                    }
                     .clickable { onProfileClick() },
                 shape = CircleShape,
                 color = Color(0xFFFFD3A5),
@@ -234,8 +260,10 @@ internal fun WarningBanner(
     Surface(
         color = Color(0xFFFCEAEA),
         shape = RoundedCornerShape(18.dp),
-        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFC61C15)),
-        modifier = modifier
+        border = BorderStroke(1.5.dp, Color(0xFFC61C15)),
+        modifier = modifier.semantics { 
+            liveRegion = LiveRegionMode.Assertive 
+        }
     ) {
         Row(
             modifier = Modifier
@@ -245,7 +273,7 @@ internal fun WarningBanner(
             verticalAlignment = Alignment.Top,
         ) {
             DangerVectorIcon(
-                contentDescription = null,
+                contentDescription = "System alert",
                 modifier = Modifier.size(30.dp),
             )
             Text(
@@ -266,6 +294,7 @@ internal fun WarningBanner(
                 tint = Color(0xFFC61C15),
                 modifier = Modifier
                     .size(24.dp)
+                    .semantics { role = Role.Button }
                     .clickable { onDismiss() },
             )
         }

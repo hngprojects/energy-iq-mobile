@@ -23,8 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.text.TextStyle
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun OtpTextField(
@@ -46,8 +50,14 @@ fun OtpTextField(
         label = "cursor_alpha"
     )
 
+    val fieldDescription = stringResource(Res.string.auth_otp_field_description)
+
     BasicTextField(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                contentDescription = fieldDescription
+            },
         value = otpValue,
         onValueChange = { newValue ->
             if (!enabled) return@BasicTextField

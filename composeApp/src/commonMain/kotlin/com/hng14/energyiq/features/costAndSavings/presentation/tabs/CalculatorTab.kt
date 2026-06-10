@@ -56,6 +56,8 @@ import com.hng14.energyiq.features.costAndSavings.presentation.components.Calcul
 import com.hng14.energyiq.features.costAndSavings.presentation.components.PeriodOption
 import com.hng14.energyiq.features.costAndSavings.presentation.components.PeriodSelectionCard
 import com.hng14.energyiq.features.costAndSavings.presentation.components.StepperInput
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CalculatorTab(
@@ -79,10 +81,17 @@ fun CalculatorTab(
     val pmsPriceString = uiState.pmsPriceString
     val generatorType = uiState.generatorType
     val isEditing = uiState.isCalculatorStep3Editing
+    
+    val customPeriodLabel = stringResource(Res.string.cas_period_custom)
+    val thisWeekLabel = stringResource(Res.string.cas_period_this_week)
+    val thisMonthLabel = stringResource(Res.string.cas_period_this_month)
+    val lastMonthLabel = stringResource(Res.string.cas_period_last_month)
+    val petrolLabel = stringResource(Res.string.cas_petrol_pms)
+    val dieselLabel = stringResource(Res.string.cas_diesel)
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
         Text(
-            text = "Calculator Savings",
+            text = stringResource(Res.string.cas_calculator_title),
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontFamily = dmSans,
                 fontWeight = FontWeight.Bold,
@@ -91,7 +100,7 @@ fun CalculatorTab(
             color = Color(0xFF111827)
         )
         Text(
-            text = "Step $currentStep of 3",
+            text = stringResource(Res.string.cas_step_format, currentStep),
             style = MaterialTheme.typography.bodySmall.copy(
                 fontFamily = dmSans,
                 color = Color(0xFFF59E0B),
@@ -109,7 +118,7 @@ fun CalculatorTab(
         when (currentStep) {
             1 -> {
                 Text(
-                    text = "Select Calculation Period",
+                    text = stringResource(Res.string.cas_select_period),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Bold,
@@ -119,7 +128,7 @@ fun CalculatorTab(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Choose the time period you want to calculate your savings for.",
+                    text = stringResource(Res.string.cas_select_period_desc),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = dmSans,
                         color = Color(0xFF6B7280),
@@ -130,10 +139,10 @@ fun CalculatorTab(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 val periods = listOf(
-                    PeriodOption("This Week", "May 31, 2026 - Jun 6, 2026"),
-                    PeriodOption("This Month", "Jun 1, 2026 - Jun 30, 2026"),
-                    PeriodOption("Last Month", "May 1, 2026 - May 31, 2026"),
-                    PeriodOption("Custom Range", customRangeDescription)
+                    PeriodOption(thisWeekLabel, "May 31, 2026 - Jun 6, 2026"),
+                    PeriodOption(thisMonthLabel, "Jun 1, 2026 - Jun 30, 2026"),
+                    PeriodOption(lastMonthLabel, "May 1, 2026 - May 31, 2026"),
+                    PeriodOption(customPeriodLabel, customRangeDescription)
                 )
 
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -143,7 +152,7 @@ fun CalculatorTab(
                             isSelected = selectedPeriod == period.title,
                             onClick = {
                                 onPeriodSelected(period.title)
-                                if (period.title == "Custom Range") onDateRangePickRequest()
+                                if (period.title == customPeriodLabel) onDateRangePickRequest()
                             },
                             fontFamily = dmSans
                         )
@@ -176,7 +185,7 @@ fun CalculatorTab(
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Why does the period matter?",
+                                text = stringResource(Res.string.cas_why_period),
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     fontFamily = dmSans,
                                     fontWeight = FontWeight.Bold,
@@ -186,7 +195,7 @@ fun CalculatorTab(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Your savings are calculated based on your energy usage, fuel price, and tariff for the selected period",
+                                text = stringResource(Res.string.cas_why_period_desc),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontFamily = dmSans,
                                     fontSize = 13.sp,
@@ -233,7 +242,7 @@ fun CalculatorTab(
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111827), contentColor = Color.White)
                 ) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Continue", style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold, fontSize = 16.sp))
+                        Text(stringResource(Res.string.cas_continue), style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold, fontSize = 16.sp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp))
                     }
@@ -241,13 +250,13 @@ fun CalculatorTab(
             }
             2 -> {
                 Text(
-                    text = "Real-time PMS (Diesel) Price",
+                    text = stringResource(Res.string.cas_real_time_pms_price),
                     style = MaterialTheme.typography.titleLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold, fontSize = 22.sp),
                     color = Color(0xFF111827)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "We fetch the latest petrol (PMS) price in your area to calculate your generator cost.",
+                    text = stringResource(Res.string.cas_pms_price_desc),
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = dmSans, color = Color(0xFF9CA3AF), fontSize = 14.sp)
                 )
 
@@ -260,7 +269,7 @@ fun CalculatorTab(
                     border = BorderStroke(1.dp, Color(0xFFFEF3C7))
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text("Current PMS Price", style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold, fontSize = 16.sp), color = Color(0xFF111827))
+                        Text(stringResource(Res.string.cas_current_pms_price), style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold, fontSize = 16.sp), color = Color(0xFF111827))
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("₦${pmsPrice.toInt()}", style = MaterialTheme.typography.headlineLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold, fontSize = 44.sp), color = Color(0xFFF59E0B))
@@ -273,12 +282,12 @@ fun CalculatorTab(
                             Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Box(modifier = Modifier.size(8.dp).background(Color(0xFF10B981), androidx.compose.foundation.shape.CircleShape))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Auto-updated", color = Color(0xFF065F46), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(Res.string.cas_auto_updated), color = Color(0xFF065F46), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                             }
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text("Last updated: Today, 4:17 AM", style = MaterialTheme.typography.bodySmall.copy(fontFamily = dmSans, color = Color(0xFF9CA3AF)))
+                        Text(stringResource(Res.string.cas_last_updated), style = MaterialTheme.typography.bodySmall.copy(fontFamily = dmSans, color = Color(0xFF9CA3AF)))
                         Spacer(modifier = Modifier.height(24.dp))
                         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFFEF3C7)))
                         Spacer(modifier = Modifier.height(24.dp))
@@ -290,9 +299,13 @@ fun CalculatorTab(
                                         Box(contentAlignment = Alignment.Center) { Text("!", color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold, fontSize = 12.sp) }
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    Text("About this price", style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold))
+                                    Text(stringResource(Res.string.cas_about_this_price), style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold))
                                 }
-                                listOf("This is the average pump price of PMS (Petrol) in Lagos", "Prices may vary slightly depending on your exact location.", "You can update this price manually if needed").forEach { point ->
+                                listOf(
+                                    stringResource(Res.string.cas_about_price_point1),
+                                    stringResource(Res.string.cas_about_price_point2),
+                                    stringResource(Res.string.cas_about_price_point3)
+                                ).forEach { point ->
                                     Row(verticalAlignment = Alignment.Top) {
                                         Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(16.dp).padding(top = 2.dp))
                                         Spacer(modifier = Modifier.width(12.dp))
@@ -306,8 +319,8 @@ fun CalculatorTab(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Text("Adjust Price (Optional)", style = MaterialTheme.typography.titleMedium.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold), color = Color(0xFF111827))
-                Text("You can adjust the price if your current local price is different", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = dmSans, color = Color(0xFF9CA3AF), fontSize = 14.sp)
+                Text(stringResource(Res.string.cas_adjust_price), style = MaterialTheme.typography.titleMedium.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold), color = Color(0xFF111827))
+                Text(stringResource(Res.string.cas_adjust_price_desc), style = MaterialTheme.typography.bodyMedium.copy(fontFamily = dmSans, color = Color(0xFF9CA3AF), fontSize = 14.sp)
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -327,8 +340,8 @@ fun CalculatorTab(
                         Icon(Icons.Outlined.Lightbulb, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Text("Tip", style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold))
-                            Text("Use the auto-updated price for the most accurate calculation.", style = MaterialTheme.typography.bodySmall.copy(fontFamily = dmSans, color = Color(0xFF6B7280)))
+                            Text(stringResource(Res.string.cas_tip), style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold))
+                            Text(stringResource(Res.string.cas_tip_desc), style = MaterialTheme.typography.bodySmall.copy(fontFamily = dmSans, color = Color(0xFF6B7280)))
                         }
                     }
                 }
@@ -346,7 +359,7 @@ fun CalculatorTab(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Back", style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold))
+                            Text(stringResource(Res.string.cas_back), style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold))
                         }
                     }
                     Button(
@@ -356,7 +369,7 @@ fun CalculatorTab(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111827), contentColor = Color.White)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Continue", style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold))
+                            Text(stringResource(Res.string.cas_continue), style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold))
                             Spacer(modifier = Modifier.width(8.dp))
                             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp))
                         }
@@ -365,17 +378,17 @@ fun CalculatorTab(
             }
             3 -> {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Review Your Input", style = MaterialTheme.typography.titleLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold, fontSize = 22.sp), color = Color(0xFF111827))
+                    Text(stringResource(Res.string.cas_review_title), style = MaterialTheme.typography.titleLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.Bold, fontSize = 22.sp), color = Color(0xFF111827))
                     Surface(onClick = onToggleEditing, shape = RoundedCornerShape(20.dp), border = BorderStroke(1.dp, Color(0xFFF59E0B)), color = Color.White) {
                         Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Outlined.Edit, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = if (isEditing) "Done editing" else "Edit setup", color = Color(0xFFF59E0B), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = dmSans)
+                            Text(text = if (isEditing) stringResource(Res.string.cas_done_editing) else stringResource(Res.string.cas_edit_setup), color = Color(0xFFF59E0B), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = dmSans)
                         }
                     }
                 }
                 
-                Text("Please review the information below. You can edit any input if needed.", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = dmSans, color = Color(0xFF9CA3AF), fontSize = 14.sp))
+                Text(stringResource(Res.string.cas_review_subtitle), style = MaterialTheme.typography.bodyMedium.copy(fontFamily = dmSans, color = Color(0xFF9CA3AF), fontSize = 14.sp))
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -383,10 +396,10 @@ fun CalculatorTab(
                     var periodExpanded by remember { mutableStateOf(false) }
                     ReviewInputCard(
                         icon = { Icon(Icons.Outlined.CalendarToday, null, tint = Color(0xFF3B82F6)) },
-                        title = "Calculation Period",
-                        subtitle = "This time period used for this Calculation",
-                        value = if (selectedPeriod == "Custom Range") customRangeDescription else selectedPeriod,
-                        valueSubtitle = if (selectedPeriod == "This Week") "May 31, 2026 - Jun 6, 2026" else "",
+                        title = stringResource(Res.string.cas_calculation_period),
+                        subtitle = stringResource(Res.string.cas_calculation_period_desc),
+                        value = if (selectedPeriod == customPeriodLabel) customRangeDescription else selectedPeriod,
+                        valueSubtitle = if (selectedPeriod == thisWeekLabel) "May 31, 2026 - Jun 6, 2026" else "",
                         fontFamily = dmSans,
                         isEditing = isEditing,
                         editContent = {
@@ -399,7 +412,7 @@ fun CalculatorTab(
                                 ) {
                                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                                         Text(
-                                            text = if (selectedPeriod == "Custom Range") customRangeDescription else selectedPeriod,
+                                            text = if (selectedPeriod == customPeriodLabel) customRangeDescription else selectedPeriod,
                                             fontFamily = dmSans,
                                             style = MaterialTheme.typography.bodyMedium
                                         )
@@ -411,11 +424,16 @@ fun CalculatorTab(
                                     onDismissRequest = { periodExpanded = false },
                                     modifier = Modifier.background(Color.White).fillMaxWidth(0.8f)
                                 ) {
-                                    listOf("This Week", "This Month", "Last Month", "Custom Range").forEach { period ->
+                                    listOf(
+                                        thisWeekLabel,
+                                        thisMonthLabel,
+                                        lastMonthLabel,
+                                        customPeriodLabel
+                                    ).forEach { period ->
                                         DropdownMenuItem(
                                             text = { Text(period, fontFamily = dmSans) },
                                             onClick = {
-                                                if (period == "Custom Range") {
+                                                if (period == customPeriodLabel) {
                                                     onDateRangePickRequest()
                                                 } else {
                                                     onPeriodSelected(period)
@@ -433,9 +451,9 @@ fun CalculatorTab(
                     var genExpanded by remember { mutableStateOf(false) }
                     ReviewInputCard(
                         icon = { Icon(Icons.Outlined.Power, null, tint = Color(0xFF3B82F6)) },
-                        title = "Generator Type",
-                        subtitle = "Petrol and diesel use different calculations",
-                        value = if (generatorType == "PMS") "Petrol (PMS)" else "Diesel",
+                        title = stringResource(Res.string.cas_generator_type),
+                        subtitle = stringResource(Res.string.cas_generator_type_desc),
+                        value = if (generatorType == "PMS") petrolLabel else dieselLabel,
                         valueSubtitle = "From your savings setup",
                         fontFamily = dmSans,
                         isEditing = isEditing,
@@ -448,7 +466,7 @@ fun CalculatorTab(
                                     color = Color.White
                                 ) {
                                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                                        Text(if (generatorType == "PMS") "Petrol (PMS)" else "Diesel", fontFamily = dmSans, style = MaterialTheme.typography.bodyMedium)
+                                        Text(if (generatorType == "PMS") petrolLabel else dieselLabel, fontFamily = dmSans, style = MaterialTheme.typography.bodyMedium)
                                         Icon(Icons.Default.KeyboardArrowDown, null, tint = Color(0xFF6B7280))
                                     }
                                 }
@@ -458,11 +476,11 @@ fun CalculatorTab(
                                     modifier = Modifier.background(Color.White).fillMaxWidth(0.8f)
                                 ) {
                                     DropdownMenuItem(
-                                        text = { Text("Petrol (PMS)", fontFamily = dmSans) },
+                                        text = { Text(petrolLabel, fontFamily = dmSans) },
                                         onClick = { onGeneratorTypeChanged("PMS"); genExpanded = false }
                                     )
                                     DropdownMenuItem(
-                                        text = { Text("Diesel", fontFamily = dmSans) },
+                                        text = { Text(dieselLabel, fontFamily = dmSans) },
                                         onClick = { onGeneratorTypeChanged("Diesel"); genExpanded = false }
                                     )
                                 }
@@ -473,10 +491,10 @@ fun CalculatorTab(
                     // Fuel Price Card
                     ReviewInputCard(
                         icon = { Icon(Icons.Outlined.LocalGasStation, null, tint = Color(0xFF8B5CF6)) },
-                        title = if (generatorType == "PMS") "Petrol (PMS) Price" else "Diesel Price",
-                        subtitle = "Fuel price used for this calculation",
+                        title = if (generatorType == "PMS") petrolLabel + " Price" else dieselLabel + " Price",
+                        subtitle = stringResource(Res.string.cas_price_per_litre_desc),
                         value = "₦${pmsPrice.toInt()} / litre",
-                        valueSubtitle = "Adjusted for this calculation",
+                        valueSubtitle = stringResource(Res.string.cas_adjusted_calculation),
                         fontFamily = dmSans,
                         isEditing = isEditing,
                         editContent = {
@@ -507,13 +525,14 @@ fun CalculatorTab(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), color = Color(0xFFFFFBEB)) {
+                Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), color = Color(0xFFFFFBEB)
+                ) {
                     Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Surface(modifier = Modifier.size(24.dp), shape = androidx.compose.foundation.shape.CircleShape, color = Color(0xFFF59E0B)) {
                             Box(contentAlignment = Alignment.Center) { Text("!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp) }
                         }
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("These inputs can be updated anytime for more accurate savings calculation.", style = MaterialTheme.typography.bodySmall.copy(fontFamily = dmSans, color = Color(0xFFB45309), fontSize = 12.sp, lineHeight = 16.sp))
+                        Text(stringResource(Res.string.cas_update_anytime_note), style = MaterialTheme.typography.bodySmall.copy(fontFamily = dmSans, color = Color(0xFFB45309), fontSize = 12.sp, lineHeight = 16.sp))
                     }
                 }
 
@@ -530,7 +549,7 @@ fun CalculatorTab(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Back", style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold))
+                            Text(stringResource(Res.string.cas_back), style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold))
                         }
                     }
                     Button(
@@ -539,7 +558,7 @@ fun CalculatorTab(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111827), contentColor = Color.White)
                     ) {
-                        Text("Calculate", style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold))
+                        Text(stringResource(Res.string.cas_calculate), style = MaterialTheme.typography.bodyLarge.copy(fontFamily = dmSans, fontWeight = FontWeight.SemiBold))
                     }
                 }
             }

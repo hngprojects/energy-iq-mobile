@@ -47,5 +47,7 @@ google-services.json
 GoogleService-Info.plist
 temp_auto_push.bat
 temp_interactive_push.bat
+IMPLEMENTATION_SUMMARY.md
+TOUCH_TARGETS_SUMMARY.md
 .gitignore
 branch_structure.json

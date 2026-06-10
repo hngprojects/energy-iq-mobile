@@ -26,7 +26,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -52,6 +52,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import com.hng14.energyiq.core.ui.AuthWaveDecoration
 import com.hng14.energyiq.core.ui.EnergyIqBrandMark
 import com.hng14.energyiq.core.ui.InverterCardIcon
@@ -62,6 +70,8 @@ import com.hng14.energyiq.core.ui.ServerErrorDialog
 import com.hng14.energyiq.core.ui.adaptiveScreenSpec
 import com.hng14.energyiq.features.auth.presentation.components.AuthTextField
 import com.hng14.energyiq.features.auth.presentation.components.PasswordTextField
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -90,311 +100,6 @@ private sealed interface VictronTestState {
 }
 
 private val emailPattern = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
-private val victronTestSteps = listOf(
-    "Verifying credentials and reaching Cloud API",
-    "Authenticating credentials",
-    "Fetching installation data",
-    "Requesting live data",
-    "Connection complete",
-)
-
-private data class ConnectionField(
-    val id: String,
-    val label: String,
-    val placeholder: String,
-    val type: ConnectionFieldType = ConnectionFieldType.TEXT,
-    val optional: Boolean = false,
-    val readOnly: Boolean = false,
-    val initialValue: String = "",
-)
-
-private data class ConnectionContent(
-    val title: String,
-    val subtitle: String,
-    val fields: List<ConnectionField>,
-    val primaryButtonText: String,
-    val helperLines: List<String>,
-)
-
-private data class InverterOption(
-    val title: String,
-    val subtitle: String,
-    val connection: ConnectionContent,
-)
-
-private fun inverterOptionFor(title: String): InverterOption? {
-    return when (title.lowercase()) {
-        "victron" -> InverterOption(
-        title = "Victron",
-        subtitle = "Vrm OAuth",
-        connection = ConnectionContent(
-            title = "Victron Inverter\nConnection",
-            subtitle = "Enter specific details of your inverter type",
-            fields = listOf(
-                ConnectionField(
-                    id = "vrm_email",
-                    label = "Enter VRM Email",
-                    placeholder = "you@email.com",
-                    type = ConnectionFieldType.EMAIL,
-                ),
-                ConnectionField(
-                    id = "vrm_password",
-                    label = "Enter VRM Password",
-                    placeholder = "************",
-                    type = ConnectionFieldType.PASSWORD,
-                ),
-                ConnectionField(
-                    id = "vrm_api_token",
-                    label = "Enter VRM API Token",
-                    placeholder = "************",
-                    type = ConnectionFieldType.PASSWORD,
-                ),
-            ),
-            primaryButtonText = "Connect",
-            helperLines = listOf(
-                "Use your VRM login details",
-                "Find your API token in your Profile -> API Access Tokens -> Generate token",
-            ),
-        ),
-        )
-        "luminous" -> InverterOption(
-        title = "Luminous",
-        subtitle = "No API",
-        connection = ConnectionContent(
-            title = "Luminous Inverter\nConnection",
-            subtitle = "Enter number specific to your inverter type",
-            fields = listOf(
-                ConnectionField(
-                    id = "model",
-                    label = "Enter Inverter Model",
-                    placeholder = "e.g Luminous Eco Volt",
-                ),
-                ConnectionField(
-                    id = "capacity",
-                    label = "Enter Inverter Capacity (kVA/kW)",
-                    placeholder = "3.5kVA",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-                ConnectionField(
-                    id = "battery_bank",
-                    label = "Enter Battery Bank Size (Ah or kWh)",
-                    placeholder = "e.g 8 x 200Ah, 96V",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-                ConnectionField(
-                    id = "solar_array",
-                    label = "Enter Solar Array Size (kWp)",
-                    placeholder = "e.g 8",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-            ),
-            primaryButtonText = "Save Inverter",
-            helperLines = listOf(
-                "Model: use the inverter name printed on the unit, e.g. Luminous 5kVA",
-                "Capacity: enter the rated output, e.g. 5kVA or 3.5kW",
-                "Battery Bank Size: enter values like 2 x 200Ah or 4.8kWh",
-                "Solar Array Size: enter values like 1.8kWp or 4 x 450W",
-            ),
-        ),
-        )
-        "growatt" -> InverterOption(
-        title = "Growatt",
-        subtitle = "API key",
-        connection = ConnectionContent(
-            title = "Growatt Inverter\nConnection",
-            subtitle = "Enter your Growatt API details",
-            fields = listOf(
-                ConnectionField(
-                    id = "growatt_api_token",
-                    label = "Enter Growatt API Token",
-                    placeholder = "zi2o82...",
-                    type = ConnectionFieldType.PASSWORD,
-                ),
-            ),
-            primaryButtonText = "Save Inverter",
-            helperLines = listOf(
-                "API Token: use the API key provided in your Growatt Open API account settings",
-            ),
-        ),
-        )
-        "su-kam", "sukam", "su kam" -> InverterOption(
-        title = "Su-kam",
-        subtitle = "No API",
-        connection = ConnectionContent(
-            title = "Su-kam Inverter\nConnection",
-            subtitle = "Enter number specific to your inverter type",
-            fields = listOf(
-                ConnectionField(
-                    id = "model",
-                    label = "Enter Inverter Model",
-                    placeholder = "e.g Su-Kam Falcon+",
-                ),
-                ConnectionField(
-                    id = "capacity",
-                    label = "Enter Inverter Capacity (kVA/kW)",
-                    placeholder = "3.5kVA",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-                ConnectionField(
-                    id = "battery_bank",
-                    label = "Enter Battery Bank Size (Ah or kWh)",
-                    placeholder = "e.g 8 x 200Ah, 96V",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-                ConnectionField(
-                    id = "solar_array",
-                    label = "Enter Solar Array Size (kWp)",
-                    placeholder = "e.g 8",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-            ),
-            primaryButtonText = "Save Inverter",
-            helperLines = listOf(
-                "Model: use the inverter name printed on the unit, e.g. Su-Kam Falcon+",
-                "Capacity: enter the rated output, e.g. 5kVA or 3.5kW",
-                "Battery Bank Size: enter values like 2 x 200Ah or 4.8kWh",
-                "Solar Array Size: enter values like 1.8kWp or 4 x 450W",
-            ),
-        ),
-        )
-        "sunsynk" -> InverterOption(
-        title = "Sunsynk",
-        subtitle = "API key",
-        connection = ConnectionContent(
-            title = "Sunsynk Inverter\nConnection",
-            subtitle = "Enter specific details of your inverter type",
-            fields = listOf(
-                ConnectionField(
-                    id = "solarman_app_id",
-                    label = "Enter SolarMan App ID",
-                    placeholder = "e.g 123456",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-                ConnectionField(
-                    id = "solarman_email",
-                    label = "Enter SolarMan Email",
-                    placeholder = "you@email.com",
-                    type = ConnectionFieldType.EMAIL,
-                ),
-                ConnectionField(
-                    id = "solarman_password",
-                    label = "Enter SolarMan Password",
-                    placeholder = "************",
-                    type = ConnectionFieldType.PASSWORD,
-                ),
-            ),
-            primaryButtonText = "Save Inverter",
-            helperLines = listOf(
-                "SolarMan App ID: enter the numeric app or plant identifier, e.g. 123456",
-                "SolarMan Email: use the email linked to your SolarMan account",
-                "SolarMan Password: use your SolarMan account password",
-            ),
-            ),
-        )
-        "deye" -> InverterOption(
-        title = "Deye",
-        subtitle = "API key",
-        connection = ConnectionContent(
-            title = "Deye Inverter\nConnection",
-            subtitle = "Enter specific details of your inverter type",
-            fields = listOf(
-                ConnectionField(
-                    id = "solarman_app_id",
-                    label = "Enter SolarMan App ID",
-                    placeholder = "e.g 123456",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-                ConnectionField(
-                    id = "solarman_email",
-                    label = "Enter SolarMan Email",
-                    placeholder = "you@email.com",
-                    type = ConnectionFieldType.EMAIL,
-                ),
-                ConnectionField(
-                    id = "solarman_password",
-                    label = "Enter SolarMan Password",
-                    placeholder = "************",
-                    type = ConnectionFieldType.PASSWORD,
-                ),
-            ),
-            primaryButtonText = "Save Inverter",
-            helperLines = listOf(
-                "SolarMan App ID: enter the numeric app or plant identifier, e.g. 123456",
-                "SolarMan Email: use the email linked to your SolarMan account",
-                "SolarMan Password: use your SolarMan account password",
-            ),
-        ),
-    )
-        "sandbox" -> InverterOption(
-        title = "Sandbox",
-        subtitle = "Mock API",
-        connection = ConnectionContent(
-            title = "Sandbox Inverter\nConnection",
-            subtitle = "Enter your sandbox credentials",
-            fields = listOf(
-                ConnectionField(
-                    id = "brand",
-                    label = "Brand",
-                    placeholder = "SANDBOX",
-                    type = ConnectionFieldType.TEXT,
-                    readOnly = true,
-                    initialValue = "SANDBOX",
-                ),
-                ConnectionField(
-                    id = "sandbox_access_token",
-                    label = "Sandbox Access Token",
-                    placeholder = "mock-token-a",
-                    type = ConnectionFieldType.PASSWORD,
-                ),
-            ),
-            primaryButtonText = "Connect",
-            helperLines = listOf(
-                "Enter the sandbox access token provided to you",
-            ),
-        ),
-    )
-        else -> InverterOption(
-            title = title.lowercase().replaceFirstChar { it.titlecase() },
-            subtitle = "We'll guide",
-            connection = ConnectionContent(
-            title = "${title.lowercase().replaceFirstChar { it.titlecase() }} Inverter\nConnection",
-            subtitle = "Enter number specific to your inverter type",
-            fields = listOf(
-                ConnectionField(
-                    id = "model",
-                    label = "Enter Inverter Model",
-                    placeholder = "e.g Hybrid 5kVA",
-                ),
-                ConnectionField(
-                    id = "capacity",
-                    label = "Enter Inverter Capacity (kVA/kW)",
-                    placeholder = "3.5kVA",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-                ConnectionField(
-                    id = "battery_bank",
-                    label = "Enter Battery Bank Size (Ah or kWh)",
-                    placeholder = "e.g 8 x 200Ah, 96V",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-                ConnectionField(
-                    id = "solar_array",
-                    label = "Enter Solar Array Size (kWp)",
-                    placeholder = "e.g 8",
-                    type = ConnectionFieldType.NUMBER,
-                ),
-            ),
-            primaryButtonText = "Save Inverter",
-            helperLines = listOf(
-                "Model: use the inverter name printed on the unit, e.g. Hybrid 5kVA",
-                "Capacity: enter the rated output, e.g. 5kVA or 3.5kW",
-                "Battery Bank Size: enter values like 2 x 200Ah or 4.8kWh",
-                "Solar Array Size: enter values like 1.8kWp or 4 x 450W",
-            ),
-            ),
-        )
-    }
-}
 
 @Composable
 fun InverterSetupScreen(
@@ -409,8 +114,22 @@ fun InverterSetupScreen(
     var victronTestJob by remember { mutableStateOf<Job?>(null) }
     var showComingSoonFor by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
-    val inverterOptions = remember(setupState.supportedBrands) {
-        setupState.supportedBrands.mapNotNull(::inverterOptionFor).distinctBy { it.title }
+    
+    val victronSteps = listOf(
+        stringResource(Res.string.onboarding_victron_verifying),
+        stringResource(Res.string.onboarding_victron_authenticating),
+        stringResource(Res.string.onboarding_victron_fetching),
+        stringResource(Res.string.onboarding_victron_requesting),
+        stringResource(Res.string.onboarding_victron_complete),
+    )
+
+    val connectLabel = stringResource(Res.string.onboarding_connect)
+    val saveInverterLabel = stringResource(Res.string.onboarding_save_inverter)
+
+    val inverterOptions = remember(setupState.supportedBrands, connectLabel, saveInverterLabel) {
+        setupState.supportedBrands.mapNotNull { brand ->
+            inverterOptionFor(brand, connectLabel, saveInverterLabel)
+        }.distinctBy { it.title }
     }
 
     setupState.connectError?.let { message ->
@@ -456,6 +175,7 @@ fun InverterSetupScreen(
                     option = option,
                     values = connectionValues,
                     victronTestState = victronTestState,
+                    victronTestSteps = victronSteps,
                     isSubmitting = setupState.isConnecting,
                     onValueChange = { fieldId, value ->
                         connectionValues = connectionValues + (fieldId to value)
@@ -467,7 +187,7 @@ fun InverterSetupScreen(
                     onRunVictronTest = {
                         victronTestJob?.cancel()
                         victronTestJob = coroutineScope.launch {
-                            victronTestSteps.forEachIndexed { index, _ ->
+                            victronSteps.forEachIndexed { index, _ ->
                                 victronTestState = VictronTestState.Running(stepIndex = index)
                                 delay(900)
                             }
@@ -500,7 +220,6 @@ private fun InverterSelectionContent(
     onRetry: () -> Unit,
     onContinue: () -> Unit,
 ) {
-    // Only tighten spacing on the selection screen so "What type of inverter..." sits higher.
     SetupPageLayout(topSpacer = 12.dp, afterBrandSpacer = 8.dp) {
         val adaptiveSpec = LocalAdaptiveScreenSpec.current
         Box(
@@ -516,7 +235,7 @@ private fun InverterSelectionContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "What type of inverter do\nyou use",
+                    text = stringResource(Res.string.onboarding_inverter_title),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = adaptiveSpec.headlineSize,
@@ -524,13 +243,15 @@ private fun InverterSelectionContent(
                     ),
                     color = Color(0xFF1F2430),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { heading() },
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Select your inverter so we can tailor your\nexperience",
+                    text = stringResource(Res.string.onboarding_inverter_subtitle),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontSize = adaptiveSpec.bodySize,
                         lineHeight = 22.sp,
@@ -553,17 +274,22 @@ private fun InverterSelectionContent(
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFFD92D20),
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .semantics { liveRegion = LiveRegionMode.Polite },
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        OutlinedButton(onClick = onRetry) {
-                            Text(text = "Retry")
+                        OutlinedButton(
+                            onClick = onRetry,
+                            modifier = Modifier.semantics { role = Role.Button }
+                        ) {
+                            Text(text = stringResource(Res.string.common_refresh))
                         }
                     }
 
                     supportedBrands.isEmpty() -> {
                         Text(
-                            text = "No supported inverter brands are available right now.",
+                            text = stringResource(Res.string.onboarding_no_brands),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF7B8190),
                             textAlign = TextAlign.Center,
@@ -582,6 +308,10 @@ private fun InverterSelectionContent(
                             Surface(
                                 modifier = Modifier
                                     .width(adaptiveSpec.inverterCardWidth)
+                                    .semantics(mergeDescendants = true) {
+                                        role = Role.Button
+                                        selected = isSelected
+                                    }
                                     .clickable { onSelectOption(option) },
                                 shape = RoundedCornerShape(14.dp),
                                 color = Color.White,
@@ -599,7 +329,7 @@ private fun InverterSelectionContent(
                                 ) {
                                     InverterCardIcon(
                                         modifier = Modifier.size(width = 36.dp, height = 28.dp),
-                                        contentDescription = "${option.title} icon",
+                                        contentDescription = stringResource(Res.string.onboarding_inverter_icon_description, option.title),
                                     )
                                     Spacer(modifier = Modifier.height(10.dp))
                                     Text(
@@ -633,7 +363,8 @@ private fun InverterSelectionContent(
             enabled = selectedOption != null,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(adaptiveSpec.buttonHeight),
+                .height(adaptiveSpec.buttonHeight)
+                .semantics { role = Role.Button },
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),
@@ -642,7 +373,7 @@ private fun InverterSelectionContent(
                 disabledContentColor = Color.White,
             ),
         ) {
-            Text(text = "Continue", fontSize = 16.sp)
+            Text(text = stringResource(Res.string.cas_continue), fontSize = 16.sp)
         }
     }
 }
@@ -652,6 +383,7 @@ private fun InverterConnectionContent(
     option: InverterOption,
     values: Map<String, String>,
     victronTestState: VictronTestState,
+    victronTestSteps: List<String>,
     isSubmitting: Boolean,
     onValueChange: (String, String) -> Unit,
     onRunVictronTest: () -> Unit,
@@ -678,7 +410,9 @@ private fun InverterConnectionContent(
             ),
             color = Color(0xFF1F2430),
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { heading() },
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -736,6 +470,10 @@ private fun InverterConnectionContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .semantics(mergeDescendants = true) {
+                        role = Role.Button
+                        contentDescription = "Test connection to Victron VRM"
+                    }
                     .clickable(enabled = victronTestState !is VictronTestState.Running) {
                         onRunVictronTest()
                     },
@@ -748,7 +486,7 @@ private fun InverterConnectionContent(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Test connection to Victron VRM",
+                    text = stringResource(Res.string.onboarding_victron_test_title),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium,
                         fontSize = 14.sp,
@@ -761,7 +499,7 @@ private fun InverterConnectionContent(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
-                    imageVector = Icons.Filled.ArrowForward,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     tint = when (victronTestState) {
                         VictronTestState.Success -> Color(0xFF2EAF5D)
@@ -777,7 +515,11 @@ private fun InverterConnectionContent(
                 is VictronTestState.Running -> {
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics(mergeDescendants = true) {
+                                liveRegion = LiveRegionMode.Polite
+                            },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         CircularProgressIndicator(
@@ -806,20 +548,24 @@ private fun InverterConnectionContent(
                             lineHeight = 18.sp,
                         ),
                         color = Color(0xFFD92D20),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics { liveRegion = LiveRegionMode.Polite },
                     )
                 }
 
                 VictronTestState.Success -> {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Connection Verified",
+                        text = stringResource(Res.string.onboarding_victron_verified),
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontSize = 12.sp,
                             lineHeight = 18.sp,
                         ),
                         color = Color(0xFF2EAF5D),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics { liveRegion = LiveRegionMode.Polite },
                     )
                 }
             }
@@ -832,7 +578,11 @@ private fun InverterConnectionContent(
             enabled = canSubmit && !isSubmitting,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(adaptiveSpec.buttonHeight),
+                .height(adaptiveSpec.buttonHeight)
+                .semantics {
+                    role = Role.Button
+                    contentDescription = if (isSubmitting) "Connecting, please wait" else content.primaryButtonText
+                },
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),
@@ -858,23 +608,26 @@ private fun InverterConnectionContent(
             onClick = onBack,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(adaptiveSpec.buttonHeight),
+                .height(adaptiveSpec.buttonHeight)
+                .semantics { role = Role.Button },
             shape = RoundedCornerShape(12.dp),
         ) {
-            Text(text = "Back", color = Color(0xFF2A2F3C), fontSize = 16.sp)
+            Text(text = stringResource(Res.string.cas_back), color = Color(0xFF2A2F3C), fontSize = 16.sp)
         }
 
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
-            text = "Where do I find these?",
+            text = stringResource(Res.string.onboarding_where_to_find),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 18.sp,
             ),
             color = Color(0xFF374151),
             textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { heading() },
         )
         Spacer(modifier = Modifier.height(10.dp))
         content.helperLines.forEachIndexed { index, line ->
@@ -908,11 +661,12 @@ private fun InverterSavedSuccessContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(top = 12.dp),
+                    .padding(top = 12.dp)
+                    .semantics(mergeDescendants = true) {},
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "You're All Set",
+                    text = stringResource(Res.string.onboarding_success_title),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = adaptiveSpec.headlineSize,
@@ -920,13 +674,15 @@ private fun InverterSavedSuccessContent(
                     ),
                     color = Color(0xFF1F2430),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { heading() },
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Your EnergyIQ account has been successfully\ncreated and your Energy System is ready to be\nmonitored",
+                    text = stringResource(Res.string.onboarding_success_subtitle),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontSize = adaptiveSpec.bodySize,
                         lineHeight = 22.sp,
@@ -940,7 +696,7 @@ private fun InverterSavedSuccessContent(
 
                 OnboardingSuccessIllustration(
                     modifier = Modifier.size(if (adaptiveSpec.tier == com.hng14.energyiq.core.ui.WidthTier.EXPANDED) 292.dp else 252.dp),
-                    contentDescription = "Success",
+                    contentDescription = stringResource(Res.string.onboarding_success_description),
                 )
             }
         }
@@ -949,15 +705,314 @@ private fun InverterSavedSuccessContent(
             onClick = onContinue,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(adaptiveSpec.buttonHeight),
+                .height(adaptiveSpec.buttonHeight)
+                .semantics { role = Role.Button },
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),
                 contentColor = Color.White,
             ),
         ) {
-            Text(text = "Continue", fontSize = 16.sp)
+            Text(text = stringResource(Res.string.auth_continue), fontSize = 16.sp)
         }
+    }
+}
+
+private data class ConnectionField(
+    val id: String,
+    val label: String,
+    val placeholder: String,
+    val type: ConnectionFieldType = ConnectionFieldType.TEXT,
+    val optional: Boolean = false,
+    val readOnly: Boolean = false,
+    val initialValue: String = "",
+)
+
+private data class ConnectionContent(
+    val title: String,
+    val subtitle: String,
+    val fields: List<ConnectionField>,
+    val primaryButtonText: String,
+    val helperLines: List<String>,
+)
+
+private data class InverterOption(
+    val title: String,
+    val subtitle: String,
+    val connection: ConnectionContent,
+)
+
+private fun inverterOptionFor(title: String, connectLabel: String, saveInverterLabel: String): InverterOption? {
+    return when (title.lowercase()) {
+        "victron" -> InverterOption(
+        title = "Victron",
+        subtitle = "Vrm OAuth",
+        connection = ConnectionContent(
+            title = "Victron Inverter\nConnection",
+            subtitle = "Enter specific details of your inverter type",
+            fields = listOf(
+                ConnectionField(
+                    id = "vrm_email",
+                    label = "Enter VRM Email",
+                    placeholder = "you@email.com",
+                    type = ConnectionFieldType.EMAIL,
+                ),
+                ConnectionField(
+                    id = "vrm_password",
+                    label = "Enter VRM Password",
+                    placeholder = "************",
+                    type = ConnectionFieldType.PASSWORD,
+                ),
+                ConnectionField(
+                    id = "vrm_api_token",
+                    label = "Enter VRM API Token",
+                    placeholder = "************",
+                    type = ConnectionFieldType.PASSWORD,
+                ),
+            ),
+            primaryButtonText = connectLabel,
+            helperLines = listOf(
+                "Use your VRM login details",
+                "Find your API token in your Profile -> API Access Tokens -> Generate token",
+            ),
+        ),
+        )
+        "luminous" -> InverterOption(
+        title = "Luminous",
+        subtitle = "No API",
+        connection = ConnectionContent(
+            title = "Luminous Inverter\nConnection",
+            subtitle = "Enter number specific to your inverter type",
+            fields = listOf(
+                ConnectionField(
+                    id = "model",
+                    label = "Enter Inverter Model",
+                    placeholder = "e.g Luminous Eco Volt",
+                ),
+                ConnectionField(
+                    id = "capacity",
+                    label = "Enter Inverter Capacity (kVA/kW)",
+                    placeholder = "3.5kVA",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+                ConnectionField(
+                    id = "battery_bank",
+                    label = "Enter Battery Bank Size (Ah or kWh)",
+                    placeholder = "e.g 8 x 200Ah, 96V",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+                ConnectionField(
+                    id = "solar_array",
+                    label = "Enter Solar Array Size (kWp)",
+                    placeholder = "e.g 8",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+            ),
+            primaryButtonText = saveInverterLabel,
+            helperLines = listOf(
+                "Model: use the inverter name printed on the unit, e.g. Luminous 5kVA",
+                "Capacity: enter the rated output, e.g. 5kVA or 3.5kW",
+                "Battery Bank Size: enter values like 2 x 200Ah or 4.8kWh",
+                "Solar Array Size: enter values like 1.8kWp or 4 x 450W",
+            ),
+        ),
+        )
+        "growatt" -> InverterOption(
+        title = "Growatt",
+        subtitle = "API key",
+        connection = ConnectionContent(
+            title = "Growatt Inverter\nConnection",
+            subtitle = "Enter your Growatt API details",
+            fields = listOf(
+                ConnectionField(
+                    id = "growatt_api_token",
+                    label = "Enter Growatt API Token",
+                    placeholder = "zi2o82...",
+                    type = ConnectionFieldType.PASSWORD,
+                ),
+            ),
+            primaryButtonText = saveInverterLabel,
+            helperLines = listOf(
+                "API Token: use the API key provided in your Growatt Open API account settings",
+            ),
+        ),
+        )
+        "su-kam", "sukam", "su kam" -> InverterOption(
+        title = "Su-kam",
+        subtitle = "No API",
+        connection = ConnectionContent(
+            title = "Su-kam Inverter\nConnection",
+            subtitle = "Enter number specific to your inverter type",
+            fields = listOf(
+                ConnectionField(
+                    id = "model",
+                    label = "Enter Inverter Model",
+                    placeholder = "e.g Su-Kam Falcon+",
+                ),
+                ConnectionField(
+                    id = "capacity",
+                    label = "Enter Inverter Capacity (kVA/kW)",
+                    placeholder = "3.5kVA",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+                ConnectionField(
+                    id = "battery_bank",
+                    label = "Enter Battery Bank Size (Ah or kWh)",
+                    placeholder = "e.g 8 x 200Ah, 96V",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+                ConnectionField(
+                    id = "solar_array",
+                    label = "Enter Solar Array Size (kWp)",
+                    placeholder = "e.g 8",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+            ),
+            primaryButtonText = saveInverterLabel,
+            helperLines = listOf(
+                "Model: use the inverter name printed on the unit, e.g. Su-Kam Falcon+",
+                "Capacity: enter the rated output, e.g. 5kVA or 3.5kW",
+                "Battery Bank Size: enter values like 2 x 200Ah or 4.8kWh",
+                "Solar Array Size: enter values like 1.8kWp or 4 x 450W",
+            ),
+        ),
+        )
+        "sunsynk" -> InverterOption(
+        title = "Sunsynk",
+        subtitle = "API key",
+        connection = ConnectionContent(
+            title = "Sunsynk Inverter\nConnection",
+            subtitle = "Enter specific details of your inverter type",
+            fields = listOf(
+                ConnectionField(
+                    id = "solarman_app_id",
+                    label = "Enter SolarMan App ID",
+                    placeholder = "e.g 123456",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+                ConnectionField(
+                    id = "solarman_email",
+                    label = "Enter SolarMan Email",
+                    placeholder = "you@email.com",
+                    type = ConnectionFieldType.EMAIL,
+                ),
+                ConnectionField(
+                    id = "solarman_password",
+                    label = "Enter SolarMan Password",
+                    placeholder = "************",
+                    type = ConnectionFieldType.PASSWORD,
+                ),
+            ),
+            primaryButtonText = saveInverterLabel,
+            helperLines = listOf(
+                "SolarMan App ID: enter the numeric app or plant identifier, e.g. 123456",
+                "SolarMan Email: use the email linked to your SolarMan account",
+                "SolarMan Password: use your SolarMan account password",
+            ),
+            ),
+        )
+        "deye" -> InverterOption(
+        title = "Deye",
+        subtitle = "API key",
+        connection = ConnectionContent(
+            title = "Deye Inverter\nConnection",
+            subtitle = "Enter specific details of your inverter type",
+            fields = listOf(
+                ConnectionField(
+                    id = "solarman_app_id",
+                    label = "Enter SolarMan App ID",
+                    placeholder = "e.g 123456",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+                ConnectionField(
+                    id = "solarman_email",
+                    label = "Enter SolarMan Email",
+                    placeholder = "you@email.com",
+                    type = ConnectionFieldType.EMAIL,
+                ),
+                ConnectionField(
+                    id = "solarman_password",
+                    label = "Enter SolarMan Password",
+                    placeholder = "************",
+                    type = ConnectionFieldType.PASSWORD,
+                ),
+            ),
+            primaryButtonText = saveInverterLabel,
+            helperLines = listOf(
+                "SolarMan App ID: enter the numeric app or plant identifier, e.g. 123456",
+                "SolarMan Email: use the email linked to your SolarMan account",
+                "SolarMan Password: use your SolarMan account password",
+            ),
+        ),
+    )
+        "sandbox" -> InverterOption(
+        title = "Sandbox",
+        subtitle = "Mock API",
+        connection = ConnectionContent(
+            title = "Sandbox Inverter\nConnection",
+            subtitle = "Enter your sandbox credentials",
+            fields = listOf(
+                ConnectionField(
+                    id = "brand",
+                    label = "Brand",
+                    placeholder = "SANDBOX",
+                    type = ConnectionFieldType.TEXT,
+                    readOnly = true,
+                    initialValue = "SANDBOX",
+                ),
+                ConnectionField(
+                    id = "sandbox_access_token",
+                    label = "Sandbox Access Token",
+                    placeholder = "mock-token-a",
+                    type = ConnectionFieldType.PASSWORD,
+                ),
+            ),
+            primaryButtonText = connectLabel,
+            helperLines = listOf(
+                "Enter the sandbox access token provided to you",
+            ),
+        ),
+    )
+        else -> InverterOption(
+            title = title.lowercase().replaceFirstChar { it.titlecase() },
+            subtitle = "We'll guide",
+            connection = ConnectionContent(
+            title = "${title.lowercase().replaceFirstChar { it.titlecase() }} Inverter\nConnection",
+            subtitle = "Enter number specific to your inverter type",
+            fields = listOf(
+                ConnectionField(
+                    id = "model",
+                    label = "Enter Inverter Model",
+                    placeholder = "e.g Hybrid 5kVA",
+                ),
+                ConnectionField(
+                    id = "capacity",
+                    label = "Enter Inverter Capacity (kVA/kW)",
+                    placeholder = "3.5kVA",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+                ConnectionField(
+                    id = "battery_bank",
+                    label = "Enter Battery Bank Size (Ah or kWh)",
+                    placeholder = "e.g 8 x 200Ah, 96V",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+                ConnectionField(
+                    id = "solar_array",
+                    label = "Enter Solar Array Size (kWp)",
+                    placeholder = "e.g 8",
+                    type = ConnectionFieldType.NUMBER,
+                ),
+            ),
+            primaryButtonText = saveInverterLabel,
+            helperLines = listOf(
+                "Model: use the inverter name printed on the unit, e.g. Hybrid 5kVA",
+                "Capacity: enter the rated output, e.g. 5kVA or 3.5kW",
+                "Battery Bank Size: enter values like 2 x 200Ah or 4.8kWh",
+                "Solar Array Size: enter values like 1.8kWp or 4 x 450W",
+            ),
+            ),
+        )
     }
 }
 

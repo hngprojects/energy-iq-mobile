@@ -44,6 +44,77 @@
     <string name="auth_reset_success_title">You're All Set</string>
     <string name="auth_reset_success_subtitle">Your password has been updated\nsuccessfully. Sign in.</string>
 
+    <!-- Accessibility & Auth Helpers -->
+    <string name="auth_input_field_description">%1$s input field</string>
+    <string name="auth_valid">Valid</string>
+    <string name="auth_invalid">Invalid</string>
+    <string name="auth_show_password">Show password</string>
+    <string name="auth_hide_password">Hide password</string>
+    <string name="auth_logging_in">Logging in, please wait</string>
+    <string name="auth_creating_account">Creating account, please wait</string>
+    <string name="auth_sending_link">Sending link, please wait</string>
+    <string name="auth_resending_link">Resending link, please wait</string>
+    <string name="auth_resetting_password">Resetting password, please wait</string>
+    <string name="auth_verify_account">Verify account</string>
+    <string name="auth_remember_password_enabled">Remember password enabled</string>
+    <string name="auth_google_logo">Google logo</string>
+    <string name="auth_full_name_rule">Enter your first and last name, for example John Doe</string>
+    <string name="auth_error_first_name_letter">First name must start with a letter</string>
+    <string name="auth_error_last_name_letter">Last name must start with a letter</string>
+    <string name="auth_error_first_name_short">First name is too short</string>
+    <string name="auth_error_last_name_short">Last name is too short</string>
+    <string name="auth_error_invalid_email">Enter a valid email address</string>
+    <string name="auth_email_valid">Email address is valid</string>
+    <string name="auth_otp_field_description">Verification code input field, 6 digits</string>
+    <string name="auth_verifying">Verifying, please wait</string>
+    <string name="auth_resending">Resending code, please wait</string>
+    <string name="auth_resend_in">Resend in %1$s</string>
+    <string name="auth_verify_email">Verify my Email</string>
+    <string name="auth_back_to_sign_up">Back to Sign Up</string>
+    <string name="auth_verification_success">Verification successful</string>
+    <string name="auth_verification_header">Email Verification</string>
+    <string name="auth_verification_subtitle">Hello %1$s, enter the 6-digit code sent to your email to verify and activate your EnergyIQ account.</string>
+    <string name="auth_paste_otp_hint">Please paste(or type) your 6-digit code</string>
+    <string name="auth_error_otp_incorrect">The code you entered is incorrect.</string>
+    <string name="auth_no_code_question">Didn\'t get a code?</string>
+    <string name="auth_resend_code">Resend code</string>
+    <string name="auth_verification_success_title">Email Verification\nSuccessful</string>
+    <string name="auth_verification_success_subtitle">Hello %1$s, your email has been successfully verified.</string>
+    <string name="auth_continue">Continue</string>
+
+    <!-- Inverter Setup Strings -->
+    <string name="onboarding_inverter_title">What type of inverter do\nyou use</string>
+    <string name="onboarding_inverter_subtitle">Select your inverter so we can tailor your\nexperience</string>
+    <string name="onboarding_no_brands">No supported inverter brands are available right now.</string>
+    <string name="onboarding_inverter_icon_description">%1$s icon</string>
+    <string name="onboarding_connect">Connect</string>
+    <string name="onboarding_save_inverter">Save Inverter</string>
+    <string name="onboarding_victron_test_title">Test connection to Victron VRM</string>
+    <string name="onboarding_victron_verifying">Verifying credentials and reaching Cloud API</string>
+    <string name="onboarding_victron_authenticating">Authenticating credentials</string>
+    <string name="onboarding_victron_fetching">Fetching installation data</string>
+    <string name="onboarding_victron_requesting">Requesting live data</string>
+    <string name="onboarding_victron_complete">Connection complete</string>
+    <string name="onboarding_victron_verified">Connection Verified</string>
+    <string name="onboarding_success_title">You\'re All Set</string>
+    <string name="onboarding_success_subtitle">Your EnergyIQ account has been successfully\ncreated and your Energy System is ready to be\nmonitored</string>
+    <string name="onboarding_success_description">Onboarding success illustration</string>
+    <string name="onboarding_where_to_find">Where do I find these?</string>
+    <string name="onboarding_connecting">Connecting, please wait</string>
+    <string name="onboarding_testing_connection">Testing connection, please wait</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_page_indicator">Page %1$d of %2$d</string>
+
+    <!-- Dashboard Accessibility -->
+    <string name="dashboard_metric_description">%1$s: %2$s. %3$s. Status: %4$s</string>
+    <string name="dashboard_battery_description">Battery level: %1$s. %2$s</string>
+    <string name="dashboard_savings_today_description">You saved today: %1$s Naira. Savings generated from solar and battery usage today</string>
+    <string name="dashboard_savings_month_description">Saved this month: %1$s Naira</string>
+    <string name="dashboard_kilowatts">kilowatts</string>
+    <string name="dashboard_percent">percent</string>
+
     <!-- Cost and Savings Strings -->
     <string name="cas_title">Cost and Savings</string>
     <string name="cas_greeting_subtitle">Here's your energy summary today</string>
@@ -96,6 +167,33 @@
     <string name="cas_fuel_rate">Generator fuel consumption rate</string>
     <string name="cas_hours_used">Hours used per day</string>
     <string name="cas_tariff_band">NERC Tariff Band (A/B/C)</string>
+    <string name="cas_review_title">Review Your Input</string>
+    <string name="cas_review_subtitle">Please review the information below. You can edit any input if needed.</string>
+    <string name="cas_edit_setup">Edit setup</string>
+    <string name="cas_done_editing">Done editing</string>
+    <string name="cas_calculation_period">Calculation Period</string>
+    <string name="cas_calculation_period_desc">This time period used for this Calculation</string>
+    <string name="cas_generator_type">Generator Type</string>
+    <string name="cas_generator_type_desc">Petrol and diesel use different calculations</string>
+    <string name="cas_petrol_pms">Petrol (PMS)</string>
+    <string name="cas_diesel">Diesel</string>
+    <string name="cas_price_per_litre_desc">Fuel price used for this calculation</string>
+    <string name="cas_adjusted_calculation">Adjusted for this calculation</string>
+    <string name="cas_update_anytime_note">These inputs can be updated anytime for more accurate savings calculation.</string>
+    <string name="cas_calculate">Calculate</string>
+    <string name="cas_real_time_pms_price">Real-time PMS (Diesel) Price</string>
+    <string name="cas_pms_price_desc">We fetch the latest petrol (PMS) price in your area to calculate your generator cost.</string>
+    <string name="cas_current_pms_price">Current PMS Price</string>
+    <string name="cas_auto_updated">Auto-updated</string>
+    <string name="cas_last_updated">Last updated: Today, 4:17 AM</string>
+    <string name="cas_about_this_price">About this price</string>
+    <string name="cas_about_price_point1">This is the average pump price of PMS (Petrol) in Lagos</string>
+    <string name="cas_about_price_point2">Prices may vary slightly depending on your exact location.</string>
+    <string name="cas_about_price_point3">You can update this price manually if needed</string>
+    <string name="cas_adjust_price">Adjust Price (Optional)</string>
+    <string name="cas_adjust_price_desc">You can adjust the price if your current local price is different</string>
+    <string name="cas_tip">Tip</string>
+    <string name="cas_tip_desc">Use the auto-updated price for the most accurate calculation.</string>
 
     <!-- General -->
     <string name="common_confirm">Confirm</string>

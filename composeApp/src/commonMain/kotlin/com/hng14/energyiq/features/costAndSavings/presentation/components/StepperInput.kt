@@ -105,7 +105,7 @@ fun StepperButton(
     onClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.size(40.dp),
+        modifier = Modifier.size(48.dp),
         shape = RoundedCornerShape(6.dp),
         color = Color.White,
         shadowElevation = 0.dp
