@@ -22,4 +22,6 @@ object EnergyPalette {
     val BatteryMidLow =  Color(0xFF854D0E)
     val DangerBackground = Color(0xFFFDE8E8)
     val Danger = Color(0xFFC81E1E)
+    val TextDark = Color(0xFF111827)
+    val TextSecondary = Color(0xFF6B7280)
 }
