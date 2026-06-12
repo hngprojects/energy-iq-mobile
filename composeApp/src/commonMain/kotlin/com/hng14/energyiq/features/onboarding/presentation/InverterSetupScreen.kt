@@ -27,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -103,7 +105,9 @@ private val emailPattern = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,
 
 @Composable
 fun InverterSetupScreen(
+    isFromAuth: Boolean = true,
     onComplete: () -> Unit,
+    onBack: (() -> Unit)? = null,
 ) {
     val viewModel = koinViewModel<InverterSetupViewModel>()
     val setupState by viewModel.state.collectAsState()
@@ -166,6 +170,7 @@ fun InverterSetupScreen(
                     step = InverterSetupStep.CONNECTION
                 }
             },
+            onBack = onBack,
         )
 
         InverterSetupStep.CONNECTION -> {
@@ -219,8 +224,9 @@ private fun InverterSelectionContent(
     onSelectOption: (InverterOption) -> Unit,
     onRetry: () -> Unit,
     onContinue: () -> Unit,
+    onBack: (() -> Unit)? = null,
 ) {
-    SetupPageLayout(topSpacer = 12.dp, afterBrandSpacer = 8.dp) {
+    SetupPageLayout(topSpacer = 12.dp, afterBrandSpacer = 8.dp, onBack = onBack) {
         val adaptiveSpec = LocalAdaptiveScreenSpec.current
         Box(
             modifier = Modifier
@@ -1039,6 +1045,7 @@ private fun isConnectionFieldValid(
 private fun SetupPageLayout(
     topSpacer: Dp = 18.dp,
     afterBrandSpacer: Dp = 16.dp,
+    onBack: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(
@@ -1056,6 +1063,7 @@ private fun SetupPageLayout(
                             .offset(x = (-10).dp, y = (-10).dp)
                             .size(width = 170.dp, height = 182.dp),
                     )
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1069,12 +1077,29 @@ private fun SetupPageLayout(
                             .align(Alignment.TopCenter),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     content = {
-                        Spacer(modifier = Modifier.height(topSpacer))
+                        Spacer(modifier = Modifier.height(if (onBack != null) maxOf(topSpacer, 40.dp) else topSpacer))
                         EnergyIqBrandMark(modifier = Modifier.fillMaxWidth())
                         Spacer(modifier = Modifier.height(afterBrandSpacer))
                         content()
                     },
                 )
+
+                if (onBack != null) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .statusBarsPadding()
+                            .padding(start = 12.dp, top = 12.dp)
+                            .size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = stringResource(Res.string.common_back),
+                            tint = Color(0xFF111827),
+                        )
+                    }
+                }
             }
         }
     }

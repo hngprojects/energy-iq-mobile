@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hng14.energyiq.core.util.toNonScaledSp
 import com.hng14.energyiq.core.data.NigeriaStateCities
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.features.auth.domain.model.User
@@ -201,6 +202,7 @@ internal fun AccountProfileScreen(
                                         fontFamily = dmSans,
                                         fontWeight = FontWeight.Bold,
                                     ),
+                                    fontSize = 16.dp.toNonScaledSp(),
                                     color = Color(0xFF111827),
                                 )
                             }

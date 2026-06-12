@@ -15,7 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.hng14.energyiq.features.home.presentation.components.HomeTopBar
+import com.hng14.energyiq.features.home.presentation.components.BackHomeTopBar
 import com.hng14.energyiq.features.reports.domain.model.ReportIcon
 import com.hng14.energyiq.features.reports.domain.model.ReportItem
 import com.hng14.energyiq.features.reports.domain.model.ReportStat
@@ -29,7 +29,7 @@ fun ReportsScreen(
     name: String,
     onViewReport: (String) -> Unit,
     onDownloadReport: (String) -> Unit,
-    onProfileClick: () -> Unit = {}
+    onBack: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val stats = rememberReportStats()
@@ -40,9 +40,10 @@ fun ReportsScreen(
             .fillMaxSize()
             .background(Color.White),
     ) {
-        HomeTopBar(
+        BackHomeTopBar(
+            title = "Reports",
             name = name,
-            onProfileClick = onProfileClick
+            onBack = onBack
         )
         Column(
             modifier = Modifier

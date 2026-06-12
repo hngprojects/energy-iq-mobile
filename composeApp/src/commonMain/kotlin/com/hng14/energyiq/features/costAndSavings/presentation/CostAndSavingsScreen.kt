@@ -96,7 +96,7 @@ private fun formatMillisToIso(millis: Long?): String {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CostAndSavingsScreen(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)? = null,
 ) {
     val viewModel = koinViewModel<CostAndSavingsViewModel>()
     val uiState by viewModel.uiState.collectAsState()

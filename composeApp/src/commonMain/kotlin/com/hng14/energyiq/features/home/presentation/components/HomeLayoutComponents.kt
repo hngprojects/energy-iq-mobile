@@ -43,6 +43,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
+import com.hng14.energyiq.core.util.toNonScaledSp
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -158,6 +159,7 @@ internal fun HomeTopBar(
             Surface(
                 modifier = Modifier
                     .minimumInteractiveComponentSize()
+                    .size(32.dp)
                     .semantics {
                         role = Role.Button
                         contentDescription = "Profile settings"
@@ -170,6 +172,7 @@ internal fun HomeTopBar(
                     Text(
                         text = initials,
                         style = MaterialTheme.typography.labelMedium,
+                        fontSize = 12.dp.toNonScaledSp(),
                         color = Color(0xFF2A2F3C),
                         fontWeight = FontWeight.Bold,
                     )
@@ -183,7 +186,7 @@ internal fun HomeTopBar(
 internal fun BackHomeTopBar(
     title: String,
     name: String?,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)? = null,
     onNotificationClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
 ) {
@@ -205,14 +208,18 @@ internal fun BackHomeTopBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color(0xFF111827),
-                )
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color(0xFF111827),
+                    )
+                }
+                Spacer(modifier = Modifier.size(4.dp))
+            } else {
+                Spacer(modifier = Modifier.width(8.dp))
             }
-            Spacer(modifier = Modifier.size(4.dp))
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge.copy(
@@ -259,6 +266,7 @@ internal fun BackHomeTopBar(
                     Text(
                         text = initials,
                         style = MaterialTheme.typography.labelMedium,
+                        fontSize = 12.dp.toNonScaledSp(),
                         color = Color(0xFF2A2F3C),
                         fontWeight = FontWeight.Bold,
                     )

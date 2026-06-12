@@ -41,7 +41,7 @@ private enum class ProfileRoute {
 fun ProfileScreen(
     onLogout: () -> Unit,
     onOpenInverterSetup: () -> Unit,
-    onOpenCostAndSavings: () -> Unit,
+    onOpenReports: () -> Unit,
 ) {
     val viewModel = koinViewModel<ProfileViewModel>()
     val state by viewModel.state.collectAsState()
@@ -315,13 +315,15 @@ fun ProfileScreen(
                     description = stringResource(Res.string.profile_notifications_desc),
                     onClick = { showComingSoonFeature = "Notifications" }
                 )
+                /*
                 Spacer(modifier = Modifier.height(16.dp))
                 SettingsCategoryCard(
-                    icon = { CasIcon(modifier = Modifier.size(22.dp), tint = Color(0xFF111827)) },
-                    title = stringResource(Res.string.profile_cost_savings),
-                    description = stringResource(Res.string.profile_cost_savings_desc),
-                    onClick = onOpenCostAndSavings
+                    icon = { TransactionHistoryIcon(modifier = Modifier.size(22.dp), tint = Color(0xFF111827)) },
+                    title = "Reports",
+                    description = "View weekly/monthly energy summaries and system reports.",
+                    onClick = onOpenReports
                 )
+                */
 
                 Spacer(modifier = Modifier.height(36.dp))
 

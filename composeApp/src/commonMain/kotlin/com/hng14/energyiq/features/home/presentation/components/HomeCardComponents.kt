@@ -2,6 +2,7 @@ package com.hng14.energyiq.features.home.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -250,6 +251,7 @@ internal fun PowerUsageCard() {
 internal fun SavingsOverviewCard(
     savedToday: Double?,
     savedMonth: Double?,
+    onClick: () -> Unit,
 ) {
     val savedTodaySafe = savedToday ?: 0.0
     val savedMonthSafe = savedMonth ?: 0.0
@@ -258,7 +260,9 @@ internal fun SavingsOverviewCard(
     val monthDesc = stringResource(Res.string.dashboard_savings_month_description, savedMonthSafe.toInt().toString())
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
         color = Color.White,
         border = BorderStroke(1.dp, Color(0xFFE7E5E4)),

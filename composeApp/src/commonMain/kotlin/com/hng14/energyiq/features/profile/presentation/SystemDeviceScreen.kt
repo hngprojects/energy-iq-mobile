@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hng14.energyiq.core.util.toNonScaledSp
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.core.ui.BellIcon
 import com.hng14.energyiq.features.auth.domain.model.User
@@ -220,6 +221,7 @@ private fun TopBar(
                     Text(
                         text = initials,
                         style = MaterialTheme.typography.labelMedium,
+                        fontSize = 12.dp.toNonScaledSp(),
                         color = Color(0xFF2A2F3C),
                         fontWeight = FontWeight.Bold,
                     )

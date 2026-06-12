@@ -1,4 +1,4 @@
-﻿package com.hng14.energyiq.features.chat.presentation.components
+package com.hng14.energyiq.features.chat.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -46,6 +46,7 @@ import com.hng14.energyiq.core.theme.EnergyPalette
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.core.ui.BatteryChargingIcon
 import com.hng14.energyiq.core.ui.DangerVectorIcon
+import com.hng14.energyiq.core.util.toNonScaledSp
 import com.hng14.energyiq.features.chat.domain.model.*
 import com.hng14.energyiq.features.chat.presentation.ChatAttachmentController
 
@@ -1166,6 +1167,7 @@ fun ChatListTopBar(
                     Text(
                         text = initials,
                         style = MaterialTheme.typography.labelSmall,
+                        fontSize = 11.dp.toNonScaledSp(),
                         color = Color(0xFF1F2937),
                         fontWeight = FontWeight.Bold,
                     )

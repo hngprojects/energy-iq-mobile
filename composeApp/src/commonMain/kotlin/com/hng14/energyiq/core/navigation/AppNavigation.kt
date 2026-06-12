@@ -15,7 +15,7 @@ import com.hng14.energyiq.features.auth.presentation.emailVerification.EmailVeri
 import com.hng14.energyiq.features.alerts.presentation.SmartAlertsScreen
 import com.hng14.energyiq.features.chat.presentation.ChatListScreen
 import com.hng14.energyiq.features.chat.presentation.ChatScreen
-import com.hng14.energyiq.features.costAndSavings.presentation.CostAndSavingsScreen
+import com.hng14.energyiq.features.reports.presentation.ReportsScreen
 import com.hng14.energyiq.features.home.presentation.HomeScreen
 import com.hng14.energyiq.features.onboarding.presentation.InverterSetupScreen
 import com.hng14.energyiq.features.onboarding.presentation.OnboardingScreen
@@ -86,7 +86,7 @@ fun AppNavigation(startDestination: AppDestination) {
                                     user.email
                                 )
 
-                                !user.onBoardingComplete -> AppDestination.InverterSetup
+                                !user.onBoardingComplete -> AppDestination.InverterSetup(isFromAuth = true)
                                 else -> AppDestination.Home
                             }
                             backStack.add(nextDestination)
@@ -96,10 +96,22 @@ fun AppNavigation(startDestination: AppDestination) {
             }
             entry<AppDestination.InverterSetup> {
                 InverterSetupScreen(
+                    isFromAuth = it.isFromAuth,
                     onComplete = {
-                        backStack.clear()
-                        backStack.add(AppDestination.Home)
+                        if (it.isFromAuth) {
+                            backStack.clear()
+                            backStack.add(AppDestination.Home)
+                        } else {
+                            backStack.clear()
+                            backStack.add(AppDestination.HomeProfile)
+                        }
                     },
+                    onBack = if (!it.isFromAuth) {
+                        {
+                            backStack.clear()
+                            backStack.add(AppDestination.HomeProfile)
+                        }
+                    } else null
                 )
             }
             entry<AppDestination.Home> {
@@ -112,10 +124,13 @@ fun AppNavigation(startDestination: AppDestination) {
                         backStack.add(AppDestination.Auth())
                     },
                     onOpenInverterSetup = {
-                        backStack.add(AppDestination.InverterSetup)
+                        if (backStack.isNotEmpty() && backStack.last() is AppDestination.Home) {
+                            backStack[backStack.lastIndex] = AppDestination.HomeProfile
+                        }
+                        backStack.add(AppDestination.InverterSetup(isFromAuth = false))
                     },
-                    onOpenCostAndSavings = {
-                        backStack.add(AppDestination.CostAndSavings)
+                    onOpenReports = {
+                        backStack.add(AppDestination.Reports)
                     }
                 )
             }
@@ -130,15 +145,28 @@ fun AppNavigation(startDestination: AppDestination) {
                         backStack.add(AppDestination.Auth())
                     },
                     onOpenInverterSetup = {
-                        backStack.add(AppDestination.InverterSetup)
+                        if (backStack.isNotEmpty() && backStack.last() is AppDestination.Home) {
+                            backStack[backStack.lastIndex] = AppDestination.HomeProfile
+                        }
+                        backStack.add(AppDestination.InverterSetup(isFromAuth = false))
                     },
-                    onOpenCostAndSavings = {
-                        backStack.add(AppDestination.CostAndSavings)
+                    onOpenReports = {
+                        backStack.add(AppDestination.Reports)
                     }
                 )
             }
-            entry<AppDestination.CostAndSavings> {
-                CostAndSavingsScreen(onBack = { backStack.removeLastOrNull() })
+            entry<AppDestination.Reports> {
+                val auth = koinInject<AuthRepository>()
+                var name by remember { mutableStateOf("") }
+                LaunchedEffect(Unit) {
+                    name = auth.getCurrentUser()?.name ?: ""
+                }
+                ReportsScreen(
+                    name = name,
+                    onViewReport = {},
+                    onDownloadReport = {},
+                    onBack = { backStack.removeLastOrNull() }
+                )
             }
             entry<AppDestination.SmartAlerts> {
                 val auth = koinInject<AuthRepository>()
@@ -203,7 +231,7 @@ fun AppNavigation(startDestination: AppDestination) {
                     email = it.email,
                     onContinue = {
                         backStack.clear()
-                        backStack.add(AppDestination.InverterSetup)
+                        backStack.add(AppDestination.InverterSetup(isFromAuth = true))
                     },
                     onBackToSignUp = {
                         scope.launch {

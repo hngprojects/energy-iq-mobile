@@ -149,11 +149,13 @@ fun PasswordTextField(
                             color = borderColor,
                             shape = fieldShape,
                         )
-                        .padding(start = 28.dp, top = 13.dp, bottom = 13.dp, end = 16.dp),
+                        .padding(start = 28.dp, end = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 13.dp),
                         contentAlignment = Alignment.CenterStart,
                     ) {
                         if (value.isEmpty() && placeholder.isNotEmpty()) {
