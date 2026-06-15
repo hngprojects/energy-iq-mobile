@@ -2,6 +2,7 @@ package com.hng14.energyiq.features.home.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,13 +22,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hng14.energyiq.Res
 import com.hng14.energyiq.core.theme.EnergyPalette
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.core.ui.ExpandVectorIcon
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun MetricCard(
@@ -41,9 +47,23 @@ internal fun MetricCard(
     badgeColor: Color = Color.Transparent,
     badgeContentColor: Color = Color.Unspecified,
 ) {
+    val kilowatts = stringResource(Res.string.dashboard_kilowatts)
+    val accessibleValue = value.replace("kW", kilowatts)
+    val accessibleBadge = badgeText ?: "Unknown"
+    val contentDesc = stringResource(
+        Res.string.dashboard_metric_description,
+        title,
+        accessibleValue,
+        subtitle,
+        accessibleBadge,
+    )
+
     DashboardCard(
         horizontalPadding = 24.dp,
         verticalPadding = 24.dp,
+        modifier = Modifier.semantics(mergeDescendants = true) {
+            contentDescription = contentDesc
+        }
     ) {
         LabelText(
             text = title,
@@ -57,7 +77,7 @@ internal fun MetricCard(
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
             ),
-            color = Color(0xFF111827),
+            color = Color(0xFF111827)
         )
         if (wrapSubtitleInContainer) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -83,18 +103,25 @@ internal fun MetricCard(
 
 @Composable
 internal fun BatteryCard(
-    soc: Double,
+    soc: Double?,
     subtitle: String = "Usage remaining",
 ) {
-    val socClamped = soc.coerceIn(0.0, 100.0)
-    // Display the value as-provided (no rounding); just trim trailing zeros like "12.0" -> "12".
+    val socSafe = soc ?: 0.0
+    val socClamped = socSafe.coerceIn(0.0, 100.0)
     val socRaw = socClamped.toString()
     val socPretty = if (socRaw.contains('.')) socRaw.trimEnd('0').trimEnd('.') else socRaw
-    val socText = "${socPretty}%"
+    val socText = "$socPretty%"
+
+    val percentStr = stringResource(Res.string.dashboard_percent)
+    val accessibleSoc = "$socPretty $percentStr"
+    val contentDesc = stringResource(Res.string.dashboard_battery_description, accessibleSoc, subtitle)
 
     DashboardCard(
         horizontalPadding = 24.dp,
         verticalPadding = 24.dp,
+        modifier = Modifier.semantics(mergeDescendants = true) {
+            contentDescription = contentDesc
+        }
     ) {
         LabelText(
             text = "Battery",
@@ -222,18 +249,31 @@ internal fun PowerUsageCard() {
 
 @Composable
 internal fun SavingsOverviewCard(
-    savedToday: Double,
-    savedMonth: Double,
+    savedToday: Double?,
+    savedMonth: Double?,
+    onClick: () -> Unit,
 ) {
+    val savedTodaySafe = savedToday ?: 0.0
+    val savedMonthSafe = savedMonth ?: 0.0
+
+    val todayDesc = stringResource(Res.string.dashboard_savings_today_description, savedTodaySafe.toInt().toString())
+    val monthDesc = stringResource(Res.string.dashboard_savings_month_description, savedMonthSafe.toInt().toString())
+
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
         color = Color.White,
         border = BorderStroke(1.dp, Color(0xFFE7E5E4)),
     ) {
         Column {
             Column(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp),
+                modifier = Modifier
+                    .padding(horizontal = 24.dp, vertical = 24.dp)
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = todayDesc
+                    },
             ) {
                 Text(
                     text = "You saved today",
@@ -245,12 +285,12 @@ internal fun SavingsOverviewCard(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "NGN ${savedToday.toInt()}",
+                    text = "NGN ${savedTodaySafe.toInt()}",
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 40.sp,
                     ),
-                    color = Color(0xFF111827),
+                    color = Color(0xFF111827)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
@@ -270,7 +310,11 @@ internal fun SavingsOverviewCard(
             )
 
             Column(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp),
+                modifier = Modifier
+                    .padding(horizontal = 24.dp, vertical = 24.dp)
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = monthDesc
+                    },
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -288,7 +332,7 @@ internal fun SavingsOverviewCard(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "NGN ${savedMonth.toInt()}",
+                            text = "NGN ${savedMonthSafe.toInt()}",
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 32.sp,

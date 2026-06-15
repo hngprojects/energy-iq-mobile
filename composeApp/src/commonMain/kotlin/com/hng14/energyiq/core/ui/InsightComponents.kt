@@ -116,7 +116,7 @@ fun InsightStatCard(
                         fontWeight = FontWeight.Medium,
                         fontSize = 12.sp,
                         lineHeight = 18.sp,
-                        color = Color(0xFF16A34A),
+                        color =  Color(0xFF15803D),
                         letterSpacing = (-0.28).sp,)
                 )
                 Text(
@@ -197,7 +197,7 @@ fun InsightSmallButton(
     }
     Surface(
         modifier = modifier
-            .height(40.dp)
+            .height(48.dp)
             .clickable(enabled = enabled, onClick = onClick),
         shape = RoundedCornerShape(8.dp),
         color = background,

@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.features.onboarding.OnboardingPage
 
@@ -29,7 +31,8 @@ fun OnboardingPageContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 40.dp),
+            .padding(horizontal = 40.dp)
+            .semantics(mergeDescendants = true) {},
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         content = {
@@ -56,6 +59,7 @@ fun OnboardingPageContent(
                 text = page.title,
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
+                modifier = Modifier.semantics { heading() }
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(

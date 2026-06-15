@@ -59,7 +59,12 @@ class ChatViewModel(
 
         viewModelScope.launch {
             agentSocket.connectionState.collect { s ->
-                _state.update { it.copy(socketState = s) }
+                _state.update { 
+                    it.copy(
+                        socketState = s,
+                        socketError = if (s is SocketConnectionState.Connected) null else it.socketError
+                    )
+                }
                 if (s is SocketConnectionState.Connected) {
                     val userId = authPreferences.getUserId()?.trim().orEmpty()
                     if (userId.isNotBlank()) {
@@ -71,7 +76,7 @@ class ChatViewModel(
 
         viewModelScope.launch {
             agentSocket.errors.collect { err ->
-                _state.update { it.copy(socketError = "${err.code}: ${err.message}", isAgentTyping = false) }
+                _state.update { it.copy(socketError = toFriendlyError(err.message, err.code), isAgentTyping = false) }
             }
         }
 
@@ -267,7 +272,7 @@ class ChatViewModel(
                                 messages = seeded?.messages ?: st.messages,
                                 conversationMeta = seeded?.meta ?: st.conversationMeta,
                                 isLoadingHistory = false,
-                                socketError = e.message ?: "Failed to load chat messages",
+                                socketError = toFriendlyError(e),
                             )
                         }
                     }
@@ -371,7 +376,7 @@ class ChatViewModel(
                         ),
                     )
                 }.onFailure { e ->
-                    _state.update { it.copy(socketError = e.message ?: "Failed to create chat", isAgentTyping = false) }
+                    _state.update { it.copy(socketError = toFriendlyError(e), isAgentTyping = false) }
                 }
                 return@launch
             }
@@ -438,4 +443,28 @@ class ChatViewModel(
         }.getOrDefault(emptyList())
     }
 
+    private fun toFriendlyError(message: String?, code: String? = null): String {
+        val msg = message.orEmpty()
+        return when {
+            code == "CONNECT_ERROR" -> "No internet connection or server is unreachable. Please check your connection."
+            code == "NOT_CONNECTED" -> "Connection lost. Reconnecting..."
+            msg.contains("websocket error", ignoreCase = true) ||
+            msg.contains("EngineIOException", ignoreCase = true) ||
+            msg.contains("SocketException", ignoreCase = true) ||
+            msg.contains("ConnectException", ignoreCase = true) ||
+            msg.contains("UnknownHostException", ignoreCase = true) ||
+            msg.contains("Connection refused", ignoreCase = true) ||
+            msg.contains("Unable to resolve host", ignoreCase = true) -> {
+                "No internet connection. Please check your network and try again."
+            }
+            msg.isBlank() -> "Failed to load chat. Please try again."
+            else -> msg
+        }
+    }
+
+    private fun toFriendlyError(e: Throwable): String {
+        return toFriendlyError(e.message)
+    }
+
 }
+

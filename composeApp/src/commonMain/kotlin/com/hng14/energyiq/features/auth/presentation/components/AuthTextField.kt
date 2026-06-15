@@ -30,7 +30,14 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import com.hng14.energyiq.*
 import com.hng14.energyiq.core.theme.dmSansFontFamily
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.layout.defaultMinSize
 
 @Composable
 fun AuthTextField(
@@ -60,7 +67,6 @@ fun AuthTextField(
         fontFamily = dmSans,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
-        lineHeight = 14.sp,
         letterSpacing = 0.sp,
         textAlign = TextAlign.Start,
         color = Color(0xFF2A2F3C),
@@ -69,13 +75,19 @@ fun AuthTextField(
         fontFamily = dmSans,
         fontWeight = FontWeight.Light,
         fontSize = 14.sp,
-        lineHeight = 14.sp,
         letterSpacing = 0.sp,
         textAlign = TextAlign.Start,
         color = Color(0xFF9CA3AF),
     )
 
-    Column(modifier = modifier) {
+    val fieldDescription = stringResource(Res.string.auth_input_field_description, label)
+    val validDescription = stringResource(Res.string.auth_valid)
+
+    Column(
+        modifier = modifier.semantics(mergeDescendants = true) {
+            contentDescription = label
+        }
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium.copy(
@@ -92,7 +104,11 @@ fun AuthTextField(
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = fieldDescription
+                },
             textStyle = textStyle,
             readOnly = readOnly,
             keyboardOptions = KeyboardOptions(
@@ -106,7 +122,7 @@ fun AuthTextField(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
+                        .defaultMinSize(minHeight = 48.dp)
                         .background(
                             color = Color(0xFFFCFCFC),
                             shape = fieldShape,
@@ -133,7 +149,7 @@ fun AuthTextField(
                     }
 
                     if (showSuccess && showStatusIndicator) {
-                        SuccessIndicator()
+                        SuccessIndicator(validDescription)
                     }
                 }
             },
@@ -145,7 +161,9 @@ fun AuthTextField(
                     text = supportingText,
                     color = supportingColor ?: MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp),
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
 
@@ -154,7 +172,9 @@ fun AuthTextField(
                     text = error,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp),
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
         }
@@ -162,7 +182,7 @@ fun AuthTextField(
 }
 
 @Composable
-private fun SuccessIndicator() {
+private fun SuccessIndicator(contentDescription: String) {
     Surface(
         modifier = Modifier.size(width = 15.dp, height = 14.dp),
         shape = RoundedCornerShape(999.dp),
@@ -171,7 +191,7 @@ private fun SuccessIndicator() {
         Box(contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = Icons.Filled.Check,
-                contentDescription = "Valid",
+                contentDescription = contentDescription,
                 tint = Color.White,
                 modifier = Modifier.size(10.dp),
             )

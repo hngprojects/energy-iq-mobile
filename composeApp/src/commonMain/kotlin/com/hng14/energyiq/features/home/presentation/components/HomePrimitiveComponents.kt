@@ -36,12 +36,13 @@ import com.hng14.energyiq.core.ui.SunIcon
 
 @Composable
 internal fun DashboardCard(
+    modifier: Modifier = Modifier,
     horizontalPadding: Dp = 12.dp,
     verticalPadding: Dp = 14.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
         color = Color.White,
         border = BorderStroke(1.dp, Color(0xFFECEEF1)),
@@ -129,7 +130,7 @@ internal fun LivePill() {
 internal fun SubtitlePill(text: String) {
     Box(
         modifier = Modifier
-            .background(Color(0xFFF5F5F5), RoundedCornerShape(16.dp))
+            .background(Color(0xFFF55F5F5), RoundedCornerShape(16.dp))
             .padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 2.dp),
     ) {
         Text(

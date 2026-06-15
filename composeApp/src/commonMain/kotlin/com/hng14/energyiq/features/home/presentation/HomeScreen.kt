@@ -61,8 +61,9 @@ import com.hng14.energyiq.features.home.presentation.components.HomeTopBar
 import com.hng14.energyiq.features.home.presentation.components.MetricCard
 import com.hng14.energyiq.features.home.presentation.components.SavingsOverviewCard
 import com.hng14.energyiq.features.home.presentation.components.WarningBanner
+import com.hng14.energyiq.features.costAndSavings.presentation.CostAndSavingsScreen
 import com.hng14.energyiq.features.profile.presentation.ProfileScreen
-import com.hng14.energyiq.features.reports.presentation.ReportsScreen
+import com.hng14.energyiq.core.ui.CasIcon
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
@@ -71,7 +72,7 @@ import org.koin.compose.viewmodel.koinViewModel
 private enum class HomeTab(val title: String, val icon: ImageVector?) {
     Dashboard("Dashboard", Icons.Outlined.GridView),
     Alert("Alert", null),
-    Reports("Reports", null),
+    CostAndSavings("Savings", null),
     Profile("Profile", Icons.Outlined.Person),
 }
 
@@ -82,11 +83,11 @@ fun HomeScreen(
     onOpenChat: () -> Unit,
     onLogout: () -> Unit,
     onOpenInverterSetup: () -> Unit,
+    onOpenReports: () -> Unit,
 ) {
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
     var selectedTab by remember { mutableStateOf(if (startOnProfile) HomeTab.Profile else HomeTab.Dashboard) }
-    var showReportsComingSoon by remember { mutableStateOf(false) }
     var showNotificationsComingSoon by remember { mutableStateOf(false) }
 
     val name = state.user?.name ?: ""
@@ -109,21 +110,11 @@ fun HomeScreen(
             HomeBottomNavigation(
                 selectedTab = selectedTab,
                 onTabSelected = { tab ->
-                    if (tab == HomeTab.Reports) {
-                        showReportsComingSoon = true
-                    } else {
-                        selectedTab = tab
-                    }
+                    selectedTab = tab
                 }
             )
         }
     ) { paddingValues ->
-        if (showReportsComingSoon) {
-            ComingSoonDialog(
-                featureName = "Reports",
-                onDismiss = { showReportsComingSoon = false }
-            )
-        }
         if (showNotificationsComingSoon) {
             ComingSoonDialog(
                 featureName = "Notifications",
@@ -177,7 +168,8 @@ fun HomeScreen(
                                     displayName = displayName,
                                     data = state.dashboardData,
                                     showHealthBanner = state.dashboardData?.health?.status != "GREEN" && !state.isHealthBannerDismissed,
-                                    onDismissHealth = viewModel::onDismissHealthBanner
+                                    onDismissHealth = viewModel::onDismissHealthBanner,
+                                    onNavigateToSavings = { selectedTab = HomeTab.CostAndSavings }
                                 )
                             }
                         }
@@ -196,15 +188,13 @@ fun HomeScreen(
                     ProfileScreen(
                         onLogout = onLogout,
                         onOpenInverterSetup = onOpenInverterSetup,
+                        onOpenReports = onOpenReports,
                     )
                 }
 
-                HomeTab.Reports -> Box(modifier = Modifier.padding(paddingValues)) {
-                    ReportsScreen(
-                        name = name,
-                        onViewReport = {},
-                        onDownloadReport = {},
-                        onProfileClick = { selectedTab = HomeTab.Profile }
+                HomeTab.CostAndSavings -> Box(modifier = Modifier.padding(paddingValues)) {
+                    CostAndSavingsScreen(
+                        onBack = null
                     )
                 }
 
@@ -287,7 +277,8 @@ private fun DashboardContent(
     displayName: String,
     data: InverterDashboardData?,
     showHealthBanner: Boolean,
-    onDismissHealth: () -> Unit
+    onDismissHealth: () -> Unit,
+    onNavigateToSavings: () -> Unit,
 ) {
     val greeting = run {
         val hour = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
@@ -362,7 +353,8 @@ private fun DashboardContent(
         // Spacer(modifier = Modifier.height(30.dp))
         SavingsOverviewCard(
             savedToday = data?.nairaSavedToday ?: 0.0,
-            savedMonth = data?.nairaSavedThisMonth ?: 0.0
+            savedMonth = data?.nairaSavedThisMonth ?: 0.0,
+            onClick = onNavigateToSavings
         )
         Spacer(modifier = Modifier.height(30.dp))
         EnergyUsageCard(history = data?.sevenDayHistory ?: emptyList())
@@ -397,10 +389,9 @@ private fun HomeBottomNavigation(
                             )
                         }
 
-                        HomeTab.Reports -> {
-                            TransactionHistoryIcon(
+                        HomeTab.CostAndSavings -> {
+                            CasIcon(
                                 modifier = Modifier.size(22.dp),
-                                contentDescription = tab.title,
                                 tint = tint
                             )
                         }
