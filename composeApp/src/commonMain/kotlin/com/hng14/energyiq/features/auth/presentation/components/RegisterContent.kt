@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
@@ -17,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +30,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.core.theme.dmSansFontFamily
@@ -57,7 +63,7 @@ fun RegisterContent(
     val energyColors = EnergyTheme.colors
     val dmSans = dmSansFontFamily()
     val adaptiveSpec = LocalAdaptiveScreenSpec.current
-    val fullNameRuleText = "Enter your first and last name, for example John Doe"
+    val fullNameRuleText = stringResource(Res.string.auth_full_name_rule)
     val fullNameParts = fullName.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
     val registerFullNameValid = fullName.isNotEmpty() &&
         fullNameParts.size >= 2 &&
@@ -69,10 +75,10 @@ fun RegisterContent(
         fullName.isEmpty() -> fullNameError
         registerFullNameValid -> null
         fullNameParts.size < 2 -> fullNameRuleText
-        fullNameParts.firstOrNull()?.firstOrNull()?.isLetter() != true -> "First name must start with a letter"
-        fullNameParts.drop(1).joinToString(" ").firstOrNull()?.isLetter() != true -> "Last name must start with a letter"
-        (fullNameParts.firstOrNull()?.length ?: 0) < 2 -> "First name is too short"
-        fullNameParts.drop(1).joinToString(" ").length < 2 -> "Last name is too short"
+        fullNameParts.firstOrNull()?.firstOrNull()?.isLetter() != true -> stringResource(Res.string.auth_error_first_name_letter)
+        fullNameParts.drop(1).joinToString(" ").firstOrNull()?.isLetter() != true -> stringResource(Res.string.auth_error_last_name_letter)
+        (fullNameParts.firstOrNull()?.length ?: 0) < 2 -> stringResource(Res.string.auth_error_first_name_short)
+        fullNameParts.drop(1).joinToString(" ").length < 2 -> stringResource(Res.string.auth_error_last_name_short)
         else -> fullNameRuleText
     }
     val registerFullNameSupportingText = when {
@@ -89,12 +95,12 @@ fun RegisterContent(
     val registerEmailError = when {
         email.isEmpty() -> emailError
         registerEmailValid -> null
-        else -> "Enter a valid email address"
+        else -> stringResource(Res.string.auth_error_invalid_email)
     }
     val registerEmailSupportingText = when {
         email.isEmpty() -> null
-        registerEmailValid -> "Email address is valid"
-        else -> "Enter a valid email address"
+        registerEmailValid -> stringResource(Res.string.auth_email_valid)
+        else -> stringResource(Res.string.auth_error_invalid_email)
     }
     val registerEmailSupportingColor = when {
         email.isEmpty() -> null
@@ -119,6 +125,9 @@ fun RegisterContent(
         registerPasswordValid -> Color(0xFF4CD964)
         else -> Color(0xFFD92D20)
     }
+    val createAccountLabel = stringResource(Res.string.auth_create_account)
+    val creatingAccountLabel = stringResource(Res.string.auth_creating_account)
+    val googleLogoLabel = stringResource(Res.string.auth_google_logo)
 
     AuthPageLayout(
         backgroundColor = energyColors.appBackground,
@@ -180,7 +189,12 @@ fun RegisterContent(
         Button(
             onClick = onCreateAccount,
             enabled = !isLoading,
-            modifier = Modifier.fillMaxWidth().height(adaptiveSpec.buttonHeight),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(adaptiveSpec.buttonHeight)
+                .semantics {
+                    contentDescription = if (isLoading) creatingAccountLabel else createAccountLabel
+                },
             shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),
@@ -226,7 +240,7 @@ fun RegisterContent(
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.social_icon),
-                    contentDescription = null,
+                    contentDescription = googleLogoLabel,
                     modifier = Modifier.size(18.dp),
                     tint = Color.Unspecified,
                 )
@@ -259,7 +273,11 @@ fun RegisterContent(
                 ),
                 color = Color(0xFF6B7280),
             )
-            TextButton(onClick = onLoginClick) {
+            TextButton(
+                onClick = onLoginClick,
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
+                modifier = Modifier.semantics { role = Role.Button }
+            ) {
                 Text(
                     text = stringResource(Res.string.auth_log_in),
                     color = MaterialTheme.colorScheme.primary,
@@ -298,7 +316,10 @@ fun RegisterContent(
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable(onClick = onTermsAndConditionsClick),
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .semantics { role = Role.Button }
+                    .clickable(onClick = onTermsAndConditionsClick),
             )
             Text(
                 text = stringResource(Res.string.auth_and),
@@ -310,14 +331,24 @@ fun RegisterContent(
                     letterSpacing = 0.sp,
                 ),
                 color = Color(0xFF6B7280),
+                modifier = Modifier.align(Alignment.CenterVertically)
             )
             Text(
                 text = stringResource(Res.string.auth_privacy_policy),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = dmSans,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    lineHeight = 21.sp,
+                    letterSpacing = 0.sp,
+                ),
                 color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
                 textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable(onClick = onPrivacyPolicyClick),
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .semantics { role = Role.Button }
+                    .clickable(onClick = onPrivacyPolicyClick),
             )
         }
     }

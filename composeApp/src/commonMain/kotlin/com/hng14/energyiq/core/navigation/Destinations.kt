@@ -16,7 +16,9 @@ sealed class AppDestination {
     ) : AppDestination()
 
     @Serializable
-    data object InverterSetup : AppDestination()
+    data class InverterSetup(
+        val isFromAuth: Boolean = true,
+    ) : AppDestination()
 
     @Serializable
     data object Home : AppDestination()
@@ -46,6 +48,9 @@ sealed class AppDestination {
         val fullName: String,
         val email: String,
     ) : AppDestination()
+
+    @Serializable
+    data object Reports : AppDestination()
 
     @Serializable
     data class WebPage(

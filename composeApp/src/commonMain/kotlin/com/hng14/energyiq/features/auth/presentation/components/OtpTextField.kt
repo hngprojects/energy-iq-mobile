@@ -23,8 +23,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.text.TextStyle
+import com.hng14.energyiq.*
+import com.hng14.energyiq.core.util.isReduceMotionEnabled
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun OtpTextField(
@@ -34,20 +39,36 @@ fun OtpTextField(
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
+    val reduceMotion = isReduceMotionEnabled()
     val keyboardController = LocalSoftwareKeyboardController.current
     val infiniteTransition = rememberInfiniteTransition(label = "otp_cursor")
-    val cursorAlpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(600),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "cursor_alpha"
-    )
+
+    val cursorAlpha = if(reduceMotion){
+        1.0f
+    }else{
+
+        val infiniteTransition = rememberInfiniteTransition(label = "otp_cursor")
+        infiniteTransition.animateFloat(
+            initialValue = 1f,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(600),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "cursor_alpha"
+        ).value
+
+    }
+
+
+    val fieldDescription = stringResource(Res.string.auth_otp_field_description)
 
     BasicTextField(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                contentDescription = fieldDescription
+            },
         value = otpValue,
         onValueChange = { newValue ->
             if (!enabled) return@BasicTextField

@@ -20,15 +20,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.core.theme.dmSansFontFamily
-import com.hng14.energyiq.core.ui.ComingSoonDialog
-import com.hng14.energyiq.core.ui.InsightOutlinedCard
-import com.hng14.energyiq.core.ui.ServerErrorDialog
-import com.hng14.energyiq.core.ui.SuccessDialog
+import com.hng14.energyiq.core.ui.*
 import com.hng14.energyiq.features.home.presentation.components.HomeTopBar
 import com.hng14.energyiq.features.home.data.HomeRepository
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 
 private enum class ProfileRoute {
     Overview,
@@ -41,6 +41,7 @@ private enum class ProfileRoute {
 fun ProfileScreen(
     onLogout: () -> Unit,
     onOpenInverterSetup: () -> Unit,
+    onOpenReports: () -> Unit,
 ) {
     val viewModel = koinViewModel<ProfileViewModel>()
     val state by viewModel.state.collectAsState()
@@ -129,7 +130,7 @@ fun ProfileScreen(
                     .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
                 Text(
-                    text = "Settings Overview",
+                    text = stringResource(Res.string.profile_settings_overview),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontFamily = dmSans,
                         fontWeight = FontWeight.Bold,
@@ -139,7 +140,7 @@ fun ProfileScreen(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Manage your EnergyIQ environment, team permissions and system health",
+                    text = stringResource(Res.string.profile_overview_desc),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = dmSans,
                         fontSize = 14.sp,
@@ -170,7 +171,7 @@ fun ProfileScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "All systems is working fine",
+                                text = stringResource(Res.string.profile_all_systems_fine),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontFamily = dmSans,
                                     fontWeight = FontWeight.Medium,
@@ -181,7 +182,7 @@ fun ProfileScreen(
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "2 min ago",
+                                text = stringResource(Res.string.profile_2_min_ago),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     fontFamily = dmSans,
                                     color = Color(0xFF9CA3AF),
@@ -191,7 +192,7 @@ fun ProfileScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Icon(
                                 imageVector = Icons.Outlined.Refresh,
-                                contentDescription = "Refresh",
+                                contentDescription = stringResource(Res.string.common_refresh),
                                 tint = Color(0xFF9CA3AF),
                                 modifier = Modifier.size(16.dp)
                             )
@@ -224,7 +225,7 @@ fun ProfileScreen(
                             }
                             Spacer(modifier = Modifier.width(14.dp))
                             Text(
-                                text = "Security Audit",
+                                text = stringResource(Res.string.profile_security_audit),
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontFamily = dmSans,
                                     fontWeight = FontWeight.Bold,
@@ -235,7 +236,7 @@ fun ProfileScreen(
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         Text(
-                            text = "Last audit completed 2 hours ago. No anomalies detected.",
+                            text = stringResource(Res.string.profile_security_audit_desc),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontFamily = dmSans,
                                 fontSize = 14.sp,
@@ -266,7 +267,7 @@ fun ProfileScreen(
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    text = "Review Logs",
+                                    text = stringResource(Res.string.profile_review_logs),
                                     style = MaterialTheme.typography.labelLarge.copy(
                                         fontFamily = dmSans,
                                         fontWeight = FontWeight.SemiBold,
@@ -282,38 +283,47 @@ fun ProfileScreen(
 
                 // Large Category Cards
                 SettingsCategoryCard(
-                    icon = Icons.Outlined.Person,
-                    title = "Account & Profile",
-                    description = "Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.",
+                    icon = { Icon(Icons.Outlined.Person, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
+                    title = stringResource(Res.string.profile_account_profile),
+                    description = stringResource(Res.string.profile_account_desc),
                     onClick = { route = ProfileRoute.AccountProfile }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SettingsCategoryCard(
-                    icon = Icons.Outlined.Build,
-                    title = "System & Device",
-                    description = "Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.",
+                    icon = { Icon(Icons.Outlined.Build, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
+                    title = stringResource(Res.string.profile_system_device),
+                    description = stringResource(Res.string.profile_system_device_desc),
                     onClick = { route = ProfileRoute.SystemDevice }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SettingsCategoryCard(
-                    icon = Icons.Outlined.Person,
-                    title = "Team & Access",
-                    description = "Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.",
+                    icon = { Icon(Icons.Outlined.Person, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
+                    title = stringResource(Res.string.profile_team_access),
+                    description = stringResource(Res.string.profile_team_desc),
                     onClick = { showComingSoonFeature = "Team & Access" }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SettingsCategoryCard(
-                    icon = Icons.Outlined.Notifications,
-                    title = "Notifications",
-                    description = "Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.",
+                    icon = { Icon(Icons.Outlined.Notifications, null, tint = Color(0xFF111827), modifier = Modifier.size(22.dp)) },
+                    title = stringResource(Res.string.common_notifications),
+                    description = stringResource(Res.string.profile_notifications_desc),
                     onClick = { showComingSoonFeature = "Notifications" }
                 )
+                /*
+                Spacer(modifier = Modifier.height(16.dp))
+                SettingsCategoryCard(
+                    icon = { TransactionHistoryIcon(modifier = Modifier.size(22.dp), tint = Color(0xFF111827)) },
+                    title = "Reports",
+                    description = "View weekly/monthly energy summaries and system reports.",
+                    onClick = onOpenReports
+                )
+                */
 
                 Spacer(modifier = Modifier.height(36.dp))
 
@@ -324,7 +334,7 @@ fun ProfileScreen(
                     enabled = !state.isLoggingOut
                 ) {
                     Text(
-                        text = "Sign Out",
+                        text = stringResource(Res.string.common_sign_out),
                         color = Color(0xFFDC2626),
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontFamily = dmSans,
@@ -342,7 +352,7 @@ fun ProfileScreen(
 
 @Composable
 private fun SettingsCategoryCard(
-    icon: ImageVector,
+    icon: @Composable () -> Unit,
     title: String,
     description: String,
     onClick: () -> Unit
@@ -361,12 +371,7 @@ private fun SettingsCategoryCard(
                 color = Color(0xFFF3F4F6)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = Color(0xFF111827),
-                        modifier = Modifier.size(22.dp)
-                    )
+                    icon()
                 }
             }
             Spacer(modifier = Modifier.height(18.dp))

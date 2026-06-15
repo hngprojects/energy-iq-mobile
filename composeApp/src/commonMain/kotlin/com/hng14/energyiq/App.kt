@@ -69,7 +69,7 @@ private fun Content(
                     !user.emailVerified -> AppDestination.EmailVerification(
                         user.name, user.email
                     )
-                    !user.onBoardingComplete -> AppDestination.InverterSetup
+                    !user.onBoardingComplete -> AppDestination.InverterSetup()
                     else -> AppDestination.Home
                 }
             }

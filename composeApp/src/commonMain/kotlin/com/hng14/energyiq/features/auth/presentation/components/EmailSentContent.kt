@@ -3,6 +3,7 @@ package com.hng14.energyiq.features.auth.presentation.components
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -17,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.core.ui.LocalAdaptiveScreenSpec
@@ -32,7 +35,8 @@ fun EmailSentContent(
 ) {
     val dmSans = dmSansFontFamily()
     val adaptiveSpec = LocalAdaptiveScreenSpec.current
-    val energyColors = EnergyTheme.colors
+    val resendingLinkLabel = stringResource(Res.string.auth_resending_link)
+    val resendLinkLabel = stringResource(Res.string.auth_resend_link)
 
     AuthPageLayout(
         backgroundColor = Color(0xFFFAFAF8),
@@ -92,7 +96,12 @@ fun EmailSentContent(
         Button(
             onClick = onResendLink,
             enabled = !isLoading,
-            modifier = Modifier.fillMaxWidth().height(adaptiveSpec.buttonHeight),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(adaptiveSpec.buttonHeight)
+                .semantics {
+                    contentDescription = if (isLoading) resendingLinkLabel else resendLinkLabel
+                },
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF141D2F),
@@ -103,7 +112,7 @@ fun EmailSentContent(
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.height(20.dp),
+                    modifier = Modifier.size(20.dp),
                     color = Color.White,
                     strokeWidth = 2.dp,
                 )

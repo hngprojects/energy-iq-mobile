@@ -30,10 +30,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import com.hng14.energyiq.core.theme.EnergyTheme
 import com.hng14.energyiq.features.onboarding.OnOnboardingComplete
 import com.hng14.energyiq.features.onboarding.defaultOnboardingPages
 import com.hng14.energyiq.features.onboarding.presentation.components.OnboardingPageContent
+import com.hng14.energyiq.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -64,7 +71,8 @@ fun OnboardingScreen(onComplete: OnOnboardingComplete) {
                                 if (!state.isLastPage) {
                                     TextButton(
                                         onClick = { viewModel.onSkip(onComplete = onComplete) },
-                                        content = { Text(text = "Skip", color = MaterialTheme.colorScheme.tertiary) },
+                                        modifier = Modifier.semantics { role = Role.Button },
+                                        content = { Text(text = stringResource(Res.string.onboarding_skip), color = MaterialTheme.colorScheme.tertiary) },
                                     )
                                 }
                             },
@@ -102,7 +110,8 @@ fun OnboardingScreen(onComplete: OnOnboardingComplete) {
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 32.dp),
+                                .padding(horizontal = 32.dp)
+                                .semantics { role = Role.Button },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -110,7 +119,8 @@ fun OnboardingScreen(onComplete: OnOnboardingComplete) {
                             content = {
                                 Text(
                                     text = when {
-                                        state.isLastPage -> "Get Started"; else -> "Next"
+                                        state.isLastPage -> stringResource(Res.string.onboarding_get_started)
+                                        else -> stringResource(Res.string.onboarding_next)
                                     }
                                 )
                             },
@@ -131,9 +141,12 @@ private fun PageIndicator(
     modifier: Modifier = Modifier,
 ) {
     val energyColors = EnergyTheme.colors
+    val indicatorDescription = stringResource(Res.string.onboarding_page_indicator, currentPage + 1, totalPages)
 
     Row(
-        modifier = modifier,
+        modifier = modifier.semantics {
+            contentDescription = indicatorDescription
+        },
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         content = {
             repeat(totalPages) { index ->

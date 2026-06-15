@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.hng14.energyiq.features.chat.domain.model.*
 import com.hng14.energyiq.features.chat.presentation.components.*
 import com.hng14.energyiq.features.auth.data.AuthRepository
@@ -26,6 +27,16 @@ import org.koin.core.parameter.parametersOf
 import org.koin.compose.koinInject
 import androidx.compose.runtime.saveable.rememberSaveable
 import kotlin.random.Random
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 
 @Composable
 fun ChatScreen(
@@ -62,6 +73,7 @@ fun ChatScreen(
     }
     val hasConversationStarted = state.messages.isNotEmpty()
     val dividerLabel = remember(state.messages) { computeDayDividerLabel(state.messages) }
+    val socketError = state.socketError
 
     Box(
         modifier = Modifier
@@ -72,14 +84,25 @@ fun ChatScreen(
         Scaffold(
             containerColor = Color.White,
             bottomBar = {
-                ChatComposer(
-                    value = state.prompt,
-                    attachments = state.attachments,
-                    attachmentController = attachmentController,
-                    onValueChange = viewModel::onPromptChange,
-                    onSend = viewModel::onSend,
-                    onRemoveAttachment = viewModel::onRemoveAttachment,
-                )
+                if (socketError != null) {
+                    if (state.messages.isNotEmpty()) {
+                        ConnectionErrorCard(
+                            message = socketError,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                        )
+                    }
+                } else {
+                    ChatComposer(
+                        value = state.prompt,
+                        attachments = state.attachments,
+                        attachmentController = attachmentController,
+                        onValueChange = viewModel::onPromptChange,
+                        onSend = viewModel::onSend,
+                        onRemoveAttachment = viewModel::onRemoveAttachment,
+                    )
+                }
             },
         ) { paddingValues ->
             if (showNotificationsComingSoon) {
@@ -123,20 +146,19 @@ fun ChatScreen(
                             },
                             showBack = false,
                         )
-                        state.socketError?.let { msg ->
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = msg,
-                                color = Color(0xFFD92D20),
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
                         if (state.isLoadingHistory) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 CircularProgressIndicator(color = Color(0xFFF59E0B))
+                            }
+                        } else if (socketError != null && state.messages.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                ConnectionErrorState(message = socketError)
                             }
                         } else if (hasConversationStarted) {
                             Spacer(modifier = Modifier.height(24.dp))
@@ -249,3 +271,116 @@ private fun computeDayDividerLabel(messages: List<ChatMessage>): String {
         else -> "${msgDate.dayOfMonth} ${msgDate.month.name.lowercase().replaceFirstChar { it.uppercase() }.take(3)}"
     }
 }
+
+@Composable
+private fun ConnectionErrorCard(
+    message: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.semantics(mergeDescendants = true) {
+            liveRegion = LiveRegionMode.Polite
+        },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFFFEDD5)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = RoundedCornerShape(10.dp),
+                color = Color(0xFFFFF7ED)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Outlined.CloudOff,
+                        contentDescription = null,
+                        tint = Color(0xFFEA580C),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Connection Offline",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color(0xFF111827),
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF4B5563)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConnectionErrorState(
+    message: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .semantics(mergeDescendants = true) {
+                liveRegion = LiveRegionMode.Polite
+            },
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFFFEDD5)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Surface(
+                modifier = Modifier.size(64.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFFFFF7ED)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Outlined.CloudOff,
+                        contentDescription = null,
+                        tint = Color(0xFFEA580C),
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "No Connection",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                ),
+                color = Color(0xFF111827),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    lineHeight = 20.sp
+                ),
+                color = Color(0xFF4B5563),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+

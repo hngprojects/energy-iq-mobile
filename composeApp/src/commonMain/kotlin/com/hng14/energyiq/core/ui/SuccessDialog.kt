@@ -54,7 +54,7 @@ fun SuccessDialog(
                             imageVector = Icons.Outlined.CheckCircle,
                             contentDescription = null,
                             modifier = Modifier.size(28.dp),
-                            tint = Color(0xFF16A34A),
+                            tint = Color(0xFF15803D)
                         )
                     }
                 }

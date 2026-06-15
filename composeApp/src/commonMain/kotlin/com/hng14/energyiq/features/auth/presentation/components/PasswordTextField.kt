@@ -40,7 +40,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import com.hng14.energyiq.*
 import com.hng14.energyiq.core.theme.dmSansFontFamily
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.foundation.layout.defaultMinSize
 
 @Composable
 fun PasswordTextField(
@@ -59,6 +66,11 @@ fun PasswordTextField(
 ) {
     var visible by remember { mutableStateOf(false) }
     val dmSans = dmSansFontFamily()
+    val fieldDescription = stringResource(Res.string.auth_input_field_description, label)
+    val validDescription = stringResource(Res.string.auth_valid)
+    val invalidDescription = stringResource(Res.string.auth_invalid)
+    val showPasswordDescription = stringResource(Res.string.auth_show_password)
+    val hidePasswordDescription = stringResource(Res.string.auth_hide_password)
     val fieldShape = RoundedCornerShape(10.dp)
     val borderColor = when {
         error != null -> MaterialTheme.colorScheme.error
@@ -69,7 +81,7 @@ fun PasswordTextField(
         fontFamily = dmSans,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
-        lineHeight = 14.sp,
+      //  lineHeight = 14.sp,
         letterSpacing = 0.sp,
         textAlign = TextAlign.Start,
         color = Color(0xFF2A2F3C),
@@ -78,13 +90,17 @@ fun PasswordTextField(
         fontFamily = dmSans,
         fontWeight = FontWeight.Light,
         fontSize = 14.sp,
-        lineHeight = 14.sp,
+      //  lineHeight = 14.sp,
         letterSpacing = 0.sp,
         textAlign = TextAlign.Start,
         color = Color(0xFF9CA3AF),
     )
 
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier.semantics(mergeDescendants = true) {
+            contentDescription = label
+        }
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium.copy(
@@ -101,7 +117,11 @@ fun PasswordTextField(
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = fieldDescription
+                },
             textStyle = textStyle,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
@@ -119,7 +139,7 @@ fun PasswordTextField(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
+                        .defaultMinSize(minHeight = 48.dp)
                         .background(
                             color = Color(0xFFFCFCFC),
                             shape = fieldShape,
@@ -129,11 +149,13 @@ fun PasswordTextField(
                             color = borderColor,
                             shape = fieldShape,
                         )
-                        .padding(start = 28.dp, top = 13.dp, bottom = 13.dp, end = 16.dp),
+                        .padding(start = 28.dp, end = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 13.dp),
                         contentAlignment = Alignment.CenterStart,
                     ) {
                         if (value.isEmpty() && placeholder.isNotEmpty()) {
@@ -154,7 +176,7 @@ fun PasswordTextField(
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Filled.Check,
-                                    contentDescription = "Valid",
+                                    contentDescription = validDescription,
                                     tint = Color.White,
                                     modifier = Modifier.size(10.dp),
                                 )
@@ -169,7 +191,7 @@ fun PasswordTextField(
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
-                                    contentDescription = "Invalid",
+                                    contentDescription = invalidDescription,
                                     tint = Color.White,
                                     modifier = Modifier.size(20.dp),
                                 )
@@ -178,16 +200,13 @@ fun PasswordTextField(
                     } else {
                         IconButton(
                             onClick = { visible = !visible },
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(48.dp),
                         ) {
                             Icon(
                                 imageVector = if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                                contentDescription = if (visible) {
-                                    "Hide password"
-                                } else {
-                                    "Show password"
-                                },
+                                contentDescription = if (visible) hidePasswordDescription else showPasswordDescription,
                                 tint = Color(0xFF2A2F3C),
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
@@ -201,17 +220,21 @@ fun PasswordTextField(
                     text = supportingText,
                     color = supportingColor ?: MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp),
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
 
             error != null -> {
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 4.dp),
-            )
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .semantics { liveRegion = LiveRegionMode.Polite },
+                )
             }
         }
     }

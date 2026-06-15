@@ -13,13 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.hng14.energyiq.core.theme.EnergyPalette
 import com.hng14.energyiq.features.home.data.remote.dto.InverterHistoryItem
@@ -33,8 +30,8 @@ internal fun EnergyUsageChart(
 ) {
     if (history.isEmpty()) return
 
-    val generated = history.map { it.solarKwh.toFloat() }
-    val used = history.map { it.avgLoadKw.toFloat() }
+    val generated = history.map { it.solarKwh?.toFloat() ?: 0f }
+    val used = history.map { it.avgLoadKw?.toFloat() ?: 0f }
     val labels = history.map { item ->
         runCatching {
             val dateTime = Instant.parse(item.date).toLocalDateTime(TimeZone.currentSystemDefault())

@@ -10,7 +10,7 @@ val LightSurface = EnergyPalette.LightBackgroundAlt
 val LightOnSurface = EnergyPalette.DarkBackground
 val LightSurfaceVariant = EnergyPalette.AmberLight
 val LightOnSurfaceVariant = EnergyPalette.Grey
-val LightOutline = EnergyPalette.Grey
+val LightOutline = EnergyPalette.GridBlueGrey
 
 // Dark scheme
 val DarkBackground = EnergyPalette.DarkBackground

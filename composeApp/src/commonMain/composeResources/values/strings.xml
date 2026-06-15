@@ -43,4 +43,241 @@
     <string name="auth_back_to_login_title">Back to Login</string>
     <string name="auth_reset_success_title">You're All Set</string>
     <string name="auth_reset_success_subtitle">Your password has been updated\nsuccessfully. Sign in.</string>
+
+    <!-- Accessibility & Auth Helpers -->
+    <string name="auth_input_field_description">%1$s input field</string>
+    <string name="auth_valid">Valid</string>
+    <string name="auth_invalid">Invalid</string>
+    <string name="auth_show_password">Show password</string>
+    <string name="auth_hide_password">Hide password</string>
+    <string name="auth_logging_in">Logging in, please wait</string>
+    <string name="auth_creating_account">Creating account, please wait</string>
+    <string name="auth_sending_link">Sending link, please wait</string>
+    <string name="auth_resending_link">Resending link, please wait</string>
+    <string name="auth_resetting_password">Resetting password, please wait</string>
+    <string name="auth_verify_account">Verify account</string>
+    <string name="auth_remember_password_enabled">Remember password enabled</string>
+    <string name="auth_google_logo">Google logo</string>
+    <string name="auth_full_name_rule">Enter your first and last name, for example John Doe</string>
+    <string name="auth_error_first_name_letter">First name must start with a letter</string>
+    <string name="auth_error_last_name_letter">Last name must start with a letter</string>
+    <string name="auth_error_first_name_short">First name is too short</string>
+    <string name="auth_error_last_name_short">Last name is too short</string>
+    <string name="auth_error_invalid_email">Enter a valid email address</string>
+    <string name="auth_email_valid">Email address is valid</string>
+    <string name="auth_otp_field_description">Verification code input field, 6 digits</string>
+    <string name="auth_verifying">Verifying, please wait</string>
+    <string name="auth_resending">Resending code, please wait</string>
+    <string name="auth_resend_in">Resend in %1$s</string>
+    <string name="auth_verify_email">Verify my Email</string>
+    <string name="auth_back_to_sign_up">Back to Sign Up</string>
+    <string name="auth_verification_success">Verification successful</string>
+    <string name="auth_verification_header">Email Verification</string>
+    <string name="auth_verification_subtitle">Hello %1$s, enter the 6-digit code sent to your email to verify and activate your EnergyIQ account.</string>
+    <string name="auth_paste_otp_hint">Please paste(or type) your 6-digit code</string>
+    <string name="auth_error_otp_incorrect">The code you entered is incorrect.</string>
+    <string name="auth_no_code_question">Didn\'t get a code?</string>
+    <string name="auth_resend_code">Resend code</string>
+    <string name="auth_verification_success_title">Email Verification\nSuccessful</string>
+    <string name="auth_verification_success_subtitle">Hello %1$s, your email has been successfully verified.</string>
+    <string name="auth_continue">Continue</string>
+
+    <!-- Inverter Setup Strings -->
+    <string name="onboarding_inverter_title">What type of inverter do\nyou use</string>
+    <string name="onboarding_inverter_subtitle">Select your inverter so we can tailor your\nexperience</string>
+    <string name="onboarding_no_brands">No supported inverter brands are available right now.</string>
+    <string name="onboarding_inverter_icon_description">%1$s icon</string>
+    <string name="onboarding_connect">Connect</string>
+    <string name="onboarding_save_inverter">Save Inverter</string>
+    <string name="onboarding_victron_test_title">Test connection to Victron VRM</string>
+    <string name="onboarding_victron_verifying">Verifying credentials and reaching Cloud API</string>
+    <string name="onboarding_victron_authenticating">Authenticating credentials</string>
+    <string name="onboarding_victron_fetching">Fetching installation data</string>
+    <string name="onboarding_victron_requesting">Requesting live data</string>
+    <string name="onboarding_victron_complete">Connection complete</string>
+    <string name="onboarding_victron_verified">Connection Verified</string>
+    <string name="onboarding_success_title">You\'re All Set</string>
+    <string name="onboarding_success_subtitle">Your EnergyIQ account has been successfully\ncreated and your Energy System is ready to be\nmonitored</string>
+    <string name="onboarding_success_description">Onboarding success illustration</string>
+    <string name="onboarding_where_to_find">Where do I find these?</string>
+    <string name="onboarding_connecting">Connecting, please wait</string>
+    <string name="onboarding_testing_connection">Testing connection, please wait</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_page_indicator">Page %1$d of %2$d</string>
+
+    <!-- Dashboard Accessibility -->
+    <string name="dashboard_metric_description">%1$s: %2$s. %3$s. Status: %4$s</string>
+    <string name="dashboard_battery_description">Battery level: %1$s. %2$s</string>
+    <string name="dashboard_savings_today_description">You saved today: %1$s Naira. Savings generated from solar and battery usage today</string>
+    <string name="dashboard_savings_month_description">Saved this month: %1$s Naira</string>
+    <string name="dashboard_kilowatts">kilowatts</string>
+    <string name="dashboard_percent">percent</string>
+
+    <!-- Cost and Savings Strings -->
+    <string name="cas_title">Cost and Savings</string>
+    <string name="cas_greeting_subtitle">Here's your energy summary today</string>
+    <string name="cas_tab_summary">Summary</string>
+    <string name="cas_tab_calculator">Calculator</string>
+    <string name="cas_tab_results">Results</string>
+    <string name="cas_tab_cumulative">Cumulative tracker</string>
+
+    <!-- Cumulative Tracker Tab -->
+    <string name="cas_cumulative_title">Cumulative Tracker</string>
+    <string name="cas_cumulative_subtitle">Real-time tracker of your solar investment impact.</string>
+    <string name="cas_lifetime_savings">LIFETIME SAVINGS</string>
+    <string name="cas_co2_avoided">CO2 AVOIDED</string>
+    <string name="cas_gen_hours_avoided">GEN HOURS AVOIDED</string>
+    <string name="cas_fuel_saved">FUEL SAVED</string>
+    <string name="cas_savings_growth_title">Cumulative Savings Growth</string>
+    <string name="cas_savings_growth_subtitle">Historical performance vs. grid projection</string>
+    <string name="cas_actual_savings">Actual savings</string>
+    <string name="cas_grid_projection">Grid projection</string>
+    <string name="cas_trends_analytics_title">Savings Trends &amp; Analytics</string>
+    <string name="cas_trends_analytics_subtitle">Visualizing performance delta and fiscal efficiency</string>
+    <string name="cas_total_savings_to_date">TOTAL SAVINGS TO DATE</string>
+    <string name="cas_avg_monthly_savings">AVG. MONTHLY SAVINGS</string>
+    <string name="cas_vs_previous_period">vs. previous period</string>
+    <string name="cas_stable_efficiency">Stable efficiency trend</string>
+
+    <!-- Summary Tab -->
+    <string name="cas_total_saved">Total Saved</string>
+    <string name="cas_energy_consumed">Energy consumed</string>
+    <string name="cas_generation_today">Generation Today</string>
+    <string name="cas_savings_trend">Savings Trend</string>
+    <string name="cas_savings_trend_subtitle">Daily total savings compared to generator</string>
+    <string name="cas_check_calculator">Check Calculator</string>
+
+    <!-- Calculator Tab -->
+    <string name="cas_calculator_title">Calculator Savings</string>
+    <string name="cas_step_format">Step %1$d of 3</string>
+    <string name="cas_select_period">Select Calculation Period</string>
+    <string name="cas_select_period_desc">Choose the time period you want to calculate your savings for.</string>
+    <string name="cas_period_this_week">This Week</string>
+    <string name="cas_period_this_month">This Month</string>
+    <string name="cas_period_last_month">Last Month</string>
+    <string name="cas_period_custom">Custom Range</string>
+    <string name="cas_period_custom_desc">Pick a start and end date</string>
+    <string name="cas_why_period">Why does the period matter?</string>
+    <string name="cas_why_period_desc">Your savings are calculated based on your energy usage, fuel price, and tariff for the selected period</string>
+    <string name="cas_continue">Continue</string>
+    <string name="cas_back">Back</string>
+    <string name="cas_pms_price">PMS Pump Price Per Litre</string>
+    <string name="cas_fuel_rate">Generator fuel consumption rate</string>
+    <string name="cas_hours_used">Hours used per day</string>
+    <string name="cas_tariff_band">NERC Tariff Band (A/B/C)</string>
+    <string name="cas_review_title">Review Your Input</string>
+    <string name="cas_review_subtitle">Please review the information below. You can edit any input if needed.</string>
+    <string name="cas_edit_setup">Edit setup</string>
+    <string name="cas_done_editing">Done editing</string>
+    <string name="cas_calculation_period">Calculation Period</string>
+    <string name="cas_calculation_period_desc">This time period used for this Calculation</string>
+    <string name="cas_generator_type">Generator Type</string>
+    <string name="cas_generator_type_desc">Petrol and diesel use different calculations</string>
+    <string name="cas_petrol_pms">Petrol (PMS)</string>
+    <string name="cas_diesel">Diesel</string>
+    <string name="cas_price_per_litre_desc">Fuel price used for this calculation</string>
+    <string name="cas_adjusted_calculation">Adjusted for this calculation</string>
+    <string name="cas_update_anytime_note">These inputs can be updated anytime for more accurate savings calculation.</string>
+    <string name="cas_calculate">Calculate</string>
+    <string name="cas_real_time_pms_price">Real-time PMS (Diesel) Price</string>
+    <string name="cas_pms_price_desc">We fetch the latest petrol (PMS) price in your area to calculate your generator cost.</string>
+    <string name="cas_current_pms_price">Current PMS Price</string>
+    <string name="cas_auto_updated">Auto-updated</string>
+    <string name="cas_last_updated">Last updated: Today, 4:17 AM</string>
+    <string name="cas_about_this_price">About this price</string>
+    <string name="cas_about_price_point1">This is the average pump price of PMS (Petrol) in Lagos</string>
+    <string name="cas_about_price_point2">Prices may vary slightly depending on your exact location.</string>
+    <string name="cas_about_price_point3">You can update this price manually if needed</string>
+    <string name="cas_adjust_price">Adjust Price (Optional)</string>
+    <string name="cas_adjust_price_desc">You can adjust the price if your current local price is different</string>
+    <string name="cas_tip">Tip</string>
+    <string name="cas_tip_desc">Use the auto-updated price for the most accurate calculation.</string>
+
+    <!-- General -->
+    <string name="common_confirm">Confirm</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_coming_soon">Coming soon</string>
+    <string name="common_back">Back</string>
+    <string name="common_refresh">Refresh</string>
+    <string name="common_save_changes">Save\nChanges</string>
+    <string name="common_saving">Saving...</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_upload_photo">Upload photo</string>
+    <string name="common_sign_out">Sign Out</string>
+    <string name="common_notifications">Notifications</string>
+    <string name="common_other">Other</string>
+    <string name="common_date">Date</string>
+
+    <!-- Profile Overview -->
+    <string name="profile_settings_overview">Settings Overview</string>
+    <string name="profile_overview_desc">Manage your EnergyIQ environment, team permissions and system health</string>
+    <string name="profile_all_systems_fine">All systems is working fine</string>
+    <string name="profile_2_min_ago">2 min ago</string>
+    <string name="profile_security_audit">Security Audit</string>
+    <string name="profile_security_audit_desc">Last audit completed 2 hours ago. No anomalies detected.</string>
+    <string name="profile_review_logs">Review Logs</string>
+    <string name="profile_account_profile">Account &amp; Profile</string>
+    <string name="profile_account_desc">Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.</string>
+    <string name="profile_system_device">System &amp; Device</string>
+    <string name="profile_system_device_desc">Manage your enterprise identity, update localisation preference, and configure multi-factor authentication protocols.</string>
+    <string name="profile_team_access">Team &amp; Access</string>
+    <string name="profile_team_desc">Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.</string>
+    <string name="profile_notifications_desc">Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.</string>
+    <string name="profile_cost_savings">Cost And Savings</string>
+    <string name="profile_cost_savings_desc">Track your energy ROI, avoided generator costs, and calculate future solar savings.</string>
+
+    <!-- Account Profile -->
+    <string name="account_profile_settings">Profile Settings</string>
+    <string name="account_manage_info">Manage your personal and business information.</string>
+    <string name="account_profile_photo">Profile Photo</string>
+    <string name="account_photo_hint">PNG or JPG, up to 2MB.</string>
+    <string name="account_personal_business_info">Personal Business and Information.</string>
+    <string name="account_info_desc">This information is used across your EnergyIQ account.</string>
+    <string name="account_full_name">Full name</string>
+    <string name="account_email">Email</string>
+    <string name="account_business_name">Business name</string>
+    <string name="account_business_type">Business Type</string>
+    <string name="account_state">State</string>
+    <string name="account_city">City</string>
+    <string name="account_ai_language">AI Language</string>
+    <string name="account_select_business_type">Select business type</string>
+    <string name="account_select_state">Select state</string>
+    <string name="account_select_city">Select city</string>
+    <string name="account_select_state_first">Select state first</string>
+    <string name="account_select_language">Select language</string>
+
+    <!-- Review Logs -->
+    <string name="logs_battery_health">Battery Health Logs</string>
+    <string name="logs_inverter">Inverter</string>
+    <string name="logs_select_inverter">Select inverter</string>
+    <string name="logs_all_dates">All dates</string>
+    <string name="logs_from_placeholder">From (HH:mm)</string>
+    <string name="logs_to_placeholder">To (HH:mm)</string>
+    <string name="logs_time_tip">Tip: Time uses 24-hour format like 09:30.</string>
+    <string name="logs_no_logs">No Logs</string>
+    <string name="logs_select_inverter_view">Select an inverter to view logs.</string>
+    <string name="logs_no_logs_yet">No logs yet for this inverter. Keep the dashboard open for a minute.</string>
+    <string name="logs_no_match">No logs match your filters.</string>
+
+    <!-- System & Device -->
+    <string name="system_device_mgmt">System &amp; Device Management</string>
+    <string name="system_overview_desc">Overview of your connected systems, inverter configurations, and diagnostic alerts.</string>
+    <string name="system_connect_new">Connect New Inverter</string>
+    <string name="system_hybrid_inverter">Hybrid Inverter</string>
+    <string name="system_active">Active</string>
+    <string name="system_offline">Offline</string>
+    <string name="system_serial_number">Serial Number</string>
+    <string name="system_connection_date">Connection Date</string>
+    <string name="system_last_sync">Last Sync</string>
+    <string name="system_reading">Reading</string>
+    <string name="system_reconnect">Reconnect</string>
+
+    <!-- Greeting Headers -->
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="greeting_user_fallback">User</string>
 </resources>
+
