@@ -100,8 +100,11 @@ fun HomeScreen(
     // In some navigation/backstack flows the ViewModel instance can be retained
     // across auth transitions; relying only on init{} can skip the first fetch
     // after login.
-    LaunchedEffect(Unit) {
-        viewModel.refresh()
+    LaunchedEffect(selectedTab) {
+        if (selectedTab == HomeTab.Dashboard || selectedTab == HomeTab.Alert || selectedTab == HomeTab.CostAndSavings) {
+            viewModel.refresh()
+        }
+
     }
 
     Scaffold(
@@ -130,6 +133,7 @@ fun HomeScreen(
                 ) {
                     HomeTopBar(
                         name = name,
+                        profileUrl = state.user?.profileUrl,
                         onNotificationClick = { showNotificationsComingSoon = true },
                         onProfileClick = { selectedTab = HomeTab.Profile }
                     )
@@ -179,6 +183,7 @@ fun HomeScreen(
                 HomeTab.Alert -> Box(modifier = Modifier.padding(paddingValues)) {
                     SmartAlertsScreen(
                         name = name, 
+                        profileUrl = state.user?.profileUrl,
                         onInspectAlert = {},
                         onProfileClick = { selectedTab = HomeTab.Profile }
                     )
@@ -194,6 +199,9 @@ fun HomeScreen(
 
                 HomeTab.CostAndSavings -> Box(modifier = Modifier.padding(paddingValues)) {
                     CostAndSavingsScreen(
+                        userName = state.user?.name,
+                        profileUrl = state.user?.profileUrl,
+                        onProfileClick = { selectedTab = HomeTab.Profile },
                         onBack = null
                     )
                 }

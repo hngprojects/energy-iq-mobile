@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.hng14.energyiq.core.theme.dmSansFontFamily
 import com.hng14.energyiq.core.ui.BellIcon
 import com.hng14.energyiq.core.ui.ChatBotVectorIcon
@@ -120,6 +122,7 @@ internal fun DraggableFab(
 @Composable
 internal fun HomeTopBar(
     name: String?,
+    profileUrl: String? = null,
     onNotificationClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
@@ -169,13 +172,24 @@ internal fun HomeTopBar(
                 color = Color(0xFFFFD3A5),
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = initials,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontSize = 12.dp.toNonScaledSp(),
-                        color = Color(0xFF2A2F3C),
-                        fontWeight = FontWeight.Bold,
-                    )
+                    if (!profileUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = profileUrl,
+                            contentDescription = "Profile settings",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text(
+                            text = initials,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontSize = 12.dp.toNonScaledSp(),
+                            color = Color(0xFF2A2F3C),
+                            fontWeight = FontWeight.Bold,
+                        )
+
+                    }
+
                 }
             }
         }
@@ -186,6 +200,7 @@ internal fun HomeTopBar(
 internal fun BackHomeTopBar(
     title: String,
     name: String?,
+    profileUrl: String? = null,
     onBack: (() -> Unit)? = null,
     onNotificationClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
@@ -203,33 +218,13 @@ internal fun BackHomeTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (onBack != null) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color(0xFF111827),
-                    )
-                }
-                Spacer(modifier = Modifier.size(4.dp))
-            } else {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = dmSans,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                ),
-                color = Color(0xFF111827),
-            )
-        }
+        com.hng14.energyiq.core.ui.EnergyIqBrandMark(
+            horizontalArrangement = Arrangement.Start
+        )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -263,13 +258,23 @@ internal fun BackHomeTopBar(
                 color = Color(0xFFFFD3A5),
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = initials,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontSize = 12.dp.toNonScaledSp(),
-                        color = Color(0xFF2A2F3C),
-                        fontWeight = FontWeight.Bold,
-                    )
+                    if (!profileUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = profileUrl,
+                            contentDescription = "Profile settings",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text(
+                            text = initials,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontSize = 12.dp.toNonScaledSp(),
+                            color = Color(0xFF2A2F3C),
+                            fontWeight = FontWeight.Bold,
+                        )
+
+                    }
                 }
             }
         }

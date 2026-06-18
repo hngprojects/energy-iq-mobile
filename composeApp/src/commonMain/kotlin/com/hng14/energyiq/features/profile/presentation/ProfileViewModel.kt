@@ -123,9 +123,20 @@ class ProfileViewModel(
             runCatching {
                 profileRepository.uploadProfileImage(bytes = bytes, fileName = fileName, mimeType = mimeType)
             }.onSuccess { url ->
-                _state.update { it.copy(isUploadingPhoto = false, uploadedProfileUrl = url) }
+                _state.update {
+                    it.copy(
+                        isUploadingPhoto = false,
+                        uploadedProfileUrl = url,
+                        user = it.user?.copy(profileUrl = url)
+                    )
+                }
             }.onFailure { e ->
-                _state.update { it.copy(isUploadingPhoto = false, error = e.message ?: "Failed to upload photo") }
+                _state.update {
+                    it.copy(
+                        isUploadingPhoto = false,
+                        error = e.message ?: "Failed to upload photo"
+                    )
+                }
             }
         }
     }

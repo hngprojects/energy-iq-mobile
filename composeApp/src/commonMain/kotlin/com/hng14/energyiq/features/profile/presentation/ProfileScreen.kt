@@ -47,6 +47,19 @@ fun ProfileScreen(
     val state by viewModel.state.collectAsState()
     val scrollState = rememberScrollState()
     val dmSans = dmSansFontFamily()
+
+    val imagePicker = rememberImagePicker(
+        onImagePicked = { pickedImage ->
+            viewModel.uploadProfilePhoto(
+                bytes = pickedImage.bytes,
+                fileName = pickedImage.fileName,
+                mimeType = pickedImage.mimeType
+            )
+        },
+        onError = { error -> // handle error
+        }
+
+    )
     
     var showComingSoonFeature by remember { mutableStateOf<String?>(null) }
     var route by remember { mutableStateOf(ProfileRoute.Overview) }
@@ -74,7 +87,8 @@ fun ProfileScreen(
         AccountProfileScreen(
             user = state.user,
             onBack = { route = ProfileRoute.Overview },
-            onUploadPhotoClick = { showComingSoonFeature = "Upload photo" },
+            onUploadPhotoClick = { imagePicker.launch() },
+            isUploadingPhoto = state.isUploadingPhoto,
             isSaving = state.isSaving,
             onSaveChanges = { fullName, businessName, businessType, userState, userCity, aiLanguage ->
                 viewModel.savePersonalSettings(
@@ -119,6 +133,7 @@ fun ProfileScreen(
         ) {
             HomeTopBar(
                 name = state.user?.name,
+                profileUrl = state.user?.profileUrl,
                 onNotificationClick = { showComingSoonFeature = "Notifications" },
                 onProfileClick = { /* Already on profile tab */ }
             )
