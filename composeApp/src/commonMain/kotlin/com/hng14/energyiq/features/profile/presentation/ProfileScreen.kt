@@ -47,6 +47,19 @@ fun ProfileScreen(
     val state by viewModel.state.collectAsState()
     val scrollState = rememberScrollState()
     val dmSans = dmSansFontFamily()
+
+    val imagePicker = rememberImagePicker(
+        onImagePicked = { pickedImage ->
+            viewModel.uploadProfilePhoto(
+                bytes = pickedImage.bytes,
+                fileName = pickedImage.fileName,
+                mimeType = pickedImage.mimeType
+            )
+        },
+        onError = { error -> // handle error
+        }
+
+    )
     
     var showComingSoonFeature by remember { mutableStateOf<String?>(null) }
     var route by remember { mutableStateOf(ProfileRoute.Overview) }
@@ -74,7 +87,8 @@ fun ProfileScreen(
         AccountProfileScreen(
             user = state.user,
             onBack = { route = ProfileRoute.Overview },
-            onUploadPhotoClick = { showComingSoonFeature = "Upload photo" },
+            onUploadPhotoClick = { imagePicker.launch() },
+            isUploadingPhoto = state.isUploadingPhoto,
             isSaving = state.isSaving,
             onSaveChanges = { fullName, businessName, businessType, userState, userCity, aiLanguage ->
                 viewModel.savePersonalSettings(
@@ -119,6 +133,7 @@ fun ProfileScreen(
         ) {
             HomeTopBar(
                 name = state.user?.name,
+                profileUrl = state.user?.profileUrl,
                 onNotificationClick = { showComingSoonFeature = "Notifications" },
                 onProfileClick = { /* Already on profile tab */ }
             )
@@ -315,15 +330,13 @@ fun ProfileScreen(
                     description = stringResource(Res.string.profile_notifications_desc),
                     onClick = { showComingSoonFeature = "Notifications" }
                 )
-                /*
                 Spacer(modifier = Modifier.height(16.dp))
                 SettingsCategoryCard(
                     icon = { TransactionHistoryIcon(modifier = Modifier.size(22.dp), tint = Color(0xFF111827)) },
-                    title = "Reports",
-                    description = "View weekly/monthly energy summaries and system reports.",
+                    title = stringResource(Res.string.profile_reports),
+                    description = stringResource(Res.string.profile_reports_desc),
                     onClick = onOpenReports
                 )
-                */
 
                 Spacer(modifier = Modifier.height(36.dp))
 

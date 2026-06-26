@@ -227,6 +227,8 @@
     <string name="profile_notifications_desc">Control organisational hierarchies by assigning specific user roles, permissions, and administrative access levels.</string>
     <string name="profile_cost_savings">Cost And Savings</string>
     <string name="profile_cost_savings_desc">Track your energy ROI, avoided generator costs, and calculate future solar savings.</string>
+    <string name="profile_reports">Reports</string>
+    <string name="profile_reports_desc">View weekly/monthly energy summaries and system reports.</string>
 
     <!-- Account Profile -->
     <string name="account_profile_settings">Profile Settings</string>

@@ -59,10 +59,12 @@ fun ChatScreen(
 
     var userInitials by remember { mutableStateOf("ME") }
     var userName by remember { mutableStateOf<String?>(null) }
+    var profileUrl by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
         val user = authRepository.getCurrentUser()
         val seed = (user?.name?.takeIf { it.isNotBlank() } ?: user?.email ?: "").trim()
         userName = user?.name?.takeIf { it.isNotBlank() } ?: user?.email
+        profileUrl = user?.profileUrl
         userInitials = initialsFrom(seed).ifBlank { "ME" }
     }
     
@@ -120,6 +122,7 @@ fun ChatScreen(
                     BackHomeTopBar(
                         title = state.conversationMeta.title.ifBlank { "Conversation" },
                         name = userName,
+                        profileUrl = profileUrl,
                         onBack = onBack,
                         onNotificationClick = { showNotificationsComingSoon = true },
                         onProfileClick = onOpenProfile,

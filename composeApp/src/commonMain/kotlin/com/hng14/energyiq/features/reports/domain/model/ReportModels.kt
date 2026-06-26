@@ -14,11 +14,6 @@ data class ReportStat(
     val showDangerVectorIcon: Boolean = false,
 )
 
-enum class ReportStatus {
-    READY,
-    PROCESSING,
-}
-
 enum class ReportIcon {
     SOLAR,
     ENERGY,
@@ -28,7 +23,7 @@ enum class ReportIcon {
 
 data class ReportItem(
     val id: String,
-    val status: ReportStatus,
+    val status: String,
     val icon: ReportIcon,
     val title: String,
     val dateRange: String,
