@@ -42,9 +42,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.hng14.energyiq.core.util.toNonScaledSp
 import com.hng14.energyiq.core.data.NigeriaStateCities
 import com.hng14.energyiq.core.theme.dmSansFontFamily
@@ -61,6 +63,7 @@ internal fun AccountProfileScreen(
     user: User?,
     onBack: () -> Unit,
     onUploadPhotoClick: () -> Unit,
+    isUploadingPhoto: Boolean = false,
     isSaving: Boolean,
     onSaveChanges: (
         fullName: String,
@@ -196,15 +199,32 @@ internal fun AccountProfileScreen(
                             modifier = Modifier.size(54.dp),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = initials,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontFamily = dmSans,
-                                        fontWeight = FontWeight.Bold,
-                                    ),
-                                    fontSize = 16.dp.toNonScaledSp(),
-                                    color = Color(0xFF111827),
-                                )
+                                if (isUploadingPhoto) {
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = Color(0xFF111827),
+                                        strokeWidth = 2.dp
+                                    )
+
+                                } else if(!user?.profileUrl.isNullOrBlank()){
+                                    AsyncImage(
+                                        model = user.profileUrl,
+                                        contentDescription = "Profile Photo",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                                else {
+                                    Text(
+                                        text = initials,
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontFamily = dmSans,
+                                            fontWeight = FontWeight.Bold,
+                                        ),
+                                        fontSize = 16.dp.toNonScaledSp(),
+                                        color = Color(0xFF111827),
+                                    )
+                                }
                             }
                         }
 
