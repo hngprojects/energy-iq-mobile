@@ -19,14 +19,34 @@ class ProfileRepository(
         fileName: String,
         mimeType: String,
     ): String {
-        val res = cloudinaryApi.uploadImage(
-            cloudName = CloudinaryConfig.CLOUD_NAME,
-            uploadPreset = CloudinaryConfig.UPLOAD_PRESET,
+        // 1. Upload to the custom backend
+        val uploadedUrl = api.uploadProfileImage(
             bytes = bytes,
             fileName = fileName,
-            mimeType = mimeType,
+            mimeType = mimeType
         )
-        return res.secureUrl.ifBlank { res.url }
+
+        // 2. Fetch the current logged-in user
+        val currentUser = authRepository.getCurrentUser()
+        if (currentUser != null) {
+            // 3. Save the new image URL into local Room DB / Preferences cache
+            val trimmed = currentUser.name.trim()
+            val firstName = trimmed.substringBefore(" ").trim().ifBlank { trimmed }
+            val lastName = trimmed.substringAfter(" ", "").trim()
+            authRepository.updateLocalUser(
+                id = currentUser.id,
+                firstName = firstName,
+                lastName = lastName,
+                businessName = currentUser.businessName.orEmpty(),
+                businessType = currentUser.businessType.orEmpty(),
+                state = currentUser.state.orEmpty(),
+                city = currentUser.city.orEmpty(),
+                aiLanguage = currentUser.aiLanguage.orEmpty(),
+                profileUrl = uploadedUrl
+            )
+        }
+
+        return uploadedUrl
     }
 
     suspend fun updatePersonalSettingsRaw(body: Map<String, JsonElement>) {

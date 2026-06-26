@@ -128,6 +128,9 @@ kotlin {
             // Room
             implementation(libs.room.runtime)
 
+            // Coil
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
             // Koin — DI
             implementation(libs.koin.core)
             implementation(libs.koin.compose)

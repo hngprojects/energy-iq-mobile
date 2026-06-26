@@ -77,6 +77,8 @@ import com.hng14.energyiq.cas_title
 import com.hng14.energyiq.common_cancel
 import com.hng14.energyiq.common_confirm
 import com.hng14.energyiq.core.theme.EnergyPalette
+import com.hng14.energyiq.core.ui.ComingSoonDialog
+import com.hng14.energyiq.features.home.presentation.components.HomeTopBar
 import org.jetbrains.compose.resources.stringResource
 
 private fun formatMillis(millis: Long?): String {
@@ -96,17 +98,13 @@ private fun formatMillisToIso(millis: Long?): String {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CostAndSavingsScreen(
+    userName: String?,
+    profileUrl: String?,
+    onProfileClick: () -> Unit = {},
     onBack: (() -> Unit)? = null,
 ) {
     val viewModel = koinViewModel<CostAndSavingsViewModel>()
     val uiState by viewModel.uiState.collectAsState()
-    
-    val authRepository = koinInject<AuthRepository>()
-    var userName by remember { mutableStateOf<String?>(null) }
-    
-    LaunchedEffect(Unit) {
-        userName = authRepository.getCurrentUser()?.name
-    }
 
     val scrollState = rememberScrollState()
     val dmSans = dmSansFontFamily()
@@ -123,6 +121,15 @@ fun CostAndSavingsScreen(
     // Custom Date Range Picker State
     val defaultCustomDesc = stringResource(Res.string.cas_period_custom_desc)
     var showDateRangePicker by remember { mutableStateOf(false) }
+
+    var showNotificationsComingSoon by remember { mutableStateOf(false) }
+
+    if (showNotificationsComingSoon) {
+        ComingSoonDialog(
+            featureName = "Notifications",
+            onDismiss = { showNotificationsComingSoon = false }
+        )
+    }
 
     val dateRangePickerState = rememberDateRangePickerState()
 
@@ -179,15 +186,22 @@ fun CostAndSavingsScreen(
 
     Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing),
+           .fillMaxSize(),
+          //  .windowInsetsPadding(WindowInsets.safeDrawing),
         containerColor = Color.White,
         topBar = {
-            BackHomeTopBar(
-                title = stringResource(Res.string.cas_title),
-                name = userName,
-                onBack = onBack
+            HomeTopBar(
+                name = stringResource(Res.string.cas_title),
+                profileUrl = profileUrl,
+                onNotificationClick = { showNotificationsComingSoon = true },
+                onProfileClick = onProfileClick
             )
+//            BackHomeTopBar(
+//                title = stringResource(Res.string.cas_title),
+//                profileUrl = profileUrl,
+//                name = userName,
+//                onBack = onBack
+//            )
         }
     ) { paddingValues ->
         PullToRefreshBox(

@@ -36,8 +36,11 @@ fun ChatListScreen(
     val state by viewModel.state.collectAsState()
     val auth = koinInject<AuthRepository>()
     var userName by remember { mutableStateOf<String?>(null) }
+    var profileUrl by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
-        userName = auth.getCurrentUser()?.name
+        val user = auth.getCurrentUser()
+        userName = user?.name
+        profileUrl = user?.profileUrl
     }
     // When navigating back to this screen, force a refresh so newly-created chats appear immediately.
     LaunchedEffect(Unit) {
@@ -63,6 +66,7 @@ fun ChatListScreen(
                 title = "Chats",
                 name = userName,
                 onBack = onBack,
+                profileUrl = profileUrl,
                 onNotificationClick = { showNotificationsComingSoon = true },
                 onProfileClick = onOpenProfile,
             )

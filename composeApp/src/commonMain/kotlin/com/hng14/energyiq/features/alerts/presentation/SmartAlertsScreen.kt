@@ -25,6 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SmartAlertsScreen(
     name: String,
+    profileUrl: String? = null,
     onInspectAlert: (String) -> Unit,
     onProfileClick: () -> Unit = {}
 ) {
@@ -48,6 +49,7 @@ fun SmartAlertsScreen(
     ) {
         HomeTopBar(
             name = name,
+            profileUrl = profileUrl,
             onNotificationClick = { showNotificationsComingSoon = true },
             onProfileClick = onProfileClick
         )

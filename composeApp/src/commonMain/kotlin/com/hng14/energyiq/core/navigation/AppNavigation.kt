@@ -163,7 +163,7 @@ fun AppNavigation(startDestination: AppDestination) {
                 }
                 ReportsScreen(
                     name = name,
-                    onViewReport = {},
+                    onDeleteReport = {},
                     onDownloadReport = {},
                     onBack = { backStack.removeLastOrNull() }
                 )
@@ -171,8 +171,11 @@ fun AppNavigation(startDestination: AppDestination) {
             entry<AppDestination.SmartAlerts> {
                 val auth = koinInject<AuthRepository>()
                 var name by remember { mutableStateOf("") }
+                var profileUrl by remember { mutableStateOf<String?>(null) }
                 LaunchedEffect(Unit) {
-                    name = auth.getCurrentUser()?.name ?: ""
+                    val user = auth.getCurrentUser()
+                    name = user?.name ?: ""
+                    profileUrl = user?.profileUrl
                 }
                 SmartAlertsScreen(
                     name = name,
