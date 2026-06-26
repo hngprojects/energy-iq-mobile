@@ -330,15 +330,13 @@ fun ProfileScreen(
                     description = stringResource(Res.string.profile_notifications_desc),
                     onClick = { showComingSoonFeature = "Notifications" }
                 )
-                /*
                 Spacer(modifier = Modifier.height(16.dp))
                 SettingsCategoryCard(
                     icon = { TransactionHistoryIcon(modifier = Modifier.size(22.dp), tint = Color(0xFF111827)) },
-                    title = "Reports",
-                    description = "View weekly/monthly energy summaries and system reports.",
+                    title = stringResource(Res.string.profile_reports),
+                    description = stringResource(Res.string.profile_reports_desc),
                     onClick = onOpenReports
                 )
-                */
 
                 Spacer(modifier = Modifier.height(36.dp))
 

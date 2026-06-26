@@ -163,7 +163,7 @@ fun AppNavigation(startDestination: AppDestination) {
                 }
                 ReportsScreen(
                     name = name,
-                    onViewReport = {},
+                    onDeleteReport = {},
                     onDownloadReport = {},
                     onBack = { backStack.removeLastOrNull() }
                 )

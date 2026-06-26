@@ -1,5 +1,6 @@
 package com.hng14.energyiq.features.reports.presentation.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,11 +16,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.ElectricBolt
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.PieChartOutline
 import androidx.compose.material.icons.outlined.WbSunny
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -52,7 +56,6 @@ import com.hng14.energyiq.core.ui.SunIcon
 import com.hng14.energyiq.features.reports.domain.model.ReportIcon
 import com.hng14.energyiq.features.reports.domain.model.ReportItem
 import com.hng14.energyiq.features.reports.domain.model.ReportStat
-import com.hng14.energyiq.features.reports.domain.model.ReportStatus
 
 @Composable
 fun ReportStatCard(
@@ -122,51 +125,155 @@ fun ReportStatCard(
 
 @Composable
 fun ReportToolbar(
+    selectedType: String,
+    onTypeSelected: (String) -> Unit,
+    selectedPeriod: String,
+    onPeriodSelected: (String) -> Unit,
+    customDateRangeLabel: String?,
+    onShowDatePicker: () -> Unit,
     modifier: Modifier = Modifier,
     onGenerateReport: () -> Unit,
 ) {
     val dmSans = dmSansFontFamily()
-    var selectedType by remember { mutableStateOf("Report Type") }
-    var selectedSchedule by remember { mutableStateOf("Schedule") }
+    var typeExpanded by remember { mutableStateOf(false) }
+    var periodExpanded by remember { mutableStateOf(false) }
+
+    val reportTypes = remember { listOf("GENERAL", "SOLAR", "ALERT", "Cost And Savings") }
+    val periods = remember { listOf("weekly", "monthly", "custom") }
 
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        ReportDropdownChip(
-            label = selectedType,
-            fontFamily = dmSans,
-            onClick = { selectedType = if (selectedType == "Report Type") "Weekly" else "Report Type" },
-            modifier = Modifier.width(160.dp),
-            height = 40.dp,
-            shapeSize = 12.dp,
-        )
+        // Type dropdown (Left side)
+        Box(modifier = Modifier.width(160.dp)) {
+            ReportDropdownChip(
+                label = if (selectedType == "Cost And Savings") "Cost and Savings" else selectedType,
+                fontFamily = dmSans,
+                onClick = { typeExpanded = true },
+                modifier = Modifier.fillMaxWidth(),
+                height = 40.dp,
+                shapeSize = 12.dp,
+            )
+            DropdownMenu(
+                expanded = typeExpanded,
+                onDismissRequest = { typeExpanded = false },
+                modifier = Modifier.width(160.dp).background(Color.White)
+            ) {
+                reportTypes.forEach { type ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = if (type == "Cost And Savings") "Cost and Savings" else type,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontFamily = dmSans,
+                                    fontSize = 14.sp
+                                ),
+                                color = Color(0xFF111827)
+                            )
+                        },
+                        onClick = {
+                            onTypeSelected(type)
+                            typeExpanded = false
+                        }
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
+        // Period Selection and Action Button (Right side Column)
         Column(
+            modifier = Modifier.width(190.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.End,
         ) {
-            InsightSmallButton(
-                label = selectedSchedule,
-                onClick = { selectedSchedule = if (selectedSchedule == "Schedule") "Auto" else "Schedule" },
-                modifier = Modifier.width(190.dp),
-                variant = InsightButtonVariant.Secondary,
-                fontFamily = dmSans,
-            )
+            // Period dropdown chip
+            Box(modifier = Modifier.fillMaxWidth()) {
+                ReportDropdownChip(
+                    label = selectedPeriod.replaceFirstChar { it.uppercase() },
+                    fontFamily = dmSans,
+                    onClick = { periodExpanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    height = 40.dp,
+                    shapeSize = 12.dp,
+                )
+                DropdownMenu(
+                    expanded = periodExpanded,
+                    onDismissRequest = { periodExpanded = false },
+                    modifier = Modifier.width(190.dp).background(Color.White)
+                ) {
+                    periods.forEach { period ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = period.replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontFamily = dmSans,
+                                        fontSize = 14.sp
+                                    ),
+                                    color = Color(0xFF111827)
+                                )
+                            },
+                            onClick = {
+                                onPeriodSelected(period)
+                                periodExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
+            // Custom Date Range Selector (only if custom is selected)
+            if (selectedPeriod == "custom") {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                        .clickable(onClick = onShowDatePicker),
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFF9FAFB),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE5E7EB))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = customDateRangeLabel ?: "Select Dates",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = dmSans,
+                                fontSize = 12.sp
+                            ),
+                            color = if (customDateRangeLabel != null) Color(0xFF111827) else Color(0xFF6B7280),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = Icons.Outlined.DateRange,
+                            contentDescription = "Select Dates",
+                            tint = Color(0xFF6B7280),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+
+            // Generate Report Button
             Surface(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .height(44.dp)
-                    .width(190.dp)
                     .clickable(onClick = onGenerateReport),
                 shape = RoundedCornerShape(12.dp),
                 color = Color(0xFF111827),
             ) {
                 Box(
-                    modifier = Modifier.padding(horizontal = 14.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -235,27 +342,41 @@ private fun ReportDropdownChip(
 @Composable
 fun ReportCard(
     item: ReportItem,
-    onView: (String) -> Unit,
+    onDelete: (String) -> Unit,
     onDownload: (String) -> Unit,
+    onCancel: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dmSans = dmSansFontFamily()
-    val ready = item.status == ReportStatus.READY
+    val statusUpper = item.status.uppercase()
+    val ready = statusUpper == "READY" || statusUpper == "COMPLETED"
+    val isCanceled = statusUpper == "CANCELLED" || statusUpper == "CANCELED"
+    val isDeleted = statusUpper == "DELETED"
+    val label = item.status.lowercase().replaceFirstChar { it.uppercase() }
     InsightOutlinedCard(
         modifier = modifier.fillMaxWidth(),
         shapeSize = 12.dp,
     ) {
         Column {
-            when (item.status) {
-                ReportStatus.READY -> InsightStatusChip(
-                    label = "Ready",
+            if (ready) {
+                InsightStatusChip(
+                    label = label,
                     background = Color(0xFFECFDF3),
                     foreground = Color(0xFF16A34A),
                     dot = Color(0xFF22C55E),
                     fontFamily = dmSans,
                 )
-                ReportStatus.PROCESSING -> InsightStatusChip(
-                    label = "Processing",
+            } else if (isCanceled || isDeleted) {
+                InsightStatusChip(
+                    label = label,
+                    background = Color(0xFFF3F4F6),
+                    foreground = Color(0xFF4B5563),
+                    dot = Color(0xFF9CA3AF),
+                    fontFamily = dmSans,
+                )
+            } else {
+                InsightStatusChip(
+                    label = label,
                     background = Color(0xFFFFF7E6),
                     foreground = Color(0xFFD97706),
                     dot = Color(0xFFF59E0B),
@@ -302,24 +423,36 @@ fun ReportCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                ReportCardActionButton(
-                    label = "View",
-                    enabled = ready,
-                    onClick = { onView(item.id) },
-                    modifier = Modifier.weight(1f),
-                    background = Color(0xFF111827),
-                    foreground = Color.White,
-                    fontFamily = dmSans,
-                )
-                ReportCardActionButton(
-                    label = "Download",
-                    enabled = ready,
-                    onClick = { onDownload(item.id) },
-                    modifier = Modifier.weight(1f),
-                    background = Color(0xFFE5E7EB),
-                    foreground = Color(0xFF111827),
-                    fontFamily = dmSans,
-                )
+                if (ready || isDeleted) {
+                    ReportCardActionButton(
+                        label = "Delete",
+                        enabled = !isDeleted,
+                        onClick = { onDelete(item.id) },
+                        modifier = Modifier.weight(1f),
+                        background = Color(0xFFEF4444),
+                        foreground = Color.White,
+                        fontFamily = dmSans,
+                    )
+                    ReportCardActionButton(
+                        label = "Download",
+                        enabled = ready,
+                        onClick = { onDownload(item.id) },
+                        modifier = Modifier.weight(1f),
+                        background = Color(0xFFE5E7EB),
+                        foreground = Color(0xFF111827),
+                        fontFamily = dmSans,
+                    )
+                } else {
+                    ReportCardActionButton(
+                        label = "Cancel",
+                        enabled = !isCanceled,
+                        onClick = { onCancel(item.id) },
+                        modifier = Modifier.fillMaxWidth(),
+                        background = Color(0xFF111827),
+                        foreground = Color.White,
+                        fontFamily = dmSans,
+                    )
+                }
             }
         }
     }
